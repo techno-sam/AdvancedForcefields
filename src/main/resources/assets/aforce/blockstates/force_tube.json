@@ -1,0 +1,74 @@
+{
+  "__comment": "Modified from Quark",
+  "multipart": [
+    {
+      "when": { "enabled": true },
+      "apply": { "model": "aforce:block/active_force_tube" }
+    },
+    {
+      "when": { "north": true, "enabled": false },
+      "apply": { "model": "aforce:block/pipe_side" }
+    },
+    {
+      "when": { "south": true, "enabled": false },
+      "apply": { "model": "aforce:block/pipe_side", "y": 180 }
+    },
+    {
+      "when": { "east": true, "enabled": false },
+      "apply": { "model": "aforce:block/pipe_side", "y": 90 }
+    },
+    {
+      "when": { "west": true, "enabled": false },
+      "apply": { "model": "aforce:block/pipe_side", "y": 270 }
+    },
+    {
+      "when": { "down": true, "enabled": false },
+      "apply": { "model": "aforce:block/pipe_side", "x": 90 }
+    },
+    {
+      "when": { "up": true, "enabled": false },
+      "apply": { "model": "aforce:block/pipe_side", "x": 270 }
+    },
+    {
+      "when": {
+        "north": false, "enabled": false
+      },
+      "apply": { "model": "aforce:block/pipe_center_side" }
+    },
+    {
+
+      "when": {
+        "south": false, "enabled": false
+      },
+      "apply": { "model": "aforce:block/pipe_center_side", "y": 180 }
+    },
+    {
+
+      "when": {
+        "east": false, "enabled": false
+      },
+      "apply": { "model": "aforce:block/pipe_center_side", "y": 90 }
+    },
+    {
+
+      "when": {
+        "west": false, "enabled": false
+      },
+      "apply": { "model": "aforce:block/pipe_center_side", "y": 270 }
+    },
+    {
+
+      "when": {
+        "down": false, "enabled": false
+      },
+      "apply": { "model": "aforce:block/pipe_center_side", "x": 90 }
+    },
+    {
+
+      "when": {
+        "up": false, "enabled": false
+      },
+      "apply": { "model": "aforce:block/pipe_center_side", "x": 270 }
+    }
+  ]
+}

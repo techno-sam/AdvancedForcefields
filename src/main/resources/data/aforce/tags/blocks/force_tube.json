@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "aforce:force_tube",
+    "aforce:force_controller"
+  ]
+}

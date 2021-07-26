@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="All rights reserved"
+
+[[mods]]
+modId="aforce"
+version="${file.jarVersion}"
+displayName="Advanced Forcefields"
+#logoFile="examplemod.png"
+credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod"
+authors="Slimeist"
+description='''
+Advanced Forcefields aare fun
+'''
+
+[[dependencies.aforce]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+# Here's another dependency
+[[dependencies.aforce]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"

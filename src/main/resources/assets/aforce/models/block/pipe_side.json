@@ -1,0 +1,42 @@
+{
+  "__comment": "Designed by Wiiv with Cubik Studio - https://cubik.studio, copied from Quark",
+  "textures": {
+    "particle": "aforce:block/pipe_structure_green",
+    "external": "aforce:block/pipe_structure_green",
+    "internal": "aforce:block/pipe_structure"
+  },
+  "elements": [
+    {
+      "from": [ 5, 5, 0 ],
+      "to": [ 11, 5, 5 ],
+      "faces": {
+        "down": { "uv": [ 5, 11, 11, 16 ], "texture": "#external" },
+        "up": { "uv": [ 5, 11, 11, 16 ], "texture": "#internal" }
+      }
+    },
+    {
+      "from": [ 5, 11, 0 ],
+      "to": [ 11, 11, 5 ],
+      "faces": {
+        "up": { "uv": [ 5, 0, 11, 5 ], "texture": "#external" },
+        "down": { "uv": [ 5, 0, 11, 5 ], "texture": "#internal" }
+      }
+    },
+    {
+      "from": [ 5, 5, 0 ],
+      "to": [ 5, 11, 5 ],
+      "faces": {
+        "west": { "uv": [ 0, 5, 5, 11 ], "texture": "#external" },
+        "east": { "uv": [ 0, 5, 5, 11 ], "texture": "#internal" }
+      }
+    },
+    {
+      "from": [ 11, 5, 0 ],
+      "to": [ 11, 11, 5 ],
+      "faces": {
+        "east": { "uv": [ 11, 5, 16, 11 ], "texture": "#external" },
+        "west": { "uv": [ 11, 5, 16, 11 ], "texture": "#internal" }
+      }
+    }
+  ]
+}
