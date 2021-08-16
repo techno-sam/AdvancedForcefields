@@ -1,5 +1,6 @@
 package com.slimeist.aforce;
 
+import com.slimeist.aforce.client.render.tileentity.ForceTubeTileEntityRenderer;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.core.init.BlockInit;
 import com.slimeist.aforce.core.init.ItemInit;
@@ -52,6 +53,7 @@ public class AdvancedForcefields {
 
     private void setupClient(final FMLClientSetupEvent event) {
         RenderLayerHandler.init();
+        ForceTubeTileEntityRenderer.register();
     }
 
     public static ResourceLocation getId(String path) {

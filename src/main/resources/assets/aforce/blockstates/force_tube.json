@@ -6,67 +6,67 @@
       "apply": { "model": "aforce:block/active_force_tube" }
     },
     {
-      "when": { "north": true, "enabled": false },
+      "when": { "north": true },
       "apply": { "model": "aforce:block/pipe_side" }
     },
     {
-      "when": { "south": true, "enabled": false },
+      "when": { "south": true },
       "apply": { "model": "aforce:block/pipe_side", "y": 180 }
     },
     {
-      "when": { "east": true, "enabled": false },
+      "when": { "east": true },
       "apply": { "model": "aforce:block/pipe_side", "y": 90 }
     },
     {
-      "when": { "west": true, "enabled": false },
+      "when": { "west": true },
       "apply": { "model": "aforce:block/pipe_side", "y": 270 }
     },
     {
-      "when": { "down": true, "enabled": false },
+      "when": { "down": true },
       "apply": { "model": "aforce:block/pipe_side", "x": 90 }
     },
     {
-      "when": { "up": true, "enabled": false },
+      "when": { "up": true },
       "apply": { "model": "aforce:block/pipe_side", "x": 270 }
     },
     {
       "when": {
-        "north": false, "enabled": false
+        "north": false
       },
       "apply": { "model": "aforce:block/pipe_center_side" }
     },
     {
 
       "when": {
-        "south": false, "enabled": false
+        "south": false
       },
       "apply": { "model": "aforce:block/pipe_center_side", "y": 180 }
     },
     {
 
       "when": {
-        "east": false, "enabled": false
+        "east": false
       },
       "apply": { "model": "aforce:block/pipe_center_side", "y": 90 }
     },
     {
 
       "when": {
-        "west": false, "enabled": false
+        "west": false
       },
       "apply": { "model": "aforce:block/pipe_center_side", "y": 270 }
     },
     {
 
       "when": {
-        "down": false, "enabled": false
+        "down": false
       },
       "apply": { "model": "aforce:block/pipe_center_side", "x": 90 }
     },
     {
 
       "when": {
-        "up": false, "enabled": false
+        "up": false
       },
       "apply": { "model": "aforce:block/pipe_center_side", "x": 270 }
     }

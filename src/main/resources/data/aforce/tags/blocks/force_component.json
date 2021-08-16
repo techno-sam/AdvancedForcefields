@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#aforce:force_component_no_controller",
+    "aforce:force_controller"
+  ]
+}

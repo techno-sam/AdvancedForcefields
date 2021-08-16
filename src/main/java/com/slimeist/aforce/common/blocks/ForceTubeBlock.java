@@ -1,12 +1,22 @@
 package com.slimeist.aforce.common.blocks;
 
+import com.google.common.collect.Sets;
+import com.mojang.datafixers.kinds.Const;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
+import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
+import com.slimeist.aforce.common.tiles.ModTileEntity;
+import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
+import com.slimeist.aforce.core.interfaces.IMasterLogic;
+import com.slimeist.aforce.core.util.ForceNetworkPacket;
+import com.slimeist.aforce.core.util.RenderLayerHandler;
 import com.slimeist.aforce.core.util.TileEntityHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.IWaterLoggable;
+import net.minecraft.block.material.PushReaction;
 import net.minecraft.client.renderer.chunk.ChunkRenderCache;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -27,12 +37,15 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Random;
+import java.util.Set;
 
-public class ForceTubeBlock extends BasePipeBlock {
+public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock {
 
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
@@ -42,6 +55,11 @@ public class ForceTubeBlock extends BasePipeBlock {
         registerDefaultState(defaultBlockState()
                 .setValue(ENABLED, false)
         );
+        RenderLayerHandler.setRenderType(this, RenderLayerHandler.RenderTypeSkeleton.TRANSLUCENT);
+    }
+
+    public PushReaction getPistonPushReaction(BlockState p_149656_1_) {
+        return PushReaction.BLOCK;
     }
 
     @Override
@@ -51,10 +69,27 @@ public class ForceTubeBlock extends BasePipeBlock {
     }
 
     @Override
+    public void onPlace(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+        super.onPlace(state, worldIn, pos, oldState, isMoving);
+        this.doUpdate(state, worldIn, pos);
+    }
+
+    @Override
     public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-        BlockState targetState = getTargetState(worldIn, pos, state.getValue(WATERLOGGED), state.getValue(ENABLED));
-        if(!targetState.equals(state))
-            worldIn.setBlock(pos, targetState, 2 | 4);
+        super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
+        this.doUpdate(state, worldIn, pos);
+    }
+
+    private void doUpdate(BlockState state, World worldIn, BlockPos pos) {
+        if (!worldIn.isClientSide) {
+            this.updateDistance(worldIn, pos, state);
+            this.markTEDirty(worldIn, pos);
+        }
+
+        BlockState targetState = getTargetState(worldIn, pos, state.getValue(WATERLOGGED), this.getInternalDistance(worldIn, pos)!=-1);
+        if(!targetState.equals(state)) {
+            worldIn.setBlock(pos, targetState, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.NO_RERENDER);
+        }
     }
 
     private BlockState getTargetState(World worldIn, BlockPos pos, boolean waterlog, boolean enabled) {
@@ -67,45 +102,13 @@ public class ForceTubeBlock extends BasePipeBlock {
 
             BlockPos neighborpos = pos.offset(facing.getNormal()); //(worldIn, pos, facing);
             BlockState neighborstate = worldIn.getBlockState(neighborpos);
-            boolean matching = isMatchingBlock(neighborstate.getBlock());
+            boolean matching = isMatchingBlock(worldIn.getBlockState(pos), neighborstate, pos, neighborpos, worldIn);
 
             newState = newState.setValue(prop, matching);
         }
 
         return newState;
     }
-
-    /*@Override
-    @SuppressWarnings("deprecation")
-    public void tick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
-        super.tick(state, world, pos, rand);
-        TileEntity tile = world.getBlockEntity(pos);
-        if (tile instanceof ForceTubeTileEntity) {
-            ForceTubeTileEntity tubeTile = (ForceTubeTileEntity) tile;
-            AdvancedForcefields.LOGGER.info("Ticking ForceTubeBlock with a correct tile");
-            boolean hasMaster = tubeTile.hasMaster();
-            if (hasMaster!=state.getValue(ENABLED)) {
-                AdvancedForcefields.LOGGER.info("ENABLED state of: "+state.getValue(ENABLED)+", and hasMaster() state of: "+hasMaster+", is inconsistent");
-                //state = state.getBlockState();
-                state = state.setValue(ENABLED, hasMaster);
-                AdvancedForcefields.LOGGER.info("Changed state to: "+state.toString());
-                world.setBlockAndUpdate(pos, state);
-            }
-        }
-        world.getBlockTicks().scheduleTick(pos, this, 10);
-    }
-
-    @Override
-    public void onPlace(BlockState state, World world, BlockPos pos, BlockState state1, boolean p_220082_5_) {
-        if (!world.isClientSide) {
-            //world.getBlockTicks().scheduleTick(pos, this, 1);
-        }
-    }
-
-    @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context) {
-        return super.getStateForPlacement(context).setValue(ENABLED, false);
-    }*/
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
@@ -115,18 +118,17 @@ public class ForceTubeBlock extends BasePipeBlock {
         return super.getShape(state, worldIn, pos, context);
     }
 
-
-    /*@Override
-    public void entityInside(BlockState blockstate, World world, BlockPos blockpos, Entity entity) {
-        super.entityInside(blockstate, world, blockpos, entity);
-        if (entity.isColliding(blockpos, blockstate)) {
-            entity.makeStuckInBlock(blockstate, new Vector3d(0.9F, 0.9D, 0.9F));
-        }
-    }*/
-
     @Override
-    public boolean isMatchingBlock(Block block) {
-        return block.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE);
+    public boolean isMatchingBlock(BlockState mystate, BlockState neighborstate, BlockPos mypos, BlockPos neighborpos, IBlockReader blockReader) {
+        return this.isMatchingBlock(mypos, neighborpos, blockReader);
+    }
+
+    public boolean isMatchingBlock(BlockPos mypos, BlockPos neighborpos, IBlockReader blockReader) {
+        TileEntity myTile = blockReader.getBlockEntity(mypos);
+        if (myTile instanceof ForceTubeTileEntity) {
+            return ((ForceTubeTileEntity) myTile).canConnect(neighborpos);
+        }
+        return false;
     }
 
     @Override
@@ -154,10 +156,191 @@ public class ForceTubeBlock extends BasePipeBlock {
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        ForceTubeTileEntity.updateNeighbors(world, pos, state);
+    public int getDistance(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity && this.shouldSignal(world, pos)) {
+            int distance = ((ForceNetworkTileEntity) tile).getDistance();
+            //LOGGER.info("getDistance @ "+pos.toShortString()+" (shouldSignal: "+this.shouldSignal(world, pos)+"), returning "+distance);
+            return distance;
+        }
+        //LOGGER.info("getDistance @ "+pos.toShortString()+" (shouldSignal: "+this.shouldSignal(world, pos)+"), returning -1, because we did not find a good TE, or shouldn't signal");
+        return -1;
     }
 
+    private int getInternalDistance(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            int distance = ((ForceNetworkTileEntity) tile).getDistance();
+            //LOGGER.info("getInteranlDistance @ "+pos.toShortString()+" returning "+distance);
+            return distance;
+        }
+        //LOGGER.info("getInternalDistance @ "+pos.toShortString()+" returning -1, because we did not find a good TE");
+        return -1;
+    }
+
+    @Override
+    public void setDistance(World world, BlockPos pos, int distance) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            ((ForceNetworkTileEntity) tile).setDistance(distance);
+        }
+    }
+
+    @Override
+    public boolean hasCloser(World world, BlockPos pos, BlockPos bannedPos, int distance) {
+        for (Direction dir : Direction.values()) {
+            BlockPos testPos = pos.relative(dir);
+            if (!testPos.equals(bannedPos) && this.canConnect(world, pos, testPos)) {
+                BlockState testState = world.getBlockState(testPos);
+                Block testBlock = testState.getBlock();
+                if (testBlock instanceof IForceNetworkBlock) {
+                    int d1 = ((IForceNetworkBlock) testBlock).getDistance(world, testPos);
+                    if (d1<distance) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isConnected(World world, BlockPos pos, BlockPos otherPos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            return ((ForceNetworkTileEntity) tile).isConnected(otherPos);
+        } else {
+            LOGGER.error("Did not find expected ForceNetworkTileEntity at ["+pos+"], when checking whether connected to ["+otherPos+"]");
+        }
+        return false;
+    }
+
+    public boolean hasMasterPos(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            return ((ForceNetworkTileEntity) tile).hasMasterPos();
+        } else {
+            LOGGER.error("Did not find expected ForceNetworkTileEntity at ["+pos+"], when checking whether it hasMasterPos");
+        }
+        return false;
+    }
+
+    public boolean canConnect(World world, BlockPos pos, BlockPos otherPos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            return ((ForceNetworkTileEntity) tile).canConnect(otherPos);
+        } else {
+            LOGGER.error("Did not find expected ForceNetworkTileEntity at [" + pos + "], when checking whether can connect to [" + otherPos + "]");
+        }
+        return false;
+    }
+
+    public boolean shouldSignal(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceTubeTileEntity) {
+            return ((ForceTubeTileEntity) tile).isSignalling();
+        } else {
+            LOGGER.error("Did not find expected ForceTubeTileEntity at [" + pos + "], when checking whether should signal");
+        }
+        return false;
+    }
+
+    public void setSignalling(World world, BlockPos pos, boolean shouldSignal) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceTubeTileEntity) {
+            ((ForceTubeTileEntity) tile).setSignalling(shouldSignal);
+        } else {
+            LOGGER.error("Did not find expected ForceTubeTileEntity at [" + pos + "], when setting shouldSignal");
+        }
+    }
+
+    private void networkDisconnect(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceTubeTileEntity) {
+            ((ForceTubeTileEntity) tile).networkDisconnect();
+        } else {
+            LOGGER.error("Did not find expected ForceTubeTileEntity at [" + pos + "], when disconnecting from network");
+        }
+    }
+
+    private void markTEDirty(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceTubeTileEntity) {
+            ((ForceTubeTileEntity) tile).setChanged();
+            BlockState state = world.getBlockState(pos);
+            world.sendBlockUpdated(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE);
+            LOGGER.info("Marked ForceTubeTileEntity at [" + pos + "] as dirty");
+        } else {
+            LOGGER.error("Did not find expected ForceTubeTileEntity at [" + pos + "], when marking TE as dirty");
+        }
+    }
+
+    private void updateDistance(World world, BlockPos pos, BlockState state) {
+        int targetDistance = this.calculateTargetDistance(world, pos);
+        if (this.getDistance(world, pos) != targetDistance) {
+            //LOGGER.warn("Distance is: "+this.getDistance(world, pos)+", target is: "+targetDistance);
+            this.setDistance(world, pos, targetDistance);
+            if (targetDistance==-1) {
+                this.networkDisconnect(world, pos);
+            }
+            //this.markTEDirty(world, pos);
+            //LOGGER.warn("Distance is now: "+this.getDistance(world, pos));
+
+            Set<BlockPos> set = Sets.newHashSet();
+            set.add(pos);
+
+            for (Direction direction : Direction.values()) {
+                set.add(pos.relative(direction));
+            }
+
+            for (BlockPos blockpos : set) {
+                world.updateNeighborsAt(blockpos, this);
+            }
+        }
+    }
+
+    private int calculateTargetDistance(World world, BlockPos pos) {
+        this.setSignalling(world, pos, false);
+        int dist = this.getLeastNeighborDistance(world, pos);
+        this.setSignalling(world, pos, true);
+        if (dist==-1) {
+            return dist;
+        } else {
+            return dist+1;
+        }
+    }
+
+    private int getLeastNeighborDistance(World world, BlockPos pos) {
+        int d = -1;
+        boolean hasCloser = false;
+        int myd = this.getInternalDistance(world, pos);
+        String msg = "\ngetLeastNeighborDistance @ "+pos.toShortString()+": ";
+
+        for (Direction dir : Direction.values()) {
+            BlockPos testPos = pos.relative(dir);
+            if (this.canConnect(world, pos, testPos)) {
+                BlockState testState = world.getBlockState(testPos);
+                msg += "\n\tConnected to the "+dir.getName()+" to "+testState;
+                Block testBlock = testState.getBlock();
+                if (testBlock instanceof IForceNetworkBlock) {
+                    int d1 = ((IForceNetworkBlock) testBlock).getDistance(world, testPos);
+                    msg += ", with distance "+d1+", our current calculated distance is "+d;
+                    if (d1 != -1 && (d1 < d || d==-1)) { //basically, if we are getting a distance from our neighbor, and they are closer than we are
+                        msg += ", calculated distance was set to "+d1;
+                        d = d1;
+                    }
+                    if (d1<myd || ((IForceNetworkBlock) testBlock).hasCloser(world, testPos, pos, d1)) {
+                        hasCloser = true;
+                        msg += ", encountered closer tube";
+                    }
+                }
+            }
+        }
+        msg += "\n";
+        //LOGGER.error(msg);
+        return hasCloser ? d : -1;
+    }
+
+    /*
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
         VoxelShape shape = super.getCollisionShape(state, blockReader, pos, context);
@@ -201,5 +384,5 @@ public class ForceTubeBlock extends BasePipeBlock {
             }
         }
         return shape;
-    }
+    }*/
 }

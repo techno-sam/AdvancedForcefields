@@ -20,6 +20,7 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.ToolType;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 
@@ -42,7 +43,6 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
     public static final BooleanProperty EAST = BooleanProperty.create("east");
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    @SuppressWarnings("unchecked")
     protected static final BooleanProperty[] CONNECTIONS = new BooleanProperty[] {
             DOWN, UP, NORTH, SOUTH, WEST, EAST
     };
@@ -82,7 +82,7 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
     public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         BlockState targetState = getTargetState(worldIn, pos, state.getValue(WATERLOGGED));
         if(!targetState.equals(state))
-            worldIn.setBlock(pos, targetState, 2 | 4);
+            worldIn.setBlock(pos, targetState, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.NO_RERENDER);//2 | 4);
     }
 
     @Override
@@ -90,8 +90,8 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
         return getTargetState(context.getLevel(), context.getClickedPos(), context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 
-    public boolean isMatchingBlock(Block block) {
-        return block.is(Tags.Blocks.GLASS);
+    public boolean isMatchingBlock(BlockState mystate, BlockState neighborstate, BlockPos mypos, BlockPos neighborpos, IBlockReader blockReader) {
+        return neighborstate.getBlock().is(Tags.Blocks.GLASS);
     }
 
     private BlockState getTargetState(World worldIn, BlockPos pos, boolean waterlog) {
@@ -103,7 +103,7 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
 
             BlockPos neighborpos = pos.offset(facing.getNormal()); //(worldIn, pos, facing);
             BlockState neighborstate = worldIn.getBlockState(neighborpos);
-            boolean matching = isMatchingBlock(neighborstate.getBlock());
+            boolean matching = isMatchingBlock(worldIn.getBlockState(pos), neighborstate, pos, neighborpos, worldIn);
 
             newState = newState.setValue(prop, matching);
         }

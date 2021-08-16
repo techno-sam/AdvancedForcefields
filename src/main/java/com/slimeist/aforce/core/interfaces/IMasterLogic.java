@@ -3,7 +3,7 @@ package com.slimeist.aforce.core.interfaces;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.extensions.IForgeTileEntity;
-
+@Deprecated
 public interface IMasterLogic extends IForgeTileEntity {
     //Copied from Tinker's Construct
     /**
