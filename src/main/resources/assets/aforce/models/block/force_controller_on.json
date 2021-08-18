@@ -2,7 +2,7 @@
   "parent": "minecraft:block/orientable",
   "textures": {
     "top": "aforce:block/force_controller_top",
-    "front": "aforce:block/force_controller_on",
+    "front": "aforce:block/force_controller_front_on",
     "side": "aforce:block/force_controller_side"
   }
 }
