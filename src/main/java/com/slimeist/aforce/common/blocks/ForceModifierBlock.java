@@ -1,6 +1,7 @@
 package com.slimeist.aforce.common.blocks;
 
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
+import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import net.minecraft.block.*;
@@ -12,7 +13,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.StateContainer;
@@ -23,19 +23,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkHooks;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
-public class ForceControllerBlock extends ContainerBlock implements IForceNetworkBlock {
+public class ForceModifierBlock extends ContainerBlock implements IForceNetworkBlock {
     public static final DirectionProperty FACING = HorizontalBlock.FACING;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
-    public ForceControllerBlock(Properties properties) {
+    public ForceModifierBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState()
                 .setValue(POWERED, false)
@@ -67,7 +64,7 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
     @Nullable
     @Override
     public TileEntity newBlockEntity(IBlockReader world) {
-        return new ForceControllerTileEntity();
+        return new ForceModifierTileEntity();
     }
 
     @Override
@@ -80,9 +77,9 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
     public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (placer instanceof PlayerEntity) {
             TileEntity myTile = worldIn.getBlockEntity(pos);
-            if (myTile instanceof ForceControllerTileEntity) {
-                ForceControllerTileEntity controllerTE = (ForceControllerTileEntity) myTile;
-                controllerTE.owner = placer.getName().getString();
+            if (myTile instanceof ForceModifierTileEntity) {
+                ForceModifierTileEntity modifieTE = (ForceModifierTileEntity) myTile;
+                modifieTE.owner = placer.getName().getString();
             }
         }
     }
@@ -90,8 +87,8 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
     @Override
     public boolean canEntityDestroy(BlockState state, IBlockReader world, BlockPos pos, Entity entity) {
         TileEntity tile = world.getBlockEntity(pos);
-        if(tile instanceof ForceControllerTileEntity)
-            return ((ForceControllerTileEntity)tile).canEntityDestroy(entity);
+        if(tile instanceof ForceModifierTileEntity)
+            return ((ForceModifierTileEntity)tile).canEntityDestroy(entity);
         return super.canEntityDestroy(state, world, pos, entity);
     }
 
@@ -103,15 +100,15 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
 
     private void doUpdate(BlockState state, World worldIn, BlockPos pos) {
         TileEntity myTile = worldIn.getBlockEntity(pos);
-        if (myTile instanceof ForceControllerTileEntity) {
+        if (myTile instanceof ForceModifierTileEntity) {
             boolean powered = worldIn.hasNeighborSignal(pos);
             if (powered!=state.getValue(POWERED)) {
                 worldIn.setBlock(pos, state.setValue(POWERED, powered), Constants.BlockFlags.BLOCK_UPDATE);
-                ForceControllerTileEntity controllerTile = (ForceControllerTileEntity) myTile;
+                ForceModifierTileEntity modifierTile = (ForceModifierTileEntity) myTile;
                 if (powered) {
-                    controllerTile.onPowered();
+                    modifierTile.onPowered();
                 } else {
-                    controllerTile.onDepowered();
+                    modifierTile.onDepowered();
                 }
             }
         }
@@ -140,10 +137,35 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
 
     @Override
     public boolean hasCloser(World world, BlockPos pos, BlockPos bannedPos, int distance) {
+        for (Direction dir : Direction.values()) {
+            BlockPos testPos = pos.relative(dir);
+            if (!testPos.equals(bannedPos) && this.canConnect(world, pos, testPos)) {
+                BlockState testState = world.getBlockState(testPos);
+                Block testBlock = testState.getBlock();
+                if (testBlock instanceof IForceNetworkBlock) {
+                    int d1 = ((IForceNetworkBlock) testBlock).getDistance(world, testPos);
+                    if (d1<distance) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
+    public boolean canConnect(World world, BlockPos pos, BlockPos otherPos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            return ((ForceNetworkTileEntity) tile).canConnect(otherPos);
+        } else {
+            LOGGER.error("Did not find expected ForceNetworkTileEntity at [" + pos + "], when checking whether can connect to [" + otherPos + "]");
+        }
+        return false;
+    }
+
+    /*
     @OnlyIn(Dist.CLIENT)
+    @Override
     public void animateTick(BlockState state, World world, BlockPos pos, Random rnd) {
         if (state.getValue(POWERED)) {
             double d0 = (double)pos.getX() + 0.5D;
@@ -162,7 +184,7 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
             double d7 = direction$axis == Direction.Axis.Z ? (double)direction.getStepZ() * 0.52D : d4;
             world.addParticle(ParticleTypes.PORTAL, d0 + d5, d1 + d6, d2 + d7, 0.0D, 0.0D, 0.0D);
         }
-    }
+    }*/
 
     public BlockState rotate(BlockState p_185499_1_, Rotation p_185499_2_) {
         return p_185499_1_.setValue(FACING, p_185499_2_.rotate(p_185499_1_.getValue(FACING)));
@@ -183,7 +205,7 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
             if (!(player instanceof ServerPlayerEntity)) return ActionResultType.FAIL;  // should always be true, but just in case...
             ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
             TileEntity tile = worldIn.getBlockEntity(pos);
-            if (tile instanceof ForceControllerTileEntity && ((ForceControllerTileEntity) tile).canUseGui(player)) {
+            if (tile instanceof ForceModifierTileEntity && ((ForceModifierTileEntity) tile).canUseGui(player)) {
                 NetworkHooks.openGui(serverPlayerEntity, namedContainerProvider, (packetBuffer) -> {
                 });
             }
@@ -198,9 +220,9 @@ public class ForceControllerBlock extends ContainerBlock implements IForceNetwor
     public void onRemove(BlockState state, World world, BlockPos blockPos, BlockState newState, boolean isMoving) {
         if (state.getBlock() != newState.getBlock()) {
             TileEntity tileentity = world.getBlockEntity(blockPos);
-            if (tileentity instanceof ForceControllerTileEntity) {
-                ForceControllerTileEntity tileEntityController = (ForceControllerTileEntity) tileentity;
-                tileEntityController.dropAllContents(world, blockPos);
+            if (tileentity instanceof ForceModifierTileEntity) {
+                ForceModifierTileEntity tileEntityModifier = (ForceModifierTileEntity) tileentity;
+                tileEntityModifier.dropAllContents(world, blockPos);
             }
 //      worldIn.updateComparatorOutputLevel(pos, this);  if the inventory is used to set redstone power for comparators
             super.onRemove(state, world, blockPos, newState, isMoving);  // call it last, because it removes the TileEntity

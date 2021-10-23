@@ -1,7 +1,10 @@
 package com.slimeist.aforce;
 
+import com.slimeist.aforce.client.ClientSideOnlyModEventRegistrar;
 import com.slimeist.aforce.client.render.tileentity.ForceTubeTileEntityRenderer;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
+import com.slimeist.aforce.common.CommonEventHandler;
+import com.slimeist.aforce.common.StartupCommon;
 import com.slimeist.aforce.core.init.BlockInit;
 import com.slimeist.aforce.core.init.ItemInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
@@ -11,10 +14,12 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -36,25 +41,17 @@ public class AdvancedForcefields {
 
     public AdvancedForcefields() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        bus.addListener(this::setup);
-        bus.addListener(this::setupClient);
 
-        bus.addGenericListener(Item.class, ItemInit::registerAll);
-        bus.addGenericListener(Block.class, BlockInit::registerAll);
-        bus.addGenericListener(TileEntityType.class, TileEntityTypeInit::registerAll);
+        final ClientSideOnlyModEventRegistrar clientSideOnlyModEventRegistrar = new ClientSideOnlyModEventRegistrar(bus);
 
-        MinecraftForge.EVENT_BUS.register(this);
+        bus.register(StartupCommon.class);
+        MinecraftForge.EVENT_BUS.register(CommonEventHandler.class);
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> clientSideOnlyModEventRegistrar::registerClientOnlyEvents);
+
+        //MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private void setup(final FMLCommonSetupEvent event)
-    {
-        AdvancedForcefieldsTags.init();
-    }
 
-    private void setupClient(final FMLClientSetupEvent event) {
-        RenderLayerHandler.init();
-        ForceTubeTileEntityRenderer.register();
-    }
 
     public static ResourceLocation getId(String path) {
         return new ResourceLocation(MOD_ID, path);

@@ -14,6 +14,7 @@ public final class ItemInit {
     //public static BlockItem BASE_PIPE;
     public static BlockItem FORCE_TUBE;
     public static BlockItem FORCE_CONTROLLER;
+    public static BlockItem FORCE_MODIFIER;
 
     private ItemInit() {}
 
@@ -24,6 +25,9 @@ public final class ItemInit {
                 .tab(ItemGroup.TAB_MISC)
         ));
         FORCE_CONTROLLER = register("force_controller", new BlockItem(BlockInit.FORCE_CONTROLLER, new Item.Properties()
+                .tab(ItemGroup.TAB_MISC)
+        ));
+        FORCE_MODIFIER = register("force_modifier", new BlockItem(BlockInit.FORCE_MODIFIER, new Item.Properties()
                 .tab(ItemGroup.TAB_MISC)
         ));
 

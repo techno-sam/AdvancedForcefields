@@ -2,6 +2,7 @@ package com.slimeist.aforce.core.init;
 
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.blocks.ForceControllerBlock;
+import com.slimeist.aforce.common.blocks.ForceModifierBlock;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -21,6 +22,7 @@ public final class BlockInit {
     //public static BasePipeBlock BASE_PIPE;
     public static ForceTubeBlock FORCE_TUBE;
     public static ForceControllerBlock FORCE_CONTROLLER;
+    public static ForceModifierBlock FORCE_MODIFIER;
 
     private BlockInit() {}
 
@@ -48,6 +50,12 @@ public final class BlockInit {
     ));
 
     FORCE_CONTROLLER = register("force_controller", new ForceControllerBlock(AbstractBlock.Properties.of(Material.STONE)
+            .strength(3.5F)
+            .requiresCorrectToolForDrops()
+            .harvestTool(ToolType.PICKAXE)
+    ));
+
+    FORCE_MODIFIER = register("force_modifier", new ForceModifierBlock(AbstractBlock.Properties.of(Material.STONE)
             .strength(3.5F)
             .requiresCorrectToolForDrops()
             .harvestTool(ToolType.PICKAXE)

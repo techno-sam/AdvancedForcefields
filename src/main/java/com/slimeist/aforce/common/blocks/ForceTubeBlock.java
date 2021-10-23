@@ -1,48 +1,28 @@
 package com.slimeist.aforce.common.blocks;
 
 import com.google.common.collect.Sets;
-import com.mojang.datafixers.kinds.Const;
-import com.slimeist.aforce.AdvancedForcefields;
-import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
-import com.slimeist.aforce.common.tiles.ModTileEntity;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
-import com.slimeist.aforce.core.interfaces.IMasterLogic;
-import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
-import com.slimeist.aforce.core.util.TileEntityHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.IWaterLoggable;
 import net.minecraft.block.material.PushReaction;
-import net.minecraft.client.renderer.chunk.ChunkRenderCache;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.EntitySelectionContext;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Random;
 import java.util.Set;
 
 public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock {

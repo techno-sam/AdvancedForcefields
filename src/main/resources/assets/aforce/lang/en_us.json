@@ -1,3 +1,10 @@
 {
-  "tooltip.aforce.meta.hold_shift": "\u00A77Hold \u00A7eShift \u00A77for More Information"
+  "tooltip.aforce.meta.hold_shift": "\u00A77Hold \u00A7eShift \u00A77for More Information",
+
+  "container.aforce.force_controller": "Force Controller",
+  "container.aforce.force_modifier": "Force Modifier",
+
+  "block.aforce.force_controller": "Force Controller",
+  "block.aforce.force_tube": "Force Tube",
+  "block.aforce.force_modifier": "Force Modifier"
 }
