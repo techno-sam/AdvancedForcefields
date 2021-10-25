@@ -1,9 +1,11 @@
 package com.slimeist.aforce;
 
+import com.slimeist.aforce.client.ClientProxy;
 import com.slimeist.aforce.client.ClientSideOnlyModEventRegistrar;
 import com.slimeist.aforce.client.render.tileentity.ForceTubeTileEntityRenderer;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.CommonEventHandler;
+import com.slimeist.aforce.common.CommonProxy;
 import com.slimeist.aforce.common.StartupCommon;
 import com.slimeist.aforce.core.init.BlockInit;
 import com.slimeist.aforce.core.init.ItemInit;
@@ -38,6 +40,7 @@ import java.util.stream.Collectors;
 public class AdvancedForcefields {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "aforce";
+    public static CommonProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
 
     public AdvancedForcefields() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();

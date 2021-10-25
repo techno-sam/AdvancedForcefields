@@ -1,5 +1,6 @@
 package com.slimeist.aforce.common.containers.force_modifier;
 
+import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.core.init.ContainerTypeInit;
@@ -9,6 +10,8 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,9 +39,10 @@ public class ContainerForceModifier extends Container {
 
     public static ContainerForceModifier createContainerServerSide(int windowID, PlayerInventory playerInventory,
                                                                    ForceModifierZoneContents upgradeZoneContents,
-                                                                   ForceModifierStateData forceModifierStateData) {
+                                                                   ForceModifierStateData forceModifierStateData,
+                                                                   TileEntity tile) {
         return new ContainerForceModifier(windowID, playerInventory,
-                upgradeZoneContents, forceModifierStateData);
+                upgradeZoneContents, forceModifierStateData, tile);
     }
 
     public static ContainerForceModifier createContainerClientSide(int windowID, PlayerInventory playerInventory, net.minecraft.network.PacketBuffer extraData) {
@@ -47,12 +51,15 @@ public class ContainerForceModifier extends Container {
         //  eg String detailedDescription = extraData.readString(128);
         ForceModifierZoneContents upgradeZoneContents = ForceModifierZoneContents.createForClientSideContainer(UPGRADE_SLOTS_COUNT);
         ForceModifierStateData forceModifierStateData = new ForceModifierStateData();
+        World world = AdvancedForcefields.proxy.getClientWorld();
+        BlockPos pos = extraData.readBlockPos();
+        TileEntity tile = world.getBlockEntity(pos);
 
         // on the client side there is no parent TileEntity to communicate with, so we:
         // 1) use dummy inventories and furnace state data (tracked ints)
         // 2) use "do nothing" lambda functions for canPlayerAccessInventory and markDirty
         return new ContainerForceModifier(windowID, playerInventory,
-                upgradeZoneContents, forceModifierStateData);
+                upgradeZoneContents, forceModifierStateData, tile);
     }
 
     // must assign a slot index to each of the slots used by the GUI.
@@ -89,13 +96,14 @@ public class ContainerForceModifier extends Container {
 
     public ContainerForceModifier(int windowID, PlayerInventory invPlayer,
                                   ForceModifierZoneContents upgradeZoneContents,
-                                  ForceModifierStateData forceModifierStateData) {
+                                  ForceModifierStateData forceModifierStateData, TileEntity tile) {
         super(ContainerTypeInit.FORCE_MODIFIER_TYPE, windowID);
         if (ContainerTypeInit.FORCE_MODIFIER_TYPE == null)
             throw new IllegalStateException("Must initialise FORCE_MODIFIER_TYPE before constructing a ContainerForceController!");
         this.upgradeZoneContents = upgradeZoneContents;
         this.forceModifierStateData = forceModifierStateData;
         this.world = invPlayer.player.level;
+        this.tile = (ForceModifierTileEntity) tile;
 
         addDataSlots(forceModifierStateData);    // tell vanilla to keep the furnaceStateData synchronised between client and server Containers
 
@@ -227,6 +235,7 @@ public class ContainerForceModifier extends Container {
 
     private ForceModifierZoneContents upgradeZoneContents;
     private ForceModifierStateData forceModifierStateData;
+    private ForceModifierTileEntity tile;
 
     private World world; //needed for some helper methods
     private static final Logger LOGGER = LogManager.getLogger();

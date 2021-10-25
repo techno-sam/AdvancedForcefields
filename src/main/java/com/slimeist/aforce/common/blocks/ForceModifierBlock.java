@@ -207,6 +207,7 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
             TileEntity tile = worldIn.getBlockEntity(pos);
             if (tile instanceof ForceModifierTileEntity && ((ForceModifierTileEntity) tile).canUseGui(player)) {
                 NetworkHooks.openGui(serverPlayerEntity, namedContainerProvider, (packetBuffer) -> {
+                    packetBuffer.writeBlockPos(pos);
                 });
             }
             // (packetBuffer)->{} is just a do-nothing because we have no extra data to send

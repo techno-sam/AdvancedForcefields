@@ -17,6 +17,7 @@ import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -173,7 +174,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     @Override
     public Container createMenu(int windowID, PlayerInventory playerInventory, PlayerEntity playerEntity) {
         return ContainerForceModifier.createContainerServerSide(windowID, playerInventory,
-                upgradeZoneContents, forceModifierStateData);
+                upgradeZoneContents, forceModifierStateData, (TileEntity) this);
     }
 
     /**
