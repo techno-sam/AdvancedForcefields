@@ -4,19 +4,33 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import com.slimeist.aforce.AdvancedForcefields;
+import com.slimeist.aforce.client.gui.ie_elements.GuiButtonCheckbox;
+import com.slimeist.aforce.client.gui.ie_elements.GuiButtonIE;
+import com.slimeist.aforce.client.gui.ie_elements.GuiReactiveList;
+import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 
+import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+//Heavily inspired from IE Turret
+
 public class ContainerScreenForceModifier extends ContainerScreen<ContainerForceModifier> {
 
+    public ForceModifierTileEntity tile;
+    private TextFieldWidget nameField;
     private ContainerForceModifier containerForceModifier;
     public ContainerScreenForceModifier(ContainerForceModifier containerForceModifier, PlayerInventory playerInventory, ITextComponent title) {
         super(containerForceModifier, playerInventory, title);
@@ -34,65 +48,88 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
     final static  int PLAYER_INV_LABEL_YPOS = ContainerForceModifier.PLAYER_INVENTORY_YPOS - FONT_Y_SPACING;
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(matrixStack);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
-        this.renderTooltip(matrixStack, mouseX, mouseY);
+    public void init() {
+        super.init();
+        ClientUtils.mc().keyboardHandler.setSendRepeatsToGui(true);
+        this.nameField = new TextFieldWidget(this.font, leftPos+11, topPos+88, 58, 12, StringTextComponent.EMPTY);
+        this.nameField.setTextColor(-1);
+        this.nameField.setTextColorUneditable(-1);
+        this.nameField.setBordered(false);
+        this.nameField.setMaxLength(30);
+
+        this.buttons.clear();
+        this.addButton(new GuiReactiveList(this, leftPos+10, topPos+10, 60, 72,
+                btn -> {
+                    GuiReactiveList list = (GuiReactiveList)btn;
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    int rem = list.selectedOption;
+                    if(rem >= 0&&tile.targetList.size() > 0)
+                    {
+                        tile.targetList.remove(rem);
+                        tag.putInt("remove", rem);
+                        listOffset = list.getOffset()-1;
+                        handleButtonClick(tag, listOffset);
+                    }
+                }, tile.targetList.toArray(new String[0]))
+                .setPadding(0, 0, 2, 2));
+        this.addButton(new GuiButtonIE(leftPos+74, topPos+84, 24, 16, new TranslationTextComponent("gui.turret.add"), TEXTURE, 176, 65,
+                btn -> {
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    String name = nameField.getValue();
+                    if(!tile.targetList.contains(name))
+                    {
+                        listOffset = ((GuiReactiveList)buttons.get(0)).getMaxOffset();
+                        tag.putString("add", name);
+                        tile.targetList.add(name);
+                    }
+                    nameField.setValue("");
+                    handleButtonClick(tag, listOffset);
+                }));
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+10, I18n.get("gui.turret.blacklist"), !tile.whitelist,
+                btn -> {
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    tile.whitelist = btn.getState();
+                    tag.putBoolean("whitelist", tile.whitelist);
+                    handleButtonClick(tag, listOffset);
+                }));
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+26, I18n.get("gui.turret.animals"), tile.attackAnimals,
+                btn -> {
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    tile.attackAnimals = !btn.getState();
+                    tag.putBoolean("attackAnimals", tile.attackAnimals);
+                    handleButtonClick(tag, listOffset);
+                }));
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+42, I18n.get("gui.turret.players"), tile.attackPlayers,
+                btn -> {
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    tile.attackPlayers = !btn.getState();
+                    tag.putBoolean("attackPlayers", tile.attackPlayers);
+                    handleButtonClick(tag, listOffset);
+                }));
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+58, I18n.get("gui.turret.neutrals"), tile.attackNeutrals,
+                btn -> {
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    tile.attackNeutrals = !btn.getState();
+                    tag.putBoolean("attackNeutrals", tile.attackNeutrals);
+                    handleButtonClick(tag, listOffset);
+                }));
     }
 
-    // Draw the Tool tip text if hovering over something of interest on the screen
-    // renderHoveredToolTip
-    @Override
-    protected void renderTooltip(MatrixStack matrixStack, int mouseX, int mouseY) {
-        if (!this.minecraft.player.inventory.getCarried().isEmpty())
-            return;  // no tooltip if the player is dragging something
-
-        List<ITextComponent> hoveringText = new ArrayList<ITextComponent>();
-        /*
-        // If the mouse is over one of the burn time indicators, add the burn time indicator hovering text
-        if (isInRect(leftPos + FLAME_XPOS, topPos + FLAME_YPOS, FLAME_WIDTH, FLAME_HEIGHT, mouseX, mouseY)) {
-            hoveringText.add(new StringTextComponent("Fuel Time:"));
-            hoveringText.add(new StringTextComponent(containerForceModifier.secondsOfFuelRemaining() + "s"));
-        }*/
-
-        // If hoveringText is not empty draw the hovering text.  Otherwise, use vanilla to render tooltip for the slots
-        if (!hoveringText.isEmpty()) {
-            renderComponentTooltip(matrixStack, hoveringText, mouseX, mouseY);  //renderToolTip
-        } else {
-            super.renderTooltip(matrixStack, mouseX, mouseY);
+    protected void handleButtonClick(CompoundNBT nbt, int listOffset)
+    {
+        if(!nbt.isEmpty())
+        {
+            ImmersiveEngineering.packetHandler.sendToServer(new MessageTileSync(tile, nbt));
+            this.init();
+            if(listOffset >= 0)
+                ((GuiReactiveList)this.buttons.get(0)).setOffset(listOffset);
         }
-    }
-
-    @Override
-    protected void renderBg(MatrixStack matrixStack, float partialTicks, int x, int y) {
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.minecraft.getTextureManager().bind(TEXTURE);
-
-        // width and height are the size provided to the window when initialised after creation.
-        // xSize, ySize are the expected size of the texture-? usually seems to be left as a default.
-        // The code below is typical for vanilla containers, so I've just copied that- it appears to centre the texture within
-        //  the available window
-        // draw the background for this window
-        int edgeSpacingX = (this.width - this.imageWidth) / 2;
-        int edgeSpacingY = (this.height - this.imageHeight) / 2;
-        this.blit(matrixStack, edgeSpacingX, edgeSpacingY, 0, 0, this.imageWidth, this.imageHeight);
-    }
-
-    @Override
-    protected void renderLabels(MatrixStack matrixStack, int mouseX, int mouseY) {
-        // draw the label for the top of the screen
-        final int LABEL_XPOS = 5;
-        final int LABEL_YPOS = 5;
-        this.font.draw(matrixStack, this.title, LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());     ///    this.font.drawString
-
-        // draw the label for the player inventory slots
-        this.font.draw(matrixStack, this.inventory.getDisplayName(),                  ///    this.font.drawString
-                PLAYER_INV_LABEL_XPOS, PLAYER_INV_LABEL_YPOS, Color.darkGray.getRGB());
-    }
-
-    // Returns true if the given x,y coordinates are within the given rectangle
-    public static boolean isInRect(int x, int y, int xSize, int ySize, int mouseX, int mouseY){
-        return ((mouseX >= x && mouseX <= x+xSize) && (mouseY >= y && mouseY <= y+ySize));
     }
 
     // This is the resource location for the background image

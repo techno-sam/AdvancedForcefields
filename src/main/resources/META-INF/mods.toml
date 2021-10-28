@@ -7,7 +7,7 @@ modId="aforce"
 version="${file.jarVersion}"
 displayName="Advanced Forcefields"
 #logoFile="examplemod.png"
-credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod"
+credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod, GUI element classes (com.slimeist.aforce.client.gui.ie_elements)to BluSunrize"
 authors="Slimeist"
 description='''
 Advanced Forcefields aare fun

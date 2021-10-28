@@ -27,6 +27,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Filterable upgrades:
@@ -48,6 +50,12 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     public static final int UPGRADE_SLOTS_COUNT = 1;
 
     public static final int TOTAL_SLOTS_COUNT = UPGRADE_SLOTS_COUNT; //upgrade slots
+
+    public ArrayList<String> targetList = new ArrayList<String>(){};//temp
+    public boolean whitelist = false;//temp
+    public boolean attackAnimals = false;//temp
+    public boolean attackPlayers = false;//temp
+    public boolean attackNeutrals = false;//temp
 
     private ForceModifierZoneContents upgradeZoneContents;
 
