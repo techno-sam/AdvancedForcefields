@@ -64,7 +64,9 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
 
         this.buttons.clear();
         AdvancedForcefields.LOGGER.info("This: "+this+", tile: "+tile);//.toString()+", targetList: "+tile.targetList.toString());
-        this.addButton(new GuiReactiveList(this, leftPos+10, topPos+10, 60, 72,
+        int extraY = 7;
+        int sideX = 50;
+        this.addButton(new GuiReactiveList(this, leftPos+9, topPos+10+extraY, 60+45, 72,
                 btn -> {
                     GuiReactiveList list = (GuiReactiveList)btn;
                     CompoundNBT tag = new CompoundNBT();
@@ -79,7 +81,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     }
                 }, tile.targetList.toArray(new String[0]))
                 .setPadding(0, 0, 2, 2));
-        this.addButton(new GuiButtonIE(leftPos+74, topPos+84, 24, 16, new TranslationTextComponent("gui.aforce.modifier.add"), TEXTURE, 176, 65,
+        this.addButton(new GuiButtonIE(leftPos+74+45, topPos+84+extraY+12, 24, 16, new TranslationTextComponent("gui.aforce.modifier.add"), TEXTURE, 110, 212,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
@@ -93,36 +95,36 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     nameField.setValue("");
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+10, new TranslationTextComponent("gui.aforce.modifier.blacklist"), !tile.whitelist,
+        this.addButton(new GuiButtonCheckbox(leftPos+74+sideX, topPos+10+extraY, new TranslationTextComponent("gui.aforce.modifier.blacklist"), !tile.whitelist,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.whitelist = btn.getState();
-                    tag.putBoolean("whitelist", tile.whitelist);
+                    tag.putBoolean(ForceModifierTileEntity.TAG_WHITELIST, tile.whitelist);
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+26, new TranslationTextComponent("gui.aforce.modifier.animals"), tile.targetAnimals,
+        this.addButton(new GuiButtonCheckbox(leftPos+74+sideX, topPos+26+extraY, new TranslationTextComponent("gui.aforce.modifier.animals"), tile.targetAnimals,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.targetAnimals = !btn.getState();
-                    tag.putBoolean("attackAnimals", tile.targetAnimals);
+                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_ANIMALS, tile.targetAnimals);
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+42, new TranslationTextComponent("gui.aforce.modifier.players"), tile.targetPlayers,
+        this.addButton(new GuiButtonCheckbox(leftPos+74+sideX, topPos+42+extraY, new TranslationTextComponent("gui.aforce.modifier.players"), tile.targetPlayers,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.targetPlayers = !btn.getState();
-                    tag.putBoolean("attackPlayers", tile.targetPlayers);
+                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_PLAYERS, tile.targetPlayers);
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+58, new TranslationTextComponent("gui.aforce.modifier.neutrals"), tile.targetNeutrals,
+        this.addButton(new GuiButtonCheckbox(leftPos+74+sideX, topPos+58+extraY, new TranslationTextComponent("gui.aforce.modifier.neutrals"), tile.targetNeutrals,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.targetNeutrals = !btn.getState();
-                    tag.putBoolean("attackNeutrals", tile.targetNeutrals);
+                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_NEUTRALS, tile.targetNeutrals);
                     handleButtonClick(tag, listOffset);
                 }));
     }
@@ -159,6 +161,10 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         ClientUtils.bindTexture(TEXTURE);
         this.blit(transform, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        //this.blit(transform, x, y, u, v, w, h);
+        if (this.nameField.isFocused()) {
+            this.blit(transform, leftPos+7, topPos+103, 0, 212, 109, 15);
+        }
     }
 
     @Override

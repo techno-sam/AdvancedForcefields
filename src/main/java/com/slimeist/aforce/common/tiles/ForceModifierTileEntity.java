@@ -17,6 +17,7 @@ import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -57,7 +58,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     public static String TAG_WHITELIST = "whitelist";
     public boolean whitelist = false;
 
-    public static String TAG_TARGET_ANMIALS = "targetAnimals";
+    public static String TAG_TARGET_ANIMALS = "targetAnimals";
     public boolean targetAnimals = false;
 
     public static String TAG_TARGET_PLAYERS = "targetPlayers";
@@ -156,7 +157,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
             targetList.add(list.getString(i));
 
         whitelist = nbt.getBoolean(TAG_WHITELIST);
-        targetAnimals = nbt.getBoolean(TAG_TARGET_ANMIALS);
+        targetAnimals = nbt.getBoolean(TAG_TARGET_ANIMALS);
         targetPlayers = nbt.getBoolean(TAG_TARGET_PLAYERS);
         targetNeutrals = nbt.getBoolean(TAG_TARGET_NEUTRALS);
 
@@ -170,9 +171,17 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         super.writeSyncedPersonal(nbt);
         forceModifierStateData.putIntoNBT(nbt);
         nbt.put(UPGRADE_SLOTS_NBT, upgradeZoneContents.serializeNBT());
-        if (this.owner!=null) {
-            nbt.putString(TAG_OWNER_NAME, this.owner);
+        if (owner!=null) {
+            nbt.putString(TAG_OWNER_NAME, owner);
         }
+        ListNBT list = new ListNBT();
+        for(String s : targetList)
+            list.add(StringNBT.valueOf(s));
+        nbt.put(TAG_TARGET_LIST, list);
+        nbt.putBoolean(TAG_WHITELIST, whitelist);
+        nbt.putBoolean(TAG_TARGET_ANIMALS, targetAnimals);
+        nbt.putBoolean(TAG_TARGET_PLAYERS, targetPlayers);
+        nbt.putBoolean(TAG_TARGET_NEUTRALS, targetNeutrals);
     }
 
 
@@ -220,11 +229,23 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     }
 
     public void receiveMessageFromServer(CompoundNBT nbt) {
-
+        log("Received message from server: "+nbt);
     }
 
     public void receiveMessageFromClient(CompoundNBT nbt) {
-        log("Received message from client: "+nbt.toString());
+        if(nbt.contains("add", Constants.NBT.TAG_STRING))
+            targetList.add(nbt.getString("add"));
+        if(nbt.contains("remove", Constants.NBT.TAG_INT))
+            targetList.remove(nbt.getInt("remove"));
+        if(nbt.contains(TAG_WHITELIST, Constants.NBT.TAG_BYTE))
+            whitelist = nbt.getBoolean(TAG_WHITELIST);
+        if(nbt.contains(TAG_TARGET_ANIMALS, Constants.NBT.TAG_BYTE))
+            targetAnimals = nbt.getBoolean(TAG_TARGET_ANIMALS);
+        if(nbt.contains(TAG_TARGET_PLAYERS, Constants.NBT.TAG_BYTE))
+            targetPlayers = nbt.getBoolean(TAG_TARGET_PLAYERS);
+        if(nbt.contains(TAG_TARGET_NEUTRALS, Constants.NBT.TAG_BYTE))
+            targetNeutrals = nbt.getBoolean(TAG_TARGET_NEUTRALS);
+        log("Received message from client: "+nbt);
         this.markDirtyFast();
     }
 }
