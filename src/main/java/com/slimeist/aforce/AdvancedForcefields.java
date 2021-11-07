@@ -30,6 +30,8 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,14 +42,22 @@ import java.util.stream.Collectors;
 public class AdvancedForcefields {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "aforce";
+    public static final String VERSION = "0.5";//""${version}";
     public static CommonProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
+
+    public static final SimpleChannel packetHandler = NetworkRegistry.ChannelBuilder
+            .named(new ResourceLocation(MOD_ID, "main"))
+            .networkProtocolVersion(() -> VERSION)
+            .serverAcceptedVersions(VERSION::equals)
+            .clientAcceptedVersions(VERSION::equals)
+            .simpleChannel();
 
     public AdvancedForcefields() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 
         final ClientSideOnlyModEventRegistrar clientSideOnlyModEventRegistrar = new ClientSideOnlyModEventRegistrar(bus);
 
-        bus.register(StartupCommon.class);
+        bus.register(new StartupCommon());
         MinecraftForge.EVENT_BUS.register(CommonEventHandler.class);
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> clientSideOnlyModEventRegistrar::registerClientOnlyEvents);
 

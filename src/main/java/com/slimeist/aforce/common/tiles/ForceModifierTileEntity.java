@@ -2,7 +2,6 @@ package com.slimeist.aforce.common.tiles;
 
 
 import com.slimeist.aforce.AdvancedForcefields;
-import com.slimeist.aforce.common.containers.force_controller.ForceControllerZoneContents;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierStateData;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierZoneContents;
@@ -17,6 +16,7 @@ import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -37,7 +37,7 @@ import java.util.List;
  * Any potion - applies effect for 10 seconds
  * Blaze rod - sets entities on fire
  *
- * Constant upgrades:
+ * Constant upgrades: (Handled by ForceController)
  * Tinted glasses - combines colors to set forcefield color
  */
 
@@ -51,11 +51,20 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
 
     public static final int TOTAL_SLOTS_COUNT = UPGRADE_SLOTS_COUNT; //upgrade slots
 
-    public ArrayList<String> targetList = new ArrayList<String>(){};//temp
-    public boolean whitelist = false;//temp
-    public boolean attackAnimals = false;//temp
-    public boolean attackPlayers = false;//temp
-    public boolean attackNeutrals = false;//temp
+    public static String TAG_TARGET_LIST = "targetList";
+    public List<String> targetList = new ArrayList<>();
+
+    public static String TAG_WHITELIST = "whitelist";
+    public boolean whitelist = false;
+
+    public static String TAG_TARGET_ANMIALS = "targetAnimals";
+    public boolean targetAnimals = false;
+
+    public static String TAG_TARGET_PLAYERS = "targetPlayers";
+    public boolean targetPlayers = false;
+
+    public static String TAG_TARGET_NEUTRALS = "targetNeutrals";
+    public boolean targetNeutrals = false;
 
     private ForceModifierZoneContents upgradeZoneContents;
 
@@ -138,8 +147,18 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         upgradeZoneContents.deserializeNBT(inventoryNBT);
 
         if (nbt.contains(TAG_OWNER_NAME, Constants.NBT.TAG_STRING)) {
-            this.owner = nbt.getString(TAG_OWNER_NAME);
+            owner = nbt.getString(TAG_OWNER_NAME);
         }
+
+        ListNBT list = nbt.getList(TAG_TARGET_LIST, Constants.NBT.TAG_STRING);
+        targetList.clear();
+        for(int i = 0; i < list.size(); i++)
+            targetList.add(list.getString(i));
+
+        whitelist = nbt.getBoolean(TAG_WHITELIST);
+        targetAnimals = nbt.getBoolean(TAG_TARGET_ANMIALS);
+        targetPlayers = nbt.getBoolean(TAG_TARGET_PLAYERS);
+        targetNeutrals = nbt.getBoolean(TAG_TARGET_NEUTRALS);
 
         if (upgradeZoneContents.getContainerSize() != UPGRADE_SLOTS_COUNT) {
             throw new IllegalArgumentException("Corrupted NBT: Number of inventory slots did not match expected.");
@@ -198,5 +217,14 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     }
 
     public void onDepowered() {
+    }
+
+    public void receiveMessageFromServer(CompoundNBT nbt) {
+
+    }
+
+    public void receiveMessageFromClient(CompoundNBT nbt) {
+        log("Received message from client: "+nbt.toString());
+        this.markDirtyFast();
     }
 }

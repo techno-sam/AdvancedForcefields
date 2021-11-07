@@ -235,7 +235,7 @@ public class ContainerForceModifier extends Container {
 
     private ForceModifierZoneContents upgradeZoneContents;
     private ForceModifierStateData forceModifierStateData;
-    private ForceModifierTileEntity tile;
+    public ForceModifierTileEntity tile;
 
     private World world; //needed for some helper methods
     private static final Logger LOGGER = LogManager.getLogger();

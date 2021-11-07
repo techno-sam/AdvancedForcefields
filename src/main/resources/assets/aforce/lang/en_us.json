@@ -6,5 +6,11 @@
 
   "block.aforce.force_controller": "Force Controller",
   "block.aforce.force_tube": "Force Tube",
-  "block.aforce.force_modifier": "Force Modifier"
+  "block.aforce.force_modifier": "Force Modifier",
+
+  "gui.aforce.modifier.add": "Add",
+  "gui.aforce.modifier.blacklist": "Blacklist",
+  "gui.aforce.modifier.animals": "Animals",
+  "gui.aforce.modifier.players": "Players",
+  "gui.aforce.modifier.neutrals": "Neutrals"
 }

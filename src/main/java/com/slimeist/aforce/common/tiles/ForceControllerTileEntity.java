@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Filterable upgrades:
+ * Filterable upgrades: (Handled by ForceModifier)
  * Slime block - makes blocks bouncy, and knocks entities back (only when entities would be blocked)
  * Magma block - makes blocks damage entities on & in them (like magma blocks)
  * Any potion - applies effect for 10 seconds

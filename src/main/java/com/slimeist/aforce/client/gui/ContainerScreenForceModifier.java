@@ -1,8 +1,8 @@
 package com.slimeist.aforce.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.gui.ie_elements.GuiButtonCheckbox;
 import com.slimeist.aforce.client.gui.ie_elements.GuiButtonIE;
@@ -10,20 +10,24 @@ import com.slimeist.aforce.client.gui.ie_elements.GuiReactiveList;
 import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 
+import com.slimeist.aforce.common.network.MessageForceModifierSync;
+import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.fml.client.gui.GuiUtils;
+import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
+
+import static com.slimeist.aforce.client.util.ClientUtils.mc;
 
 //Heavily inspired from IE Turret
 
@@ -35,6 +39,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
     public ContainerScreenForceModifier(ContainerForceModifier containerForceModifier, PlayerInventory playerInventory, ITextComponent title) {
         super(containerForceModifier, playerInventory, title);
         this.containerForceModifier = containerForceModifier;
+        this.tile = this.containerForceModifier.tile;
 
         // Set the width and height of the gui.  Should match the size of the texture!
         imageWidth = 233;
@@ -50,21 +55,22 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
     @Override
     public void init() {
         super.init();
-        ClientUtils.mc().keyboardHandler.setSendRepeatsToGui(true);
-        this.nameField = new TextFieldWidget(this.font, leftPos+11, topPos+88, 58, 12, StringTextComponent.EMPTY);
+        mc().keyboardHandler.setSendRepeatsToGui(true);
+        this.nameField = new TextFieldWidget(this.font, leftPos+11, topPos+107, 100, 12, StringTextComponent.EMPTY);
         this.nameField.setTextColor(-1);
         this.nameField.setTextColorUneditable(-1);
         this.nameField.setBordered(false);
         this.nameField.setMaxLength(30);
 
         this.buttons.clear();
+        AdvancedForcefields.LOGGER.info("This: "+this+", tile: "+tile);//.toString()+", targetList: "+tile.targetList.toString());
         this.addButton(new GuiReactiveList(this, leftPos+10, topPos+10, 60, 72,
                 btn -> {
                     GuiReactiveList list = (GuiReactiveList)btn;
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     int rem = list.selectedOption;
-                    if(rem >= 0&&tile.targetList.size() > 0)
+                    if(rem >= 0&&tile.targetList.size() > 0 && rem<tile.targetList.size())
                     {
                         tile.targetList.remove(rem);
                         tag.putInt("remove", rem);
@@ -73,7 +79,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     }
                 }, tile.targetList.toArray(new String[0]))
                 .setPadding(0, 0, 2, 2));
-        this.addButton(new GuiButtonIE(leftPos+74, topPos+84, 24, 16, new TranslationTextComponent("gui.turret.add"), TEXTURE, 176, 65,
+        this.addButton(new GuiButtonIE(leftPos+74, topPos+84, 24, 16, new TranslationTextComponent("gui.aforce.modifier.add"), TEXTURE, 176, 65,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
@@ -87,7 +93,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     nameField.setValue("");
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+10, I18n.get("gui.turret.blacklist"), !tile.whitelist,
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+10, new TranslationTextComponent("gui.aforce.modifier.blacklist"), !tile.whitelist,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
@@ -95,28 +101,28 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     tag.putBoolean("whitelist", tile.whitelist);
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+26, I18n.get("gui.turret.animals"), tile.attackAnimals,
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+26, new TranslationTextComponent("gui.aforce.modifier.animals"), tile.targetAnimals,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
-                    tile.attackAnimals = !btn.getState();
-                    tag.putBoolean("attackAnimals", tile.attackAnimals);
+                    tile.targetAnimals = !btn.getState();
+                    tag.putBoolean("attackAnimals", tile.targetAnimals);
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+42, I18n.get("gui.turret.players"), tile.attackPlayers,
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+42, new TranslationTextComponent("gui.aforce.modifier.players"), tile.targetPlayers,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
-                    tile.attackPlayers = !btn.getState();
-                    tag.putBoolean("attackPlayers", tile.attackPlayers);
+                    tile.targetPlayers = !btn.getState();
+                    tag.putBoolean("attackPlayers", tile.targetPlayers);
                     handleButtonClick(tag, listOffset);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+58, I18n.get("gui.turret.neutrals"), tile.attackNeutrals,
+        this.addButton(new GuiButtonCheckbox(leftPos+74, topPos+58, new TranslationTextComponent("gui.aforce.modifier.neutrals"), tile.targetNeutrals,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
-                    tile.attackNeutrals = !btn.getState();
-                    tag.putBoolean("attackNeutrals", tile.attackNeutrals);
+                    tile.targetNeutrals = !btn.getState();
+                    tag.putBoolean("attackNeutrals", tile.targetNeutrals);
                     handleButtonClick(tag, listOffset);
                 }));
     }
@@ -125,11 +131,93 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
     {
         if(!nbt.isEmpty())
         {
-            ImmersiveEngineering.packetHandler.sendToServer(new MessageTileSync(tile, nbt));
+            AdvancedForcefields.packetHandler.sendToServer(new MessageForceModifierSync(tile, nbt));
             this.init();
             if(listOffset >= 0)
                 ((GuiReactiveList)this.buttons.get(0)).setOffset(listOffset);
         }
+    }
+
+    @Override
+    public void render(MatrixStack transform, int mx, int my, float partial)
+    {
+        this.renderBackground(transform);
+        super.render(transform, mx, my, partial);
+        this.renderTooltip(transform, mx, my);
+        this.nameField.render(transform, mx, my, partial);
+
+        ArrayList<ITextComponent> tooltip = new ArrayList<>();
+        //tooltip.add(new TranslationTextComponent("Version: "+AdvancedForcefields.VERSION));
+
+        if(!tooltip.isEmpty())
+            GuiUtils.drawHoveringText(transform, tooltip, mx, my, width, height, -1, font);
+    }
+
+    @Override
+    protected void renderBg(MatrixStack transform, float f, int mx, int my)
+    {
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        ClientUtils.bindTexture(TEXTURE);
+        this.blit(transform, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+    }
+
+    @Override
+    protected void renderLabels(MatrixStack matrixStack, int mouseX, int mouseY) {
+        // draw the label for the top of the screen
+        final int LABEL_XPOS = 5;
+        final int LABEL_YPOS = 5;
+        this.font.draw(matrixStack, this.title, LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());     ///    this.font.drawString
+
+        // draw the label for the player inventory slots
+        this.font.draw(matrixStack, this.inventory.getDisplayName(),                  ///    this.font.drawString
+                PLAYER_INV_LABEL_XPOS, PLAYER_INV_LABEL_YPOS, Color.darkGray.getRGB());
+    }
+
+    @Override
+    public void onClose()
+    {
+        super.onClose();
+        mc().keyboardHandler.setSendRepeatsToGui(false);
+    }
+
+    @Override
+    public boolean keyPressed(int key, int scancode, int p_keyPressed_3_)
+    {
+        if(this.nameField.isFocused())
+        {
+            if(key== GLFW.GLFW_KEY_ENTER)
+            {
+                String name = this.nameField.getValue();
+                if(!tile.targetList.contains(name))
+                {
+                    CompoundNBT tag = new CompoundNBT();
+                    tag.putString("add", name);
+                    tile.targetList.add(name);
+                    AdvancedForcefields.packetHandler.sendToServer(new MessageForceModifierSync(tile, tag));
+
+                    this.init();
+                    ((GuiReactiveList)this.buttons.get(0)).setOffset(((GuiReactiveList)this.buttons.get(0)).getMaxOffset());
+                }
+            }
+            else
+                this.nameField.keyPressed(key, scancode, p_keyPressed_3_);
+            return true;
+        }
+        else
+            return super.keyPressed(key, scancode, p_keyPressed_3_);
+    }
+
+    @Override
+    public boolean charTyped(char p_charTyped_1_, int p_charTyped_2_)
+    {
+        return this.nameField.charTyped(p_charTyped_1_, p_charTyped_2_);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton)
+    {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        return this.nameField.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     // This is the resource location for the background image

@@ -13,9 +13,9 @@ import net.minecraft.util.text.ITextComponent;
 
 public class GuiButtonBoolean extends GuiButtonState<Boolean>
 {
-	public GuiButtonBoolean(int x, int y, int w, int h, String name, boolean state, ResourceLocation texture, int u, int v,
-							int offsetDir, GuiButtonIE.IIEPressable<GuiButtonState<Boolean>> handler)
+	public GuiButtonBoolean(int x, int y, int w, int h, ITextComponent name, boolean state, ResourceLocation texture, int u, int v,
+                            int offsetDir, IIEPressable<GuiButtonState<Boolean>> handler)
 	{
-		super(x, y, w, h, ITextComponent.nullToEmpty(name), new Boolean[]{false, true}, state?1: 0, texture, u, v, offsetDir, handler);
+		super(x, y, w, h, name, new Boolean[]{false, true}, state?1: 0, texture, u, v, offsetDir, handler);
 	}
 }

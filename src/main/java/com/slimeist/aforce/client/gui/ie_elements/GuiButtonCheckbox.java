@@ -12,12 +12,13 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import com.slimeist.aforce.AdvancedForcefields;
+import net.minecraft.util.text.ITextComponent;
 
 public class GuiButtonCheckbox extends GuiButtonBoolean
 {
 	private static final ResourceLocation TEXTURE = AdvancedForcefields.getId("textures/gui/hud_elements.png");
 
-	public GuiButtonCheckbox(int x, int y, String name, boolean state, GuiButtonIE.IIEPressable<GuiButtonState<Boolean>> handler)
+	public GuiButtonCheckbox(int x, int y, ITextComponent name, boolean state, IIEPressable<GuiButtonState<Boolean>> handler)
 	{
 		super(x, y, 8, 8, name, state, TEXTURE, 0, 128, -1, handler);
 	}
