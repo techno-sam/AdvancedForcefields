@@ -56,7 +56,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
 
     @Override
     public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-        super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
+        //super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
         this.doUpdate(state, worldIn, pos);
     }
 
@@ -248,7 +248,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
             ((ForceTubeTileEntity) tile).setChanged();
             BlockState state = world.getBlockState(pos);
             world.sendBlockUpdated(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE);
-            LOGGER.info("Marked ForceTubeTileEntity at [" + pos + "] as dirty");
+            //LOGGER.info("Marked ForceTubeTileEntity at [" + pos + "] as dirty");
         } else {
             LOGGER.error("Did not find expected ForceTubeTileEntity at [" + pos + "], when marking TE as dirty");
         }

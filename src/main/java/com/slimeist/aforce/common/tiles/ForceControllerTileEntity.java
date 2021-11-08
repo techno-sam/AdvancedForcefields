@@ -323,6 +323,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
             if (this.getLevel()!=null) {
                 TileEntity tile = this.getLevel().getBlockEntity(pos);
                 if (tile instanceof ForceNetworkTileEntity) {
+                    //AdvancedForcefields.LOGGER.info("ForceController adding tile: "+tile+", at pos: "+pos.toShortString());
                     ForceNetworkTileEntity networkTile = (ForceNetworkTileEntity) tile;
                     networkTile.onNetworkBuild(this.getBlockPos());
                     networkTile.setDistance(distances.get(pos));
@@ -330,7 +331,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                     World world = this.getLevel();
                     BlockState state = world.getBlockState(pos);
                     if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
-                        world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, true), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.NO_RERENDER);
+                        world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, true), Constants.BlockFlags.BLOCK_UPDATE);// | Constants.BlockFlags.NO_RERENDER);
                     }
                 }
             }
