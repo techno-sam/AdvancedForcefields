@@ -4,10 +4,10 @@ license="All rights reserved"
 
 [[mods]]
 modId="aforce"
-version="${file.jarVersion}"
+version="0.5" #"${version}"
 displayName="Advanced Forcefields"
 #logoFile="examplemod.png"
-credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod"
+credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod, GUI element classes and network classes (com.slimeist.aforce.client.gui.ie_elements, com.slimeist.aforce.common.network) to BluSunrize"
 authors="Slimeist"
 description='''
 Advanced Forcefields aare fun

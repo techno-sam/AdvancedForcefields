@@ -5,7 +5,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.extensions.IForgeTileEntity;
 
 import javax.annotation.Nullable;
-
+@Deprecated
 public interface IServantLogic extends IForgeTileEntity {
     // Copied from slimeknight's Tinkers' Construct
     /**
