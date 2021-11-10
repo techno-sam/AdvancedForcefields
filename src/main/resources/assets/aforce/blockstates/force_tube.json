@@ -2,10 +2,6 @@
   "__comment": "Modified from Quark",
   "multipart": [
     {
-      "when": { "enabled": true },
-      "apply": { "model": "aforce:block/active_force_tube" }
-    },
-    {
       "when": { "north": true, "enabled": false },
       "apply": { "model": "aforce:block/pipe_side" }
     },

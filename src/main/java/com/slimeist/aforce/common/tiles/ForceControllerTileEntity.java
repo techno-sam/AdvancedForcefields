@@ -317,20 +317,20 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                 128, this::validTube, this::validComponent).create();
         ArrayList<BlockPos> blocks = blockChain.getComponentBlocks();
         HashMap<BlockPos, Integer> distances = blockChain.getDistances();
-        //AdvancedForcefields.LOGGER.info("ForceController powered with a blocklist of length: "+blocks.size());
+        AdvancedForcefields.LOGGER.info("ForceController powered with a blocklist of length: "+blocks.size());
         this.onNetworkBuild(this.getBlockPos());
         for (BlockPos pos : blocks) {
             if (this.getLevel()!=null) {
                 TileEntity tile = this.getLevel().getBlockEntity(pos);
                 if (tile instanceof ForceNetworkTileEntity) {
-                    //AdvancedForcefields.LOGGER.info("ForceController adding tile: "+tile+", at pos: "+pos.toShortString());
+                    AdvancedForcefields.LOGGER.info("ForceController adding tile: "+tile+", at pos: "+pos.toShortString());
                     ForceNetworkTileEntity networkTile = (ForceNetworkTileEntity) tile;
                     networkTile.onNetworkBuild(this.getBlockPos());
                     networkTile.setDistance(distances.get(pos));
                     networkTile.setLocked(true);
                     World world = this.getLevel();
                     BlockState state = world.getBlockState(pos);
-                    if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
+                    if (false && state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
                         world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, true), Constants.BlockFlags.BLOCK_UPDATE);// | Constants.BlockFlags.NO_RERENDER);
                     }
                 }

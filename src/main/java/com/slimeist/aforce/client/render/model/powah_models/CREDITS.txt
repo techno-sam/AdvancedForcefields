@@ -1,0 +1,1 @@
+Credits for files in this package go to omwii's Lollipop mod, and are licensed under the included LICENSE.txt
