@@ -1,34 +1,29 @@
 package com.slimeist.aforce.client.render.tileentity;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import com.slimeist.aforce.AdvancedForcefields;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.slimeist.aforce.client.render.model.ForceFieldModel;
 import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
-import com.slimeist.aforce.core.init.BlockInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
-import net.minecraft.client.Minecraft;
+import net.minecraft.block.*;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.client.renderer.model.RenderMaterial;
-import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.NativeImage;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL11;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import static com.slimeist.aforce.client.util.ClientUtils.mc;
 
 //structure from https://github.com/TheGreyGhost/MinecraftByExample/blob/master/src/main/java/minecraftbyexample/mbe21_tileentityrenderer/TileEntityRendererMBE21.java
 
@@ -64,13 +59,32 @@ public class ForceTubeTileEntityRenderer extends TileEntityRenderer<ForceTubeTil
         fontrenderer.draw(matrixStack, "Dist: "+distance, 0.0f, 0.0f, NativeImage.combine(0, r, g, b));
         matrixStack.popPose();
 
+        /*
+        BlockRendererDispatcher blockRenderer = mc().getBlockRenderer();
+        Block block = Blocks.END_ROD;
+        BlockState state = block.defaultBlockState().setValue(EndRodBlock.FACING, Direction.UP);
+        IBakedModel model = blockRenderer.getBlockModel(state);
+        blockRenderer.renderSingleBlock(state, matrixStack, renderBuffers, combinedLight, combinedOverlay);
+         */
+
         //render force field
         if (distance>0) { //we are active
+            /*GlStateManager._enableBlend();
+            GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+            GlStateManager._depthMask(false);
+            GlStateManager._alphaFunc(GL11.GL_LESS, 1.0F);*/
+
             matrixStack.pushPose();
             matrixStack.translate(0.5, 0.5, 0.5);
-            matrixStack.scale(1.0f, -1.0f, -1.0f);
+            float scale = 1.0f;
+            matrixStack.scale(scale, -scale, -scale);
             FORCE_FIELD_MODEL.renderToBuffer(tile, this, matrixStack, renderBuffers, combinedLight, combinedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
             matrixStack.popPose();
+
+            /*GlStateManager._depthMask(true);
+
+            GlStateManager._disableBlend();*/
         }
     }
 

@@ -320,6 +320,11 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return hasCloser ? d : -1;
     }
 
+    @Override
+    public VoxelShape getVisualShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
+        return VoxelShapes.empty();
+    }
+
     /*
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {

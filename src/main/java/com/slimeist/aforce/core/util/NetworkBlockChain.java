@@ -1,5 +1,6 @@
 package com.slimeist.aforce.core.util;
 
+import com.slimeist.aforce.AdvancedForcefields;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Direction;
@@ -85,51 +86,63 @@ public class NetworkBlockChain {
         return this;
     }
 
+    protected static void log(String msg) {
+        AdvancedForcefields.LOGGER.info(msg);
+    }
+
     protected void search() {
         ArrayDeque<StackEntry> stack = new ArrayDeque<StackEntry>();
         stack.push(new StackEntry(this.masterPos));
+        this.distances.put(this.masterPos, 0);
 
         while (!stack.isEmpty()) {
+            //log("NBC: searchSteps: " + searchSteps);
+            if (this.size() > this.maxSearch) {
+                //log("NBC giving up because size: " + this.size() + ", or searchSteps: " + this.searchSteps + ", exceed maxSearch: " + this.maxSearch);
+                return;
+            }
             StackEntry entry = stack.peek();
 
-            if (!entry.isChecked()) {
+            if (entry != null) {
                 BlockPos pos = entry.getPos();
-                if (!TileEntityHelper.isBlockLoaded(this.getWorld(), pos)) {
-                    stack.pop();
-                    continue;
-                }
-                if (this.isValidComponent(pos) && !this.componentBlocks.contains(pos)) {
-                    this.componentBlocks.add(pos);
-                }
+                if (!entry.isChecked()) {
+                    if (!TileEntityHelper.isBlockLoaded(this.getWorld(), pos)) {
+                        stack.pop();
+                        continue;
+                    }
+                    if (this.isValidComponent(pos) && !this.componentBlocks.contains(pos)) {
+                        this.componentBlocks.add(pos);
+                    }
 
-                if (pos != this.masterPos) {
-                    int distance = this.getDistances().getOrDefault(pos, -1);
-                    for (Direction dir : DIRECTIONS) {
-                        if (distance == -1) {
-                            distance = this.getDistances().getOrDefault(pos.relative(dir), -1);
-                            if (distance != -1) {
-                                distance++;
-                            }
-                        } else {
-                            int adjdist = this.getDistances().getOrDefault(pos.relative(dir), -1);
-                            if (adjdist != -1) {
-                                distance = adjdist + 1;
+                    if (pos != this.masterPos) {
+                        int distance = this.getDistances().getOrDefault(pos, -1);
+                        for (Direction dir : DIRECTIONS) {
+                            if (distance == -1) {
+                                distance = this.getDistances().getOrDefault(pos.relative(dir), -1);
+                                if (distance != -1) {
+                                    distance++;
+                                }
+                            } else {
+                                int adjdist = this.getDistances().getOrDefault(pos.relative(dir), -1);
+                                if (adjdist != -1) {
+                                    distance = adjdist + 1;
+                                }
                             }
                         }
+                        this.getDistances().put(pos, distance);
                     }
-                    this.getDistances().put(pos, distance);
-                }
 
-                if (!this.isValidTube(pos) || this.tubeBlocks.contains(pos)) {
-                    stack.pop();
-                    continue;
-                }
+                    if (!this.isValidTube(pos) || this.tubeBlocks.contains(pos)) {
+                        stack.pop();
+                        continue;
+                    }
 
-                this.tubeBlocks.add(pos);
-                entry.setChecked();
+                    this.tubeBlocks.add(pos);
+                    entry.setChecked();
+                }
 
                 Direction direction = entry.getNextDirection().orElse(null);
-                if (direction!=null) {
+                if (direction != null) {
                     stack.push(new StackEntry(pos.relative(direction)));
                     continue;
                 }

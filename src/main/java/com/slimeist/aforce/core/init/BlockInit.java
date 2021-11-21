@@ -44,7 +44,7 @@ public final class BlockInit {
             .harvestTool(ToolType.PICKAXE)
             .requiresCorrectToolForDrops()
             .lightLevel(enabledBlockEmission(3))
-            .hasPostProcess(BlockInit::always)
+            //.hasPostProcess(BlockInit::always)
             .emissiveRendering(BlockInit::always)
             .randomTicks()
     ));

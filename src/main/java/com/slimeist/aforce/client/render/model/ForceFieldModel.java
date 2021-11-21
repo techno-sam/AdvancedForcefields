@@ -3,6 +3,7 @@ package com.slimeist.aforce.client.render.model;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.slimeist.aforce.AdvancedForcefields;
+import com.slimeist.aforce.client.render.RenderTypes;
 import com.slimeist.aforce.client.render.model.powah_models.AbstractModel;
 import com.slimeist.aforce.client.render.tileentity.ForceTubeTileEntityRenderer;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
@@ -18,7 +19,7 @@ public class ForceFieldModel extends AbstractModel<ForceTubeTileEntity, ForceTub
     private final ModelRenderer forceCube;
 
     public ForceFieldModel() {
-        super(RenderType::entityTranslucentCull);
+        super(RenderTypes::forceField);
         int pixels = 16;
         this.texWidth = pixels * 4;
         this.texHeight = pixels * 2;
