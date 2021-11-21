@@ -69,7 +69,7 @@ public class ForceTubeTileEntityRenderer extends TileEntityRenderer<ForceTubeTil
             matrixStack.pushPose();
             matrixStack.translate(0.5, 0.5, 0.5);
             matrixStack.scale(1.0f, -1.0f, -1.0f);
-            FORCE_FIELD_MODEL.renderToBuffer(tile, this, matrixStack, renderBuffers, combinedLight, combinedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);//rgba at end maybe
+            FORCE_FIELD_MODEL.renderToBuffer(tile, this, matrixStack, renderBuffers, combinedLight, combinedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
             matrixStack.popPose();
         }
     }

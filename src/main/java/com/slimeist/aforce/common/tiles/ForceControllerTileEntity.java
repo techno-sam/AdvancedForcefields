@@ -314,7 +314,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     //time to start building our network
     public void onPowered() {
         NetworkBlockChain blockChain = new NetworkBlockChain(this.getLevel(), this.getBlockPos(),
-                128, this::validTube, this::validComponent).create();
+                128, this::validTube, this::validComponent).runSearch();
         ArrayList<BlockPos> blocks = blockChain.getComponentBlocks();
         HashMap<BlockPos, Integer> distances = blockChain.getDistances();
         AdvancedForcefields.LOGGER.info("ForceController powered with a blocklist of length: "+blocks.size());

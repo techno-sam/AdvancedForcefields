@@ -8,41 +8,29 @@ import net.minecraft.world.IWorld;
 
 import java.util.*;
 
-public class NetworkBlockChain { //based on ForgeEndertech BlockChain
+public class NetworkBlockChain {
+
     protected static Direction[] DIRECTIONS = Direction.values();
+
     protected IWorld world;
     protected BlockPos masterPos;
-    protected ArrayList<BlockPos> tubeBlocks; //blocks that link our network together
-    protected ArrayList<BlockPos> componentBlocks; //blocks that are part of our network (tubes and modifiers)
-    protected HashMap<BlockPos, Integer> distances; //how far in network space each position
-    protected int maxSearch; //how many blocks we try to search through before we give up
-    protected boolean stopSearch = false;
-
+    protected int maxSearch; //how long to search before giving up
     protected AbstractBlock.IPositionPredicate validTube;
     protected AbstractBlock.IPositionPredicate validComponent;
+    protected ArrayList<BlockPos> tubeBlocks; //positions of blocks linking our network together
+    protected ArrayList<BlockPos> componentBlocks; //positions of blocks attached to our network (tubeBlocks + modifiers)
+    protected HashMap<BlockPos, Integer> distances; //how far in network space each position is from the master
 
-    public NetworkBlockChain(IWorld world, BlockPos masterPos, int maxSearch, AbstractBlock.IPositionPredicate validTube, AbstractBlock.IPositionPredicate validComponent) {
+    public NetworkBlockChain(IWorld world, BlockPos start, int maxSearch, AbstractBlock.IPositionPredicate validTube, AbstractBlock.IPositionPredicate validComponent) {
         this.world = world;
-        this.masterPos = masterPos;
+        this.masterPos = start;
         this.maxSearch = maxSearch;
+        this.validTube = validTube;
+        this.validComponent = validComponent;
+
         this.tubeBlocks = new ArrayList<BlockPos>();
         this.componentBlocks = new ArrayList<BlockPos>();
         this.distances = new HashMap<BlockPos, Integer>();
-        this.validTube = validTube;
-        this.validComponent = validComponent;
-    }
-
-    public NetworkBlockChain create() { //search, but prepare stuff first
-        this.stopSearch = false;
-        this.tubeBlocks.clear();
-        this.componentBlocks.clear();
-        this.distances.clear();
-        this.search();
-        return this;
-    }
-
-    public Direction[] getDirections() {
-        return DIRECTIONS;
     }
 
     public IWorld getWorld() {
@@ -51,6 +39,10 @@ public class NetworkBlockChain { //based on ForgeEndertech BlockChain
 
     public BlockPos getMasterPos() {
         return this.masterPos;
+    }
+
+    public int getMaxSearch() {
+        return this.maxSearch;
     }
 
     public ArrayList<BlockPos> getTubeBlocks() {
@@ -70,72 +62,75 @@ public class NetworkBlockChain { //based on ForgeEndertech BlockChain
     }
 
     protected boolean isValidTube(BlockPos pos) {
-        return this.isValidTube(pos, this.getWorld().getBlockState(pos)) || pos.equals(this.masterPos);
+        return pos.equals(this.masterPos) || this.isValidTube(pos, this.getWorld().getBlockState(pos));
     }
 
-    protected boolean isValidTube(BlockPos pos, BlockState blockState) {
-        return this.validTube.test(blockState, this.getWorld(), pos);
+    protected boolean isValidTube(BlockPos pos, BlockState state) {
+        return this.validTube.test(state, this.getWorld(), pos);
     }
 
     protected boolean isValidComponent(BlockPos pos) {
-        return this.isValidComponent(pos, this.getWorld().getBlockState(pos)) || pos.equals(this.masterPos);
+        return pos.equals(this.masterPos) || this.isValidComponent(pos, this.getWorld().getBlockState(pos));
     }
 
-    protected boolean isValidComponent(BlockPos pos, BlockState blockState) {
-        return this.validComponent.test(blockState, this.getWorld(), pos);
+    protected boolean isValidComponent(BlockPos pos, BlockState state) {
+        return this.validComponent.test(state, this.getWorld(), pos);
+    }
+
+    public NetworkBlockChain runSearch() {
+        this.tubeBlocks.clear();
+        this.componentBlocks.clear();
+        this.distances.clear();
+        this.search();
+        return this;
     }
 
     protected void search() {
-        ArrayDeque<SearchStackEntry> stack = new ArrayDeque<SearchStackEntry>();
-        stack.push(new SearchStackEntry(this.masterPos));
-        this.distances.put(this.masterPos, 0);
+        ArrayDeque<StackEntry> stack = new ArrayDeque<StackEntry>();
+        stack.push(new StackEntry(this.masterPos));
 
         while (!stack.isEmpty()) {
-            if (this.size()>this.maxSearch) {
-                return;
-            }
-            SearchStackEntry entry = stack.peek();
-            if (entry!=null) {
+            StackEntry entry = stack.peek();
+
+            if (!entry.isChecked()) {
                 BlockPos pos = entry.getPos();
-                if (!entry.isChecked()) {
-                    if (!TileEntityHelper.isBlockLoaded(this.getWorld(), pos)) {
-                        stack.pop();
-                        continue;
-                    }
-                    if (this.isValidComponent(pos) && !this.componentBlocks.contains(pos)) {
-                        this.componentBlocks.add(pos);
-                    }
-                    if (!this.isValidTube(pos) || this.tubeBlocks.contains(pos)) {
-                        stack.pop();
-                        continue;
-                    }
-                    if (pos != this.masterPos) {
-                        int distance = this.getDistances().getOrDefault(pos, -1);
-                        for (Direction dir : DIRECTIONS) {
-                            if (distance == -1) {
-                                distance = this.getDistances().getOrDefault(pos.relative(dir), -1);
-                                if (distance != -1) {
-                                    distance++;
-                                }
-                            } else {
-                                int adjdist = this.getDistances().getOrDefault(pos.relative(dir), -1);
-                                if (adjdist != -1) {
-                                    distance = adjdist + 1;
-                                }
-                            }
-                        }
-                        this.getDistances().put(pos, distance);
-                    }
-                    this.tubeBlocks.add(pos);
-                    entry.setChecked();
+                if (!TileEntityHelper.isBlockLoaded(this.getWorld(), pos)) {
+                    stack.pop();
+                    continue;
+                }
+                if (this.isValidComponent(pos) && !this.componentBlocks.contains(pos)) {
+                    this.componentBlocks.add(pos);
                 }
 
-                if (this.stopSearch) {
-                    return;
+                if (pos != this.masterPos) {
+                    int distance = this.getDistances().getOrDefault(pos, -1);
+                    for (Direction dir : DIRECTIONS) {
+                        if (distance == -1) {
+                            distance = this.getDistances().getOrDefault(pos.relative(dir), -1);
+                            if (distance != -1) {
+                                distance++;
+                            }
+                        } else {
+                            int adjdist = this.getDistances().getOrDefault(pos.relative(dir), -1);
+                            if (adjdist != -1) {
+                                distance = adjdist + 1;
+                            }
+                        }
+                    }
+                    this.getDistances().put(pos, distance);
                 }
+
+                if (!this.isValidTube(pos) || this.tubeBlocks.contains(pos)) {
+                    stack.pop();
+                    continue;
+                }
+
+                this.tubeBlocks.add(pos);
+                entry.setChecked();
+
                 Direction direction = entry.getNextDirection().orElse(null);
-                if (direction != null) {
-                    stack.push(new SearchStackEntry(pos.relative(direction)));
+                if (direction!=null) {
+                    stack.push(new StackEntry(pos.relative(direction)));
                     continue;
                 }
                 stack.pop();
@@ -143,22 +138,23 @@ public class NetworkBlockChain { //based on ForgeEndertech BlockChain
         }
     }
 
-    protected class SearchStackEntry {//an entry in the stack to continue searching
-        protected final BlockPos pos;
-        protected Deque<Direction> directions; //in which directions should this entry be searched from
-        protected boolean checked = false;
+    protected class StackEntry {
 
-        public SearchStackEntry(BlockPos pos) {
+        protected final BlockPos pos;
+        protected Deque<Direction> directions; //which directions are valid for searching
+        protected boolean checked; //whether this has been checked for adding to tubeBlocks and componentBlocks
+
+        protected StackEntry(BlockPos pos) {
             this.pos = pos;
         }
 
-        public BlockPos getPos(){
-            return this.pos;
+        public BlockPos getPos() {
+            return pos;
         }
 
-        public Optional<Direction> getNextDirection() {//what direction to search in next
+        public Optional<Direction> getNextDirection() {
             if (this.directions==null) {
-                this.directions = new ArrayDeque<Direction>(Arrays.asList(NetworkBlockChain.this.getDirections()));
+                this.directions = new ArrayDeque<Direction>(Arrays.asList(DIRECTIONS));
             }
 
             if (this.directions.isEmpty()) {
