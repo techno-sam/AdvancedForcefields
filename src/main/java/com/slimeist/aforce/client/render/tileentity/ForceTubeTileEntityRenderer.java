@@ -68,7 +68,7 @@ public class ForceTubeTileEntityRenderer extends TileEntityRenderer<ForceTubeTil
          */
 
         //render force field
-        if (distance>0) { //we are active
+        if (distance>0 || true) { //we are active
             /*GlStateManager._enableBlend();
             GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 

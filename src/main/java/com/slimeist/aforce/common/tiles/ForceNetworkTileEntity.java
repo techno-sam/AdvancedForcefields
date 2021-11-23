@@ -74,7 +74,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         this.connections[dir.get3DDataValue()] = booleanToByte(connected);
     }
 
-    protected boolean isConnected(Direction dir) {
+    public boolean isConnected(Direction dir) {
         return byteToBoolean(this.connections[dir.get3DDataValue()]);
     }
 

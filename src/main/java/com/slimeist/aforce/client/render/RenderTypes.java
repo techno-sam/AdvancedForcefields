@@ -25,15 +25,20 @@ public class RenderTypes extends RenderType {
         return create("beacon_beam", DefaultVertexFormats.BLOCK, 7, 256, false, true, rendertype$state);
     }
 
+    public static RenderType beaconBeam(ResourceLocation resource) {
+        return beaconBeam(resource, true);
+    }
+
     public static RenderType forceField(ResourceLocation texture) {
         RenderType.State rendertype$state = RenderType.State.builder().setTextureState(new RenderState.TextureState(texture, false, false))
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY) //from beacon
                 .setWriteMaskState(COLOR_WRITE) //from beacon
                 .setDiffuseLightingState(DIFFUSE_LIGHTING)
                 .setAlphaState(DEFAULT_ALPHA)
-                .setCullState(CULL)
+                .setCullState(NO_CULL)
                 .setLightmapState(LIGHTMAP)
                 .setOutputState(TRANSLUCENT_TARGET)
+                .setFogState(NO_FOG) //from beacon
                 .createCompositeState(false); //from beacon
         return create("force_field", DefaultVertexFormats.NEW_ENTITY, 7, 256, false, false, rendertype$state);
     }
