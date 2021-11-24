@@ -21,7 +21,9 @@ public class RenderTypes extends RenderType {
     }
 
     public static RenderType beaconBeam(ResourceLocation p_228637_0_, boolean p_228637_1_) {
-        RenderType.State rendertype$state = RenderType.State.builder().setTextureState(new RenderState.TextureState(p_228637_0_, false, false)).setTransparencyState(p_228637_1_ ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY).setWriteMaskState(p_228637_1_ ? COLOR_WRITE : COLOR_DEPTH_WRITE).setFogState(NO_FOG).createCompositeState(false);
+        RenderType.State rendertype$state = RenderType.State.builder().setTextureState(new RenderState.TextureState(p_228637_0_, false, false)).setTransparencyState(p_228637_1_ ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY).setWriteMaskState(p_228637_1_ ? COLOR_WRITE : COLOR_DEPTH_WRITE).setFogState(NO_FOG)
+                .setOutputState(MAIN_TARGET)
+                .createCompositeState(false);
         return create("beacon_beam", DefaultVertexFormats.BLOCK, 7, 256, false, true, rendertype$state);
     }
 
@@ -41,5 +43,16 @@ public class RenderTypes extends RenderType {
                 .setFogState(NO_FOG) //from beacon
                 .createCompositeState(false); //from beacon
         return create("force_field", DefaultVertexFormats.NEW_ENTITY, 7, 256, false, false, rendertype$state);
+    }
+
+    public static RenderType simpleForceField(ResourceLocation texture) {
+        RenderType.State rendertype$state = RenderType.State.builder()
+                .setTextureState(new RenderState.TextureState(texture, false, false))
+                .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                .setAlphaState(DEFAULT_ALPHA)
+                .setWriteMaskState(COLOR_WRITE)
+                .setCullState(NO_CULL)
+                .createCompositeState(false);
+        return create("simple_force_field", DefaultVertexFormats.BLOCK, 7, 256, false, false, rendertype$state);
     }
 }

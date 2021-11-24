@@ -92,7 +92,7 @@ public class ForceTubeTileEntityRenderer extends TileEntityRenderer<ForceTubeTil
     @Override
     public boolean shouldRenderOffScreen(ForceTubeTileEntity tile)
     {
-        return false;
+        return true;
     }
 
     public static void register() {

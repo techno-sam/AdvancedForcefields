@@ -7,6 +7,7 @@ import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.state.BooleanProperty;
@@ -320,10 +321,10 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return hasCloser ? d : -1;
     }
 
-    @Override
+    /*@Override
     public VoxelShape getVisualShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
         return VoxelShapes.empty();
-    }
+    }*/
 
     /*
     @Override
