@@ -4,7 +4,6 @@ import com.slimeist.aforce.common.blocks.ForceControllerBlock;
 import com.slimeist.aforce.core.init.BlockInit;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
