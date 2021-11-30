@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -56,27 +57,36 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
         u2 = SHIMMER_MATERIAL.sprite().getU1();
         v2 = SHIMMER_MATERIAL.sprite().getV1();
 
-        renderCube(matrix, SHIMMER_MATERIAL.buffer(rtbuffer, RenderTypes::simpleForceField), red, green, blue, alpha, x1, y1, z1, x2, y2, z2, u1, v1, u2, v2);
+        if (te.getDistance()>0) {
+            renderCube(te, matrix, SHIMMER_MATERIAL.buffer(rtbuffer, RenderTypes::simpleForceField), red, green, blue, alpha, x1, y1, z1, x2, y2, z2, u1, v1, u2, v2);
+        }
     }
 
-    private void renderCube(MatrixStack matrix, IVertexBuilder builder, float red, float green, float blue, float alpha, float x1, float y1, float z1, float x2, float y2, float z2, float u1, float v1, float u2, float v2) {
+    private boolean show(ForceTubeTileEntity te, Direction dir) {
+        return !te.isConnected(dir);
+    }
+
+    private void renderCube(ForceTubeTileEntity te, MatrixStack matrix, IVertexBuilder builder, float red, float green, float blue, float alpha, float x1, float y1, float z1, float x2, float y2, float z2, float u1, float v1, float u2, float v2) {
         MatrixStack.Entry matrixstack$entry = matrix.last();
         Matrix4f poseMatrix = matrixstack$entry.pose();
         Matrix3f normalMatrix = matrixstack$entry.normal();
 
-        this.renderFace(poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, red, green, blue, alpha, u1, v1, u2, v2);
-        this.renderFace(poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2);
-        this.renderFace(poseMatrix, normalMatrix, builder, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2);
-        this.renderFace(poseMatrix, normalMatrix, builder, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2);
-        this.renderFace(poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 1.0F, red, green, blue, alpha, u1, v1, u2, v2);
-        this.renderFace(poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2);
+        this.renderFace(te, poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, red, green, blue, alpha, u1, v1, u2, v2, Direction.SOUTH);
+        this.renderFace(te, poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2, Direction.NORTH);
+        this.renderFace(te, poseMatrix, normalMatrix, builder, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2, Direction.EAST);
+        this.renderFace(te, poseMatrix, normalMatrix, builder, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2, Direction.WEST);
+        this.renderFace(te, poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 1.0F, red, green, blue, alpha, u1, v1, u2, v2, Direction.DOWN);
+        this.renderFace(te, poseMatrix, normalMatrix, builder, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, red, green, blue, alpha, u1, v1, u2, v2, Direction.UP);
     }
 
-    private void renderFace(Matrix4f poseMatrix, Matrix3f normalMatrix, IVertexBuilder builder, float x1, float x2, float y1, float y2, float z1, float z2, float z3, float z4, float red, float green, float blue, float alpha, float u1, float v1, float u2, float v2) {
+    private void renderFace(ForceTubeTileEntity te, Matrix4f poseMatrix, Matrix3f normalMatrix, IVertexBuilder builder, float x1, float x2, float y1, float y2, float z1, float z2, float z3, float z4, float red, float green, float blue, float alpha, float u1, float v1, float u2, float v2, Direction dir) {
         /*builder.vertex(poseMatrix, x1, y1, z1).color(red, green, blue, alpha).endVertex();
         builder.vertex(poseMatrix, x2, y1, z2).color(red, green, blue, alpha).endVertex();
         builder.vertex(poseMatrix, x2, y2, z3).color(red, green, blue, alpha).endVertex();
         builder.vertex(poseMatrix, x1, y2, z4).color(red, green, blue, alpha).endVertex();*/
+        if (te.isConnected(dir.getOpposite())) {
+            return;
+        }
         vertex(poseMatrix, normalMatrix, builder, red, green, blue, alpha, x1, y1, z1, u2, v2);
         vertex(poseMatrix, normalMatrix, builder, red, green, blue, alpha, x2, y1, z2, u1, v2);
         vertex(poseMatrix, normalMatrix, builder, red, green, blue, alpha, x2, y2, z3, u1, v1);
