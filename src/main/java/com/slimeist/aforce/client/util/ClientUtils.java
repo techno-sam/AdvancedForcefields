@@ -11,4 +11,14 @@ public class ClientUtils {
     public static void bindTexture(ResourceLocation texture) {
         mc().getTextureManager().bind(texture);
     }
+
+    public static double modDouble(double x, int modulus) {
+        while (x>modulus) {
+            x -= modulus;
+        }
+        while (x<-modulus) {
+            x += modulus;
+        }
+        return x;
+    }
 }

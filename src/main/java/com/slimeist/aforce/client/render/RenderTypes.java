@@ -50,7 +50,7 @@ public class RenderTypes extends RenderType {
                 .setTextureState(new RenderState.TextureState(texture, false, false))
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                 .setAlphaState(DEFAULT_ALPHA)
-                .setWriteMaskState(COLOR_WRITE)
+                .setWriteMaskState(COLOR_DEPTH_WRITE)
                 .setCullState(NO_CULL)
                 .createCompositeState(false);
         return create("simple_force_field", DefaultVertexFormats.BLOCK, 7, 256, false, false, rendertype$state);
