@@ -108,7 +108,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
 
     protected static final String TAG_PACKET_LIST = "packetList";
 
-    protected ArrayList<ForceNetworkPacket> packetList = new ArrayList<ForceNetworkPacket>(){};
+    protected ArrayList<ForceNetworkPacket> packetList = new ArrayList<ForceNetworkPacket>();
 
     protected void setPacketList(ArrayList<ForceNetworkPacket> packetList) {
         this.packetList = packetList;
@@ -131,7 +131,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     }
 
     protected void loadPacketList(ListNBT list) {
-        this.packetList = new ArrayList<ForceNetworkPacket>(){};
+        this.packetList = new ArrayList<ForceNetworkPacket>();
         for(int i = 0; i < list.size(); ++i) {
             CompoundNBT nbt = list.getCompound(i);
             this.packetList.add(new ForceNetworkPacket(nbt));
@@ -335,7 +335,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         this.distance = -1;
         //this.connections = new byte[] {1, 1, 1, 1, 1, 1};
         this.masterPos = masterPos;
-        this.packetList = new ArrayList<ForceNetworkPacket>(){};
+        this.packetList = new ArrayList<ForceNetworkPacket>();
     }
     public boolean isConnected(BlockPos otherPos) {
         BlockPos myPos = this.getBlockPos();

@@ -70,6 +70,7 @@ public class SidedModelRenderer {
         return modelrenderer;
     }
 
+    @SuppressWarnings("unchecked")
     public void copyFrom(SidedModelRenderer other) {
         this.xRot = other.xRot;
         this.yRot = other.yRot;

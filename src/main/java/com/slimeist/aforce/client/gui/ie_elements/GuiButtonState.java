@@ -11,6 +11,7 @@ package com.slimeist.aforce.client.gui.ie_elements;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -85,7 +86,7 @@ public class GuiButtonState<E> extends GuiButtonIE
 				else if(this.isHovered)
 					txtCol = 0xfff78034;
 				int[] offset = getTextOffset(fontrenderer);
-				this.drawString(transform, fontrenderer, getMessage(), x+offset[0], y+offset[1], txtCol);
+				drawString(transform, fontrenderer, getMessage(), x+offset[0], y+offset[1], txtCol);
 			}
 		}
 	}

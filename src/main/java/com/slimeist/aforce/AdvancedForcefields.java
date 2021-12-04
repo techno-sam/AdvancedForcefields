@@ -23,6 +23,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.InterModComms;
+import net.minecraftforge.fml.MavenVersionStringHelper;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -30,11 +32,15 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.LibraryFinder;
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Collectors;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -42,7 +48,7 @@ import java.util.stream.Collectors;
 public class AdvancedForcefields {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "aforce";
-    public static final String VERSION = "0.5";//""${version}";
+    public static final String VERSION = getVersion();
     public static CommonProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
 
     public static final SimpleChannel packetHandler = NetworkRegistry.ChannelBuilder
@@ -64,7 +70,18 @@ public class AdvancedForcefields {
         //MinecraftForge.EVENT_BUS.register(this);
     }
 
+    private static String getVersion() {
+        String versionString = "BROKEN";
 
+        List<ModInfo> infoList = ModList.get().getMods();
+        for (ModInfo info : infoList) {
+            if (info.getModId().equals(MOD_ID)) {
+                versionString = MavenVersionStringHelper.artifactVersionToString(info.getVersion());
+                break;
+            }
+        }
+        return versionString;
+    }
 
     public static ResourceLocation getId(String path) {
         return new ResourceLocation(MOD_ID, path);

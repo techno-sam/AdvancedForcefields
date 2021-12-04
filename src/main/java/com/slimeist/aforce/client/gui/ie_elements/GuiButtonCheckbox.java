@@ -10,6 +10,7 @@ package com.slimeist.aforce.client.gui.ie_elements;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.util.ResourceLocation;
 import com.slimeist.aforce.AdvancedForcefields;
 import net.minecraft.util.text.ITextComponent;
@@ -36,7 +37,7 @@ public class GuiButtonCheckbox extends GuiButtonBoolean
 				color = 0xfff78034;
 			else
 				color = 0xE0E0E0;
-			this.drawCenteredString(transform, Minecraft.getInstance().font, "\u2714", x+width/2, y-2, color);
+			drawCenteredString(transform, Minecraft.getInstance().font, "\u2714", x+width/2, y-2, color);
 		}
 	}
 }

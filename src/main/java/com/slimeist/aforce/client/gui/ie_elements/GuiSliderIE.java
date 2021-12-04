@@ -12,6 +12,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.slimeist.aforce.client.util.ClientUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.client.gui.widget.Slider;
@@ -45,7 +46,7 @@ ClientUtils.mc().getTextureManager().bind(GuiReactiveList.TEXTURE);
 				color = 0xa0a0a0;
 			else if(this.isHovered)
 				color = 0xffffa0;
-			this.drawCenteredString(transform, fontrenderer, dispString, x+width/2, y-10+height/2-3, color);
+			drawCenteredString(transform, fontrenderer, dispString, x+width/2, y-10+height/2-3, color);
 		}
 	}
 

@@ -1,10 +1,10 @@
 modLoader="javafml"
 loaderVersion="[36,)"
-license="All rights reserved"
+license="GNU General Public License v3.0"
 
 [[mods]]
 modId="aforce"
-version="0.5" #"${version}"
+version="${version}"
 displayName="Advanced Forcefields"
 #logoFile="examplemod.png"
 credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod, GUI element classes and network classes (com.slimeist.aforce.client.gui.ie_elements, com.slimeist.aforce.common.network) to BluSunrize"

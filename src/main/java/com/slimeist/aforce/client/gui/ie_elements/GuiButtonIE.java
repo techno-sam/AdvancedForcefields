@@ -14,6 +14,7 @@ import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
@@ -25,7 +26,7 @@ public class GuiButtonIE extends Button
 	protected final int texU;
 	protected final int texV;
 
-	public GuiButtonIE(int x, int y, int w, int h, ITextComponent name, ResourceLocation texture, int u, int v, IIEPressable handler)
+	public GuiButtonIE(int x, int y, int w, int h, ITextComponent name, ResourceLocation texture, int u, int v, IIEPressable<? extends GuiButtonIE> handler)
 	{
 		super(x, y, w, h, name, handler);
 		this.texture = texture;
@@ -69,7 +70,7 @@ public class GuiButtonIE extends Button
 					txtCol = 0xA0A0A0;
 				else if(this.isHovered)
 					txtCol = 0xfff78034;
-				this.drawCenteredString(transform, fontrenderer, getMessage(), this.x+this.width/2, this.y+(this.height-8)/2, txtCol);
+				drawCenteredString(transform, fontrenderer, getMessage(), this.x+this.width/2, this.y+(this.height-8)/2, txtCol);
 			}
 		}
 	}
@@ -85,6 +86,7 @@ public class GuiButtonIE extends Button
 		void onIEPress(B var1);
 
 		@Override
+		@SuppressWarnings("unchecked")
 		default void onPress(Button var1)
 		{
 			Preconditions.checkArgument(var1 instanceof GuiButtonIE);
