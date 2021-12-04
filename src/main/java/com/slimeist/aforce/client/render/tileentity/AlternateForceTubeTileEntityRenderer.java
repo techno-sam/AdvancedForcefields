@@ -7,6 +7,7 @@ import com.slimeist.aforce.client.render.RenderTypes;
 import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
+import com.slimeist.aforce.core.util.ColorUtil;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.AtlasTexture;
@@ -48,10 +49,12 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
 
         double scale = sinloop*(maxSize-minSize) + minSize;
 
-        float red = 1.0f;
-        float green = 0.1f;
-        float blue = 0.8f;
-        float alpha = 0.6f;
+        int[] intcolor = ColorUtil.unpackRGBA(te.getColor());
+
+        float red = intcolor[0]/255.0f;
+        float green = intcolor[1]/255.0f;
+        float blue = intcolor[2]/255.0f;
+        float alpha = intcolor[3]/255.0f;
 
         float x1 = (float) (-0.5f * scale);
         float y1 = (float) (-0.5f * scale);

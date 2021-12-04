@@ -1,6 +1,7 @@
 package com.slimeist.aforce.common.tiles;
 
 import com.slimeist.aforce.AdvancedForcefields;
+import com.slimeist.aforce.core.util.MiscUtil;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -25,7 +26,10 @@ public class ModTileEntity extends TileEntity {
     public void markDirtyFast() {
         if (level!=null) {
             level.blockEntityChanged(worldPosition, this);
-            AdvancedForcefields.LOGGER.info("Marked "+this+" @ [" + worldPosition + "] as dirty");
+            //AdvancedForcefields.LOGGER.info("Marked "+this+" @ [" + worldPosition + "] as dirty");
+            if (shouldSyncOnUpdate()) {
+                MiscUtil.syncTE(this);
+            }
         }
     }
 

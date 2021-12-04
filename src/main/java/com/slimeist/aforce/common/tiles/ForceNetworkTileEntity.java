@@ -38,6 +38,18 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         return this.blockingMode;
     }
 
+    protected static final String TAG_COLOR = "color"; //int representing packed rgba color
+
+    protected int color = 16711680; //(255, 0, 0)
+
+    protected void setColor(int color) {
+        this.color = color;
+    }
+
+    public int getColor() {
+        return this.color;
+    }
+
     protected static final String TAG_DISTANCE = "distance"; //how far we are from master in network space
 
     protected int distance = -1; //-1 means not connected, 0 is master, 1 is tube next to master, 2 is tube next to tube next to master, etc.
@@ -234,6 +246,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     public void onReceiveToServantsPacket(BlockPos myPos, int myDist, ForceNetworkPacket packet) {
         if (this.getLevel()!=null && packet.data.getString(TAG_PACKET_TYPE).equals("DATA_SYNC")) {
             this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
+            this.markDirtyFast();
         } else if (packet.data.getString(TAG_PACKET_TYPE).equals("NETWORK_RELEASE")) {
             this.onNetworkBuild(null);
             this.setLocked(false);
@@ -400,10 +413,12 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
 
     public void loadShared(BlockState state, CompoundNBT nbt) {
         this.setBlockingMode(nbt.getInt(TAG_BLOCKING_MODE));
+        this.setColor(nbt.getInt(TAG_COLOR));
     }
 
     public void writeSyncedShared(CompoundNBT nbt) {
         nbt.putInt(TAG_BLOCKING_MODE, this.getBlockingMode());
+        nbt.putInt(TAG_COLOR, this.getColor());
     }
 
     public void loadPersonal(BlockState blockState, CompoundNBT nbt) {
@@ -441,6 +456,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
 
     @Override
     public boolean shouldSyncOnUpdate() {
+        //AdvancedForcefields.LOGGER.info("Returning true for shouldSyncOnUpdate");
         return true;
     }
 }

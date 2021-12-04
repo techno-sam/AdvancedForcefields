@@ -11,15 +11,19 @@ import com.slimeist.aforce.common.containers.force_controller.ForceControllerZon
 import com.slimeist.aforce.common.recipies.EnderFuelRecipe;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
+import com.slimeist.aforce.core.util.ColorUtil;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.NetworkBlockChain;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.IBeaconBeamColorProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -70,25 +74,23 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         fuelZoneContents = ForceControllerZoneContents.createForTileEntity(1,
                 this::canPlayerAccessInventory, this::setChanged);
         glassZoneContents = ForceControllerZoneContents.createForTileEntity(GLASS_SLOTS_COUNT,
-                this::canPlayerAccessInventory, this::setChanged);
+                this::canPlayerAccessInventory, this::glassSlotsChanged);
     }
 
-    protected boolean hasOwnerRights(PlayerEntity player)
-    {
-        if(player.abilities.instabuild||owner==null||owner.isEmpty())
+    protected boolean hasOwnerRights(PlayerEntity player) {
+        if (player.abilities.instabuild || owner == null || owner.isEmpty())
             return true;
         return owner.equalsIgnoreCase(player.getName().getString());
     }
 
     public boolean canEntityDestroy(Entity entity) {
-        if(entity instanceof PlayerEntity)
-            return hasOwnerRights((PlayerEntity)entity);
-        return owner==null||owner.isEmpty();
+        if (entity instanceof PlayerEntity)
+            return hasOwnerRights((PlayerEntity) entity);
+        return owner == null || owner.isEmpty();
     }
 
-    public boolean canUseGui(PlayerEntity player)
-    {
-        if(hasOwnerRights(player))
+    public boolean canUseGui(PlayerEntity player) {
+        if (hasOwnerRights(player))
             return true;
         player.displayClientMessage(new TranslationTextComponent("container.isLocked", this.getDisplayName()), true);
         player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundCategory.BLOCKS, 1.0F, 1.0F);
@@ -112,18 +114,64 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     }
 
     public boolean hasBurningFuelSlots() {
-        return forceControllerStateData.burnTimeRemaining>0;
+        return forceControllerStateData.burnTimeRemaining > 0;
     }
 
     @Override
     public void tick() {
         super.tick();
         this.handleFuel();
-        this.handleStainedGlass();
     }
 
-    public void handleStainedGlass() {
+    public void glassSlotsChanged() {
+        this.updateStainedGlass();
+        this.setChanged();
+    }
 
+    public void updateStainedGlass() {
+        int alpha = 255;
+        int totalColors = 0;
+        float[] colorSum = new float[]{0.0f, 0.0f, 0.0f};
+
+        int slots = this.glassZoneContents.getContainerSize();
+        for (int slot = 0; slot < slots; slot++) {
+            ItemStack stack = this.glassZoneContents.getItem(slot);
+            Item item = stack.getItem();
+            if (Tags.Items.GLASS_COLORLESS.contains(item)) {
+                alpha -= stack.getCount();
+            }
+            if (item instanceof BlockItem) {
+                Block block = ((BlockItem) item).getBlock();
+                if (block instanceof IBeaconBeamColorProvider) {
+                    float[] dyeColor = ((IBeaconBeamColorProvider) block).getColor().getTextureDiffuseColors();
+                    for (int i = 0; i < stack.getCount(); i++) {
+                        totalColors++;
+                        colorSum = new float[]{colorSum[0] + dyeColor[0], colorSum[1] + dyeColor[1], colorSum[2] + dyeColor[2]};
+                    }
+                }
+            }
+        }
+
+        float[] color = new float[]{colorSum[0] / totalColors, colorSum[1] / totalColors, colorSum[2] / totalColors};
+
+        int red = (int) (color[0] * 255);
+        int green = (int) (color[1] * 255);
+        int blue = (int) (color[2] * 255);
+
+        if (red < 0) red = 0;
+        if (green < 0) green = 0;
+        if (blue < 0) blue = 0;
+        if (alpha < 0) alpha = 0;
+
+        if (red > 255) red = 255;
+        if (green > 255) green = 255;
+        if (blue > 255) blue = 255;
+        if (alpha > 255) alpha = 255;
+
+        int packedColor = ColorUtil.packRGBA(red, green, blue, alpha);
+        this.setColor(packedColor);
+        this.markAsDirty();
+        this.markDirtyFast();
     }
 
     public boolean handleFuel() {
