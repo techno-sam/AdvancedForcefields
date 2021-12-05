@@ -36,6 +36,7 @@ import net.minecraftforge.fml.loading.LibraryFinder;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.forgespi.language.IModInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -73,8 +74,11 @@ public class AdvancedForcefields {
     private static String getVersion() {
         String versionString = "BROKEN";
 
-        List<ModInfo> infoList = ModList.get().getMods();
-        for (ModInfo info : infoList) {
+        List<IModInfo> infoList = ModList.get().getModFileById(MOD_ID).getMods();
+        if (infoList.stream().count()>1) {
+            LOGGER.error("Multiple mods for MOD_ID: "+MOD_ID);
+        }
+        for (IModInfo info : infoList) {
             if (info.getModId().equals(MOD_ID)) {
                 versionString = MavenVersionStringHelper.artifactVersionToString(info.getVersion());
                 break;

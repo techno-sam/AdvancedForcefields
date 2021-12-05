@@ -74,8 +74,6 @@ public class ContainerScreenForceController extends ContainerScreen<ContainerFor
             hoveringText.add(new StringTextComponent(containerForceController.secondsOfFuelRemaining() + "s"));
         }
 
-        hoveringText.add(new StringTextComponent("Version: "+AdvancedForcefields.VERSION));
-
         // If hoveringText is not empty draw the hovering text.  Otherwise, use vanilla to render tooltip for the slots
         if (!hoveringText.isEmpty()) {
             renderComponentTooltip(matrixStack, hoveringText, mouseX, mouseY);  //renderToolTip
