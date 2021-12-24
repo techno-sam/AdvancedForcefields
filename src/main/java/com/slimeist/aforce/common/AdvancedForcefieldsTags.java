@@ -36,6 +36,7 @@ public class AdvancedForcefieldsTags {
         private static void init() {}
 
         public static final Tags.IOptionalNamedTag<Item> ENDER_FUEL = tag("ender_fuel");
+        public static final Tags.IOptionalNamedTag<Item> MODIFIER_UPGRADE = tag("modifier_upgrade");
 
         private static Tags.IOptionalNamedTag<Item> tag(String name) {
             return ItemTags.createOptional(AdvancedForcefields.getId(name));

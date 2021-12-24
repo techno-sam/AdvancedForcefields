@@ -2,6 +2,7 @@ package com.slimeist.aforce.common.tiles;
 
 
 import com.slimeist.aforce.AdvancedForcefields;
+import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierStateData;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierZoneContents;
@@ -33,10 +34,12 @@ import java.util.List;
 
 /**
  * Filterable upgrades:
- * Slime block - makes blocks bouncy, and knocks entities back (only when entities would be blocked)
- * Magma block - makes blocks damage entities on & in them (like magma blocks)
- * Any potion - applies effect for 10 seconds
- * Blaze rod - sets entities on fire
+ * Slime block - makes blocks bouncy, and knocks entities back (if force field solid for entity)
+ * Magma block - makes blocks damage entities on & in them (like magma blocks) (unconditional on force field solidity for entity)
+ * Any lingering potion - acts as if entity walked through lingering cloud (uncoditional on force field solidity for entity,
+ *                                                                          range of 1 block beyond force field,
+ *                                                                          if entity is player (OR the entity is being spectated) will spawn particles, clientside only)
+ * Blaze rod - sets entities on fire (unconditional on force field solidity for entity)
  *
  * Constant upgrades: (Handled by ForceController)
  * Tinted glasses - combines colors to set forcefield color
@@ -133,7 +136,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     // Unlike the vanilla furnace, we allow anything to be placed in the input slots
     static public boolean isItemValidForUpgradeSlot(ItemStack itemStack)
     {
-        return true;//itemStack.getItem().is(Tags.Items.GLASS);
+        return itemStack.getItem().is(AdvancedForcefieldsTags.Items.MODIFIER_UPGRADE);
     }
 
 

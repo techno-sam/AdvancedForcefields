@@ -32,12 +32,12 @@ join other tubes, and potentially create a network with multiple masters
         * Are we 'dirty' (do we need to re-send data)
         * Are we locked in yet
     * **Personal** data - independent of network status
-        * Settings such as color for **tubes** (may be implemented)
         * Filters and other settings for **modifiers**
-        * Endergy level for **masters** (will be implemented in future)
+        * Endergy level for **masters**
     * **Shared** data - shared across entire network, updated by sending
     packets to the **master** (send to adjacent tube with lowest distance value),
       then the **master** sends it back out over the network (propogate to
       components with a higher distance value)
       	* Will be stored on master even when network deactivated
-		* Data such as blocking mode
+		* Data such as blocking mode (actually will be filters for modifiers)
+        * Color for **force tubes**
