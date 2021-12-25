@@ -9,11 +9,13 @@ import com.slimeist.aforce.common.containers.force_controller.ContainerForceCont
 import com.slimeist.aforce.common.containers.force_controller.ForceControllerStateData;
 import com.slimeist.aforce.common.containers.force_controller.ForceControllerZoneContents;
 import com.slimeist.aforce.common.recipies.EnderFuelRecipe;
+import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ColorUtil;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.NetworkBlockChain;
+import com.slimeist.aforce.core.util.TagUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IBeaconBeamColorProvider;
@@ -335,9 +337,20 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
 
     @Override
     public void onReceiveToMasterPacket(BlockPos myPos, int myDist, ForceNetworkPacket packet) {
-        if (this.getLevel()!=null && packet.data.getString(TAG_PACKET_TYPE).equals("DATA_SYNC")) {
-            this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
-            this.markAsDirty();
+        if (this.getLevel()!=null) {
+            if (packet.data.getString(TAG_PACKET_TYPE).equals("DATA_SYNC")) {
+                this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
+                this.markAsDirty();
+            } else if (packet.data.getString(TAG_PACKET_TYPE).equals("CLEAR_ACTIONS")) {
+                this.clearActionSelectors(TagUtil.readPos(packet.data.getCompound(TAG_PACKET_MESSAGE)));
+                this.markAsDirty();
+                this.markDirtyFast();
+            } else if (packet.data.getString(TAG_PACKET_TYPE).equals("ADD_ACTION")) {
+                this.addActionSelector(ForceModifierSelector.fromNBT(packet.data.getCompound(TAG_PACKET_MESSAGE)));
+                AdvancedForcefields.LOGGER.info("Loading add_action, and marking as dirty");
+                this.markAsDirty();
+                this.markDirtyFast();
+            }
         }
     }
 
@@ -384,6 +397,9 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                 }
             }
         }
+        this.markDirtyFast();
+        this.markAsDirty();
+        this.setChanged();
     }
 
     public void onDepowered() {
@@ -395,5 +411,6 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         this.handlePackets();
         this.onNetworkBuild(null);
         this.setDistance(-1);
+        this.setLocked(false);
     }
 }

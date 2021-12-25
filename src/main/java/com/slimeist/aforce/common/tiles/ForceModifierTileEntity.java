@@ -6,8 +6,16 @@ import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierStateData;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierZoneContents;
+import com.slimeist.aforce.common.modifier_actions.BlockAction;
+import com.slimeist.aforce.common.registries.ForceModifierRegistry;
+import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
+import com.slimeist.aforce.core.enums.ForceNetworkDirection;
+import com.slimeist.aforce.core.init.ModifierInit;
+import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
+import com.slimeist.aforce.core.interfaces.IForceModifierAction;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
+import com.slimeist.aforce.core.util.TagUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,11 +23,13 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -55,20 +65,27 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
 
     public static final int TOTAL_SLOTS_COUNT = UPGRADE_SLOTS_COUNT; //upgrade slots
 
-    public static String TAG_TARGET_LIST = "targetList";
+    public static String TAG_TARGET_LIST = ForceModifierSelector.TAG_TARGET_LIST;
     public List<String> targetList = new ArrayList<>();
-
-    public static String TAG_WHITELIST = "whitelist";
+    public static String TAG_WHITELIST = ForceModifierSelector.TAG_WHITELIST;
     public boolean whitelist = false;
 
-    public static String TAG_TARGET_ANIMALS = "targetAnimals";
+
+    public static String TAG_TARGET_ANIMALS = ForceModifierSelector.TAG_TARGET_ANIMALS;
     public boolean targetAnimals = false;
 
-    public static String TAG_TARGET_PLAYERS = "targetPlayers";
+    public static String TAG_TARGET_PLAYERS = ForceModifierSelector.TAG_TARGET_PLAYERS;
     public boolean targetPlayers = false;
 
-    public static String TAG_TARGET_NEUTRALS = "targetNeutrals";
+    public static String TAG_TARGET_NEUTRALS = ForceModifierSelector.TAG_TARGET_NEUTRALS;
     public boolean targetNeutrals = false;
+
+    public static String TAG_PRIORITY = ForceModifierSelector.TAG_PRIORITY;
+    public int priority = 0;
+
+    public List<ForceModifierRegistry> actions = new ArrayList<>();
+
+    protected int sendActionsCountdown = -1;
 
     private ForceModifierZoneContents upgradeZoneContents;
 
@@ -77,7 +94,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     public ForceModifierTileEntity() {
         super(TileEntityTypeInit.FORCE_MODIFIER_TYPE);
         upgradeZoneContents = ForceModifierZoneContents.createForTileEntity(UPGRADE_SLOTS_COUNT,
-                this::canPlayerAccessInventory, this::setChanged);
+                this::canPlayerAccessInventory, this::handleUpgrades);
     }
 
     protected boolean hasOwnerRights(PlayerEntity player)
@@ -121,11 +138,52 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     @Override
     public void tick() {
         super.tick();
-        this.handleUpgrades();
+        if (this.sendActionsCountdown==0) {
+            AdvancedForcefields.LOGGER.info("sendActionsCountdown is zero!");
+            for (ForceModifierRegistry action : this.actions) {
+                ForceModifierSelector selector = new ForceModifierSelector(this.targetList, this.whitelist, this.targetAnimals, this.targetPlayers, this.targetNeutrals, action.getRegistryName().toString(), priority, this.getBlockPos());
+                CompoundNBT message = selector.toNBT();
+
+                CompoundNBT data = new CompoundNBT();
+                data.putString(TAG_PACKET_TYPE, "ADD_ACTION");
+                data.put(TAG_PACKET_MESSAGE, message);
+
+                this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data));
+                AdvancedForcefields.LOGGER.info("Sent ADD_ACTION packet with action of: "+action.getRegistryName().toString());
+            }
+        }
+        if (this.sendActionsCountdown>=0) {
+            this.sendActionsCountdown -= 1;
+        }
     }
 
     public void handleUpgrades() {
+        this.setChanged();
 
+        Item item = this.upgradeZoneContents.getItem(0).getItem();
+
+        this.actions.clear();
+
+        for (ResourceLocation id : RegistryInit.MODIFIER_REGISTRY.getKeys()) {
+            ForceModifierRegistry reg = RegistryInit.MODIFIER_REGISTRY.getValue(id);
+            if (reg != null && item == reg.getTrigger()) {
+                this.actions.add(reg);
+            }
+        }
+
+        if (this.actions.size()<=0) {
+            this.actions.add(ModifierInit.DEFAULT_ACTION);
+        }
+
+        CompoundNBT data = new CompoundNBT();
+        data.putString(TAG_PACKET_TYPE, "CLEAR_ACTIONS");
+        data.put(TAG_PACKET_MESSAGE, TagUtil.writePos(this.getBlockPos()));
+
+        this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data));
+        this.sendActionsCountdown = 5;
+
+        this.markAsDirty();
+        this.markDirtyFast();
     }
 
     private static void log(String msg) {
@@ -156,13 +214,15 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
 
         ListNBT list = nbt.getList(TAG_TARGET_LIST, Constants.NBT.TAG_STRING);
         targetList.clear();
-        for(int i = 0; i < list.size(); i++)
+        for (int i = 0; i < list.size(); i++)
             targetList.add(list.getString(i));
 
         whitelist = nbt.getBoolean(TAG_WHITELIST);
         targetAnimals = nbt.getBoolean(TAG_TARGET_ANIMALS);
         targetPlayers = nbt.getBoolean(TAG_TARGET_PLAYERS);
         targetNeutrals = nbt.getBoolean(TAG_TARGET_NEUTRALS);
+
+        priority = nbt.getInt(TAG_PRIORITY);
 
         if (upgradeZoneContents.getContainerSize() != UPGRADE_SLOTS_COUNT) {
             throw new IllegalArgumentException("Corrupted NBT: Number of inventory slots did not match expected.");
@@ -185,6 +245,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         nbt.putBoolean(TAG_TARGET_ANIMALS, targetAnimals);
         nbt.putBoolean(TAG_TARGET_PLAYERS, targetPlayers);
         nbt.putBoolean(TAG_TARGET_NEUTRALS, targetNeutrals);
+        nbt.putInt(TAG_PRIORITY, priority);
     }
 
 

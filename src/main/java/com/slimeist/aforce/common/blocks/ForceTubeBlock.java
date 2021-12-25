@@ -1,21 +1,30 @@
 package com.slimeist.aforce.common.blocks;
 
 import com.google.common.collect.Sets;
+import com.slimeist.aforce.AdvancedForcefields;
+import com.slimeist.aforce.common.registries.ForceModifierRegistry;
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
+import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
+import com.slimeist.aforce.core.enums.CollisionType;
+import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.PushReaction;
+import net.minecraft.client.renderer.chunk.ChunkRenderCache;
+import net.minecraft.entity.Entity;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.EntitySelectionContext;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -24,6 +33,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
 
 public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock {
@@ -326,7 +338,6 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return VoxelShapes.empty();
     }*/
 
-    /*
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
         VoxelShape shape = super.getCollisionShape(state, blockReader, pos, context);
@@ -338,37 +349,41 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
             TileEntity tile = blockReader.getBlockEntity(pos);
             if (tile instanceof ForceTubeTileEntity) {
                 ForceTubeTileEntity forceTubeTile = (ForceTubeTileEntity) tile;
-                if (forceTubeTile.hasMaster()) {
-                    BlockPos masterPos = forceTubeTile.getMasterPos();
-                    if (masterPos != null) {
-                        //AdvancedForcefields.LOGGER.warn("getting collision box for a forceTube with a controller at: " + masterPos.toString());
-                        TileEntity masterTile = TileEntityHelper.getTile(ForceControllerTileEntity.class, blockReader, masterPos).orElse(null);
-                        if (masterTile instanceof ForceControllerTileEntity) {
-                            ForceControllerTileEntity controllerTile = (ForceControllerTileEntity) masterTile;
-                            int blockingmode = controllerTile.getBlockingMode();
-                            switch (blockingmode) {
-                                case 1: //Block NONE
-                                    return empty;
-                                case 2: //Block ALL
-                                    return shape;
-                                case 3: //Block PLAYERS
-                                    if (entity instanceof PlayerEntity) {
-                                        return shape;
-                                    } else {
-                                        return empty;
-                                    }
-                                case 4: //Block MOBS
-                                    if (entity instanceof MobEntity) {
-                                        return shape;
-                                    } else {
-                                        return empty;
-                                    }
+                if (forceTubeTile.hasMasterPos()) {
+                    CollisionType collisionType = CollisionType.SOLID;
+                    HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+                    if (selectors.size() > 0) {
+                        int max = Collections.max(selectors.keySet());
+                        int min = Collections.min(selectors.keySet());
+
+                        for (int i = min; i < max; i++) {
+                            ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                            if (temp == null || temp.isEmpty()) {
+                                continue;
                             }
+                            for (ForceModifierSelector sel : temp) {
+                                if (sel.validForEntity(entity)) {
+                                    ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                                    if (registered != null) {
+                                        CollisionType test = registered.getAction().collisionType();
+                                        if (test != CollisionType.INHERIT) {
+                                            collisionType = test;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (collisionType == CollisionType.SOLID) {
+                            return shape;
+                        } else if (collisionType == CollisionType.EMPTY) {
+                            return empty;
+                        } else {
+                            LOGGER.error("CollisionType of: " + collisionType.name() + ". Not sure how this happened, but it shouldn't have.");
                         }
                     }
                 }
             }
         }
         return shape;
-    }*/
+    }
 }

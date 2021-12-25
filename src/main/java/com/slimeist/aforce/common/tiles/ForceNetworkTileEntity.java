@@ -3,6 +3,7 @@ package com.slimeist.aforce.common.tiles;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
+import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.TagUtil;
@@ -19,6 +20,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTileEntity {
 
@@ -177,6 +180,77 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
 
     protected boolean isLocked() {
         return this.isLocked;
+    }
+
+    protected HashMap<Integer, ArrayList<ForceModifierSelector>> sortedActionSelectors = new HashMap<>();
+
+    protected static final String TAG_ACTION_SELECTORS = "actionSelectors";
+
+    protected ArrayList<ForceModifierSelector> actionSelectors = new ArrayList<>();
+
+    public void clearActionSelectors() {
+        this.actionSelectors.clear();
+        updateSortedActionSelectors();
+    }
+
+    public void clearActionSelectors(BlockPos originator) {
+        ArrayList<ForceModifierSelector> newSelectors = new ArrayList<>();
+        for (ForceModifierSelector selector : this.actionSelectors) {
+            if (!selector.getOriginPosition().equals(originator)) {
+                newSelectors.add(selector);
+            }
+        }
+        this.actionSelectors = newSelectors;
+        updateSortedActionSelectors();
+    }
+
+    public void addActionSelector(ForceModifierSelector selector) {
+        this.actionSelectors.add(selector);
+        updateSortedActionSelectors();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ForceModifierSelector> getActionSelectors() {
+        return (List<ForceModifierSelector>) this.actionSelectors.clone();
+    }
+
+    public void updateSortedActionSelectors() {
+        if (this.getActionSelectors().size()==0) {
+            this.sortedActionSelectors.clear();
+            return;
+        }
+        HashMap<Integer, ArrayList<ForceModifierSelector>> sorted = new HashMap<>();
+
+        int minPriority = Integer.MAX_VALUE;
+        int maxPriority = Integer.MIN_VALUE;
+
+        for (ForceModifierSelector sel : this.getActionSelectors()) {
+            int priority = sel.getPriority();
+            if (priority<minPriority) {
+                minPriority = priority;
+            }
+            if (priority>maxPriority) {
+                maxPriority = priority;
+            }
+        }
+
+        for (int priority=minPriority; priority<=maxPriority; priority++) {
+            ArrayList<ForceModifierSelector> temp = new ArrayList<>();
+            for (ForceModifierSelector sel : this.getActionSelectors()) {
+                if (sel.getPriority()==priority) {
+                    temp.add(sel);
+                }
+            }
+            if (temp.size()!=0) {
+                sorted.put(priority, temp);
+            }
+        }
+
+        this.sortedActionSelectors = sorted;
+    }
+
+    public HashMap<Integer, ArrayList<ForceModifierSelector>> getSortedActionSelectors() {
+        return this.sortedActionSelectors;
     }
 
     public ForceNetworkTileEntity(TileEntityType<?> tileEntityType) {
@@ -397,6 +471,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         }
         this.loadPacketList(nbt.getList(TAG_PACKET_LIST, Constants.NBT.TAG_COMPOUND));
         this.setDirty(nbt.getBoolean(TAG_IS_DIRTY));
+        this.setLocked(nbt.getBoolean(TAG_IS_LOCKED));
     }
 
     public void writeSyncedInternal(CompoundNBT nbt) {
@@ -409,16 +484,30 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         }
         nbt.put(TAG_PACKET_LIST, this.savePacketList());
         nbt.putBoolean(TAG_IS_DIRTY, this.isDirty());
+        nbt.putBoolean(TAG_IS_LOCKED, this.isLocked());
     }
 
     public void loadShared(BlockState state, CompoundNBT nbt) {
         this.setBlockingMode(nbt.getInt(TAG_BLOCKING_MODE));
         this.setColor(nbt.getInt(TAG_COLOR));
+
+        ListNBT actionList = nbt.getList(TAG_ACTION_SELECTORS, Constants.NBT.TAG_COMPOUND);
+        this.clearActionSelectors();
+        for (int i=0; i<actionList.size(); i++) {
+            CompoundNBT actionNBT = actionList.getCompound(i);
+            this.addActionSelector(ForceModifierSelector.fromNBT(actionNBT));
+        }
     }
 
     public void writeSyncedShared(CompoundNBT nbt) {
         nbt.putInt(TAG_BLOCKING_MODE, this.getBlockingMode());
         nbt.putInt(TAG_COLOR, this.getColor());
+
+        ListNBT actionList = new ListNBT();
+        for (ForceModifierSelector sel : this.getActionSelectors()) {
+            actionList.add(sel.toNBT());
+        }
+        nbt.put(TAG_ACTION_SELECTORS, actionList);
     }
 
     public void loadPersonal(BlockState blockState, CompoundNBT nbt) {

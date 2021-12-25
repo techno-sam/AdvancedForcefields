@@ -7,7 +7,7 @@ modId="aforce"
 version="${version}"
 displayName="Advanced Forcefields"
 #logoFile="examplemod.png"
-credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod, GUI element classes and network classes (com.slimeist.aforce.client.gui.ie_elements, com.slimeist.aforce.common.network) to BluSunrize"
+credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod, GUI element classes and network classes (com.slimeist.aforce.client.gui.ie_elements, com.slimeist.aforce.common.network) to BluSunrize, com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector#validForEntity to BluSunrize"
 authors="Slimeist"
 description='''
 Advanced Forcefields are fun
@@ -19,7 +19,7 @@ Advanced Forcefields are fun
     versionRange="[36,)"
     ordering="NONE"
     side="BOTH"
-# Here's another dependency
+
 [[dependencies.aforce]]
     modId="minecraft"
     mandatory=true

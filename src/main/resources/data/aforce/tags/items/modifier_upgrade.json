@@ -4,6 +4,7 @@
     "minecraft:slime_block",
     "minecraft:magma_block",
     "minecraft:lingering_potion",
-    "minecraft:blaze_rod"
+    "minecraft:blaze_rod",
+    "minecraft:oak_trapdoor"
   ]
 }

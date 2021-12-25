@@ -4,10 +4,8 @@ import com.slimeist.aforce.common.network.IMessage;
 import com.slimeist.aforce.common.network.MessageForceModifierSync;
 import com.slimeist.aforce.common.recipies.EnderFuelRecipe;
 import com.slimeist.aforce.common.recipies.RecipeTypeEnderFuel;
-import com.slimeist.aforce.core.init.BlockInit;
-import com.slimeist.aforce.core.init.ContainerTypeInit;
-import com.slimeist.aforce.core.init.ItemInit;
-import com.slimeist.aforce.core.init.TileEntityTypeInit;
+import com.slimeist.aforce.common.registries.ForceModifierRegistry;
+import com.slimeist.aforce.core.init.*;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
@@ -72,6 +70,16 @@ public class StartupCommon {
 
         // Register the recipe serializer. This handles from json, from packet, and to packet.
         event.getRegistry().register(EnderFuelRecipe.SERIALIZER);
+    }
+
+    @SubscribeEvent
+    public void onRegistryRegistration(final RegistryEvent.NewRegistry event) {
+        RegistryInit.registerAll(event);
+    }
+
+    @SubscribeEvent
+    public void onModifierActionRegistration(final RegistryEvent.Register<ForceModifierRegistry> event) {
+        ModifierInit.registerAll(event);
     }
 
     //message registering from IE
