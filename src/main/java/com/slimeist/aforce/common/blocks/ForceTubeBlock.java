@@ -338,6 +338,10 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return VoxelShapes.empty();
     }*/
 
+    public static void info(String msg) {
+        AdvancedForcefields.LOGGER.info(msg);
+    }
+
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
         VoxelShape shape = super.getCollisionShape(state, blockReader, pos, context);
@@ -347,16 +351,19 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
             Entity entity = entityContext.getEntity();
 
             TileEntity tile = blockReader.getBlockEntity(pos);
-            if (tile instanceof ForceTubeTileEntity) {
+            if (tile instanceof ForceTubeTileEntity && entity!=null) {
                 ForceTubeTileEntity forceTubeTile = (ForceTubeTileEntity) tile;
                 if (forceTubeTile.hasMasterPos()) {
+
+                    info("Entity ["+entity.getName().getString()+"] colliding with ForceTubeTileEntity at "+pos.toShortString());
+
                     CollisionType collisionType = CollisionType.SOLID;
                     HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
                     if (selectors.size() > 0) {
                         int max = Collections.max(selectors.keySet());
                         int min = Collections.min(selectors.keySet());
 
-                        for (int i = min; i < max; i++) {
+                        for (int i = min; i <= max; i++) {
                             ArrayList<ForceModifierSelector> temp = selectors.get(i);
                             if (temp == null || temp.isEmpty()) {
                                 continue;

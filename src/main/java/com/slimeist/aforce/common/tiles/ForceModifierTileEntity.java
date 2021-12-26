@@ -57,6 +57,24 @@ import java.util.List;
 
 public class ForceModifierTileEntity extends ForceNetworkTileEntity implements INamedContainerProvider {
 
+    protected boolean shouldSignal = true;
+
+    public boolean isSignalling() {
+        return this.shouldSignal;
+    }
+
+    public void setSignalling(boolean shouldSignal) {
+        this.shouldSignal = shouldSignal;
+    }
+
+    public void networkDisconnect() {
+        CompoundNBT data = new CompoundNBT();
+        data.putString(TAG_PACKET_TYPE, "NETWORK_RELEASE");
+        data.put(TAG_PACKET_MESSAGE, new CompoundNBT());
+        ForceNetworkPacket release_packet = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, true);
+        this.onReceiveToServantsPacket(this.getBlockPos(), this.getDistance(), release_packet);
+    }
+
     public String owner;
 
     public static final String TAG_OWNER_NAME = "owner";
@@ -163,6 +181,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         Item item = this.upgradeZoneContents.getItem(0).getItem();
 
         this.actions.clear();
+        this.clearActionSelectors(this.getBlockPos());
 
         for (ResourceLocation id : RegistryInit.MODIFIER_REGISTRY.getKeys()) {
             ForceModifierRegistry reg = RegistryInit.MODIFIER_REGISTRY.getValue(id);
@@ -296,7 +315,9 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         log("Received message from server: "+nbt);
     }
 
-    public void receiveMessageFromClient(CompoundNBT nbt) {
+    public void receiveMessageFromClient(PlayerEntity from, CompoundNBT nbt) {
+        if (!this.hasOwnerRights(from))
+            return;
         if(nbt.contains("add", Constants.NBT.TAG_STRING))
             targetList.add(nbt.getString("add"));
         if(nbt.contains("remove", Constants.NBT.TAG_INT))
@@ -310,6 +331,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         if(nbt.contains(TAG_TARGET_NEUTRALS, Constants.NBT.TAG_BYTE))
             targetNeutrals = nbt.getBoolean(TAG_TARGET_NEUTRALS);
         log("Received message from client: "+nbt);
+        this.handleUpgrades();
         this.markDirtyFast();
     }
 }

@@ -1,8 +1,10 @@
 package com.slimeist.aforce.common.blocks;
 
+import com.google.common.collect.Sets;
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
+import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import net.minecraft.block.*;
 import net.minecraft.block.material.PushReaction;
@@ -27,6 +29,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkHooks;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 public class ForceModifierBlock extends ContainerBlock implements IForceNetworkBlock {
     public static final DirectionProperty FACING = HorizontalBlock.FACING;
@@ -99,6 +102,10 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     }
 
     private void doUpdate(BlockState state, World worldIn, BlockPos pos) {
+        if (!worldIn.isClientSide) {
+            this.updateDistance(worldIn, pos, state);
+        }
+
         TileEntity myTile = worldIn.getBlockEntity(pos);
         if (myTile instanceof ForceModifierTileEntity) {
             boolean powered = worldIn.hasNeighborSignal(pos);
@@ -118,12 +125,54 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         return PushReaction.BLOCK;
     }
 
+    public boolean shouldSignal(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceModifierTileEntity) {
+            return ((ForceModifierTileEntity) tile).isSignalling();
+        } else {
+            LOGGER.error("Did not find expected ForceModifierTileEntity at [" + pos + "], when checking whether should signal");
+        }
+        return false;
+    }
+
+    public void setSignalling(World world, BlockPos pos, boolean shouldSignal) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceModifierTileEntity) {
+            ((ForceModifierTileEntity) tile).setSignalling(shouldSignal);
+        } else {
+            LOGGER.error("Did not find expected ForceModifierTileEntity at [" + pos + "], when setting shouldSignal");
+        }
+    }
+
+    private void networkDisconnect(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceModifierTileEntity) {
+            ((ForceModifierTileEntity) tile).networkDisconnect();
+        } else {
+            LOGGER.error("Did not find expected ForceModifierTileEntity at [" + pos + "], when disconnecting from network");
+        }
+    }
+
     @Override
     public int getDistance(World world, BlockPos pos) {
         TileEntity tile = world.getBlockEntity(pos);
-        if (tile instanceof ForceNetworkTileEntity) {
-            return ((ForceNetworkTileEntity) tile).getDistance();
+        if (tile instanceof ForceNetworkTileEntity && this.shouldSignal(world, pos)) {
+            int distance = ((ForceNetworkTileEntity) tile).getDistance();
+            //LOGGER.info("getDistance @ "+pos.toShortString()+" (shouldSignal: "+this.shouldSignal(world, pos)+"), returning "+distance);
+            return distance;
         }
+        //LOGGER.info("getDistance @ "+pos.toShortString()+" (shouldSignal: "+this.shouldSignal(world, pos)+"), returning -1, because we did not find a good TE, or shouldn't signal");
+        return -1;
+    }
+
+    private int getInternalDistance(World world, BlockPos pos) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            int distance = ((ForceNetworkTileEntity) tile).getDistance();
+            //LOGGER.info("getInteranlDistance @ "+pos.toShortString()+" returning "+distance);
+            return distance;
+        }
+        //LOGGER.info("getInternalDistance @ "+pos.toShortString()+" returning -1, because we did not find a good TE");
         return -1;
     }
 
@@ -133,6 +182,72 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         if (tile instanceof ForceNetworkTileEntity) {
             ((ForceNetworkTileEntity) tile).setDistance(distance);
         }
+    }
+
+    private void updateDistance(World world, BlockPos pos, BlockState state) {
+        int targetDistance = this.calculateTargetDistance(world, pos);
+        if (this.getDistance(world, pos) != targetDistance) {
+            //LOGGER.warn("Distance is: "+this.getDistance(world, pos)+", target is: "+targetDistance);
+            this.setDistance(world, pos, targetDistance);
+            if (targetDistance==-1) {
+                this.networkDisconnect(world, pos);
+            }
+            //this.markTEDirty(world, pos);
+            //LOGGER.warn("Distance is now: "+this.getDistance(world, pos));
+
+            Set<BlockPos> set = Sets.newHashSet();
+            set.add(pos);
+
+            for (Direction direction : Direction.values()) {
+                set.add(pos.relative(direction));
+            }
+
+            for (BlockPos blockpos : set) {
+                world.updateNeighborsAt(blockpos, this);
+            }
+        }
+    }
+
+    private int calculateTargetDistance(World world, BlockPos pos) {
+        this.setSignalling(world, pos, false);
+        int dist = this.getLeastNeighborDistance(world, pos);
+        this.setSignalling(world, pos, true);
+        if (dist==-1) {
+            return dist;
+        } else {
+            return dist+1;
+        }
+    }
+
+    private int getLeastNeighborDistance(World world, BlockPos pos) {
+        int d = -1;
+        boolean hasCloser = false;
+        int myd = this.getInternalDistance(world, pos);
+        String msg = "\ngetLeastNeighborDistance @ "+pos.toShortString()+": ";
+
+        for (Direction dir : Direction.values()) {
+            BlockPos testPos = pos.relative(dir);
+            if (this.canConnect(world, pos, testPos)) {
+                BlockState testState = world.getBlockState(testPos);
+                msg += "\n\tConnected to the "+dir.getName()+" to "+testState;
+                Block testBlock = testState.getBlock();
+                if (testBlock instanceof IForceNetworkBlock) {
+                    int d1 = ((IForceNetworkBlock) testBlock).getDistance(world, testPos);
+                    msg += ", with distance "+d1+", our current calculated distance is "+d;
+                    if (d1 != -1 && (d1 < d || d==-1)) { //basically, if we are getting a distance from our neighbor, and they are closer than we are
+                        msg += ", calculated distance was set to "+d1;
+                        d = d1;
+                    }
+                    if (d1<myd || ((IForceNetworkBlock) testBlock).hasCloser(world, testPos, pos, d1)) {
+                        hasCloser = true;
+                        msg += ", encountered closer tube";
+                    }
+                }
+            }
+        }
+        msg += "\n";
+        //LOGGER.error(msg);
+        return hasCloser ? d : -1;
     }
 
     @Override

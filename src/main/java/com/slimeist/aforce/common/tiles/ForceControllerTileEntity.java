@@ -397,6 +397,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                 }
             }
         }
+        this.updateStainedGlass();
         this.markDirtyFast();
         this.markAsDirty();
         this.setChanged();

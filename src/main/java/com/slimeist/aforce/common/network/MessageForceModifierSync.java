@@ -50,7 +50,7 @@ public class MessageForceModifierSync implements IMessage
                 {
                     TileEntity tile = world.getBlockEntity(pos);
                     if(tile instanceof ForceModifierTileEntity)
-                        ((ForceModifierTileEntity)tile).receiveMessageFromClient(nbt);
+                        ((ForceModifierTileEntity)tile).receiveMessageFromClient(ctx.getSender(), nbt);
                 }
             });
         else

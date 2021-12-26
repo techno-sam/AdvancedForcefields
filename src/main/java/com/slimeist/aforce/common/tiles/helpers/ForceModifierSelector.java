@@ -185,25 +185,53 @@ public class ForceModifierSelector {
         this.originPosition = originPosition;
     }
 
+    public static void info(String msg) {
+        AdvancedForcefields.LOGGER.info(msg);
+    }
+
+    public static String listToString(List<String> list) {
+        StringBuilder ret = new StringBuilder("[");
+
+        for (String s : list) {
+            ret.append(s).append(", ");
+        }
+
+        ret = new StringBuilder(ret.substring(0, ret.length() - 2));
+        ret.append("]");
+
+        return ret.toString();
+    }
+
     //the following method, validForEntity is from ImmersiveEngineering turret validation check, credit to BluSunrize
     public boolean validForEntity(Entity entity) {
+        info("Checking for entity: "+entity.getName().getString());
         if (entity==null || entity.level==null) {
+            info("Entity does not exist or it has no level");
             return false;
         }
 
         if (entity instanceof LivingEntity && ((LivingEntity) entity).getHealth()<=0) {
+            info("Entity is dead");
             return false;
         }
 
-        if (whitelist^this.getTargetList().contains(entity.getName().getString()))
+        if (whitelist^this.getTargetList().contains(entity.getName().getString())) {
+            info("Whitelist state: "+(whitelist ? "on" : "off")+", TargetList of: "+listToString(this.getTargetList())+", contains name: "+(this.getTargetList().contains(entity.getName().getString()) ? "yes" : "no"));
             return false;
+        }
 
-        if (entity instanceof AnimalEntity &&!this.shouldTargetAnimals())
+        if (entity instanceof AnimalEntity &&!this.shouldTargetAnimals()) {
+            info("Entity is an animal, and we don't target them.");
             return false;
-        if (entity instanceof PlayerEntity &&!this.shouldTargetPlayers())
+        }
+        if (entity instanceof PlayerEntity &&!this.shouldTargetPlayers()) {
+            info("Entity is a player, and we don't target them.");
             return false;
-        if (!(entity instanceof PlayerEntity)&&!(entity instanceof AnimalEntity)&&!(entity instanceof IMob)&&!this.shouldTargetNeutrals())
+        }
+        if (!(entity instanceof PlayerEntity)&&!(entity instanceof AnimalEntity)&&!(entity instanceof IMob)&&!this.shouldTargetNeutrals()&&(entity instanceof LivingEntity)) {
+            info("Entity is neutral, and we don't target them");
             return false;
+        }
 
         return true;
     }

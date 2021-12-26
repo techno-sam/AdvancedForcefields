@@ -194,18 +194,27 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     }
 
     public void clearActionSelectors(BlockPos originator) {
+        //info("cas: We are "+((this instanceof ForceControllerTileEntity) ? "" : "not ")+"a controller");
+        //info("Clearing action selectors for pos: "+originator.toShortString()+", this network tile is "+(this.getLevel().isClientSide() ? "clientside" : "serverside"));
+        //info("There were "+this.actionSelectors.size()+" selectors.");
         ArrayList<ForceModifierSelector> newSelectors = new ArrayList<>();
         for (ForceModifierSelector selector : this.actionSelectors) {
             if (!selector.getOriginPosition().equals(originator)) {
+                //info("Adding selector which has a position of: "+selector.getOriginPosition().toShortString()+", which is not the same as "+originator.toShortString());
                 newSelectors.add(selector);
             }
         }
+        this.actionSelectors.clear();
         this.actionSelectors = newSelectors;
+        //info("There are now "+this.actionSelectors.size()+" selectors.");
         updateSortedActionSelectors();
+        //info("After updating our sorted list of action selectors, there are now "+this.actionSelectors.size()+" selectors.");
     }
 
     public void addActionSelector(ForceModifierSelector selector) {
         this.actionSelectors.add(selector);
+        //info("aas: We are "+((this instanceof ForceControllerTileEntity) ? "" : "not ")+"a controller");
+        //info("Added action selector with action: "+selector.getAction());
         updateSortedActionSelectors();
     }
 
@@ -425,7 +434,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         return this.canConnect(otherPos, false);
     }
 
-    private void info(String msg) {
+    protected void info(String msg) {
         AdvancedForcefields.LOGGER.info(msg);
     }
 

@@ -17,14 +17,14 @@ public class ForceControllerStateData implements IIntArray {
     // --------- read/write to NBT for permanent storage (on disk, or packet transmission) - used by the TileEntity only
 
     public void putIntoNBT(CompoundNBT nbtTagCompound) {
-        nbtTagCompound.putInt("color", color);
+        //nbtTagCompound.putInt("color", color);
         nbtTagCompound.putInt("burnTimeRemaining", burnTimeRemaining);
         nbtTagCompound.putInt("burnTimeInitial", burnTimeInitialValue);
     }
 
     public void readFromNBT(CompoundNBT nbtTagCompound) {
         // Trim the arrays (or pad with 0) to make sure they have the correct number of elements
-        color = nbtTagCompound.getInt("color");
+        //color = nbtTagCompound.getInt("color");
         burnTimeRemaining = nbtTagCompound.getInt("burnTimeRemaining");
         burnTimeInitialValue = nbtTagCompound.getInt("burnTimeInitialValue");
     }
