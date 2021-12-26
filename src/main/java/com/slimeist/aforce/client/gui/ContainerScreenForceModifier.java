@@ -7,6 +7,7 @@ import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.gui.ie_elements.GuiButtonCheckbox;
 import com.slimeist.aforce.client.gui.ie_elements.GuiButtonIE;
 import com.slimeist.aforce.client.gui.ie_elements.GuiReactiveList;
+import com.slimeist.aforce.client.gui.ie_elements.GuiSliderIE;
 import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 
@@ -42,8 +43,8 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
         this.tile = this.containerForceModifier.tile;
 
         // Set the width and height of the gui.  Should match the size of the texture!
-        imageWidth = 233;
-        imageHeight = 211;
+        imageWidth = 233+1;
+        imageHeight = 211+1;
     }
 
     //ADJUST TO IMAGE
@@ -127,6 +128,22 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_NEUTRALS, tile.targetNeutrals);
                     handleButtonClick(tag, listOffset);
                 }));
+        this.addButton(new GuiButtonIE(leftPos+74+sideX, topPos+70+extraY, 7,7, new StringTextComponent(""), ELEMENTS, 9, 87,
+                btn -> {
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    tile.priority += 1;
+                    tag.putInt(ForceModifierTileEntity.TAG_PRIORITY, tile.priority);
+                    handleButtonClick(tag, listOffset);
+                }).setHoverOffset(9,0));
+        this.addButton(new GuiButtonIE(leftPos+74+sideX, topPos+84+extraY, 7,7, new StringTextComponent(""), ELEMENTS, 9, 96,
+                btn -> {
+                    CompoundNBT tag = new CompoundNBT();
+                    int listOffset = -1;
+                    tile.priority -= 1;
+                    tag.putInt(ForceModifierTileEntity.TAG_PRIORITY, tile.priority);
+                    handleButtonClick(tag, listOffset);
+                }).setHoverOffset(9,0));
     }
 
     protected void handleButtonClick(CompoundNBT nbt, int listOffset)
@@ -177,6 +194,10 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
         // draw the label for the player inventory slots
         this.font.draw(matrixStack, this.inventory.getDisplayName(),                  ///    this.font.drawString
                 PLAYER_INV_LABEL_XPOS, PLAYER_INV_LABEL_YPOS, Color.darkGray.getRGB());
+
+        // draw the label for the priority
+        this.font.draw(matrixStack, String.valueOf(tile.priority),
+                leftPos+74+50, topPos+7+79, 0xE0E0E0);
     }
 
     @Override
@@ -228,4 +249,5 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
 
     // This is the resource location for the background image
     private static final ResourceLocation TEXTURE = new ResourceLocation(AdvancedForcefields.MOD_ID, "textures/gui/force_modifier.png");
+    private static final ResourceLocation ELEMENTS = new ResourceLocation(AdvancedForcefields.MOD_ID, "textures/gui/hud_elements.png");
 }
