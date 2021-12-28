@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=east,powered=false": {
+      "model": "aforce:block/force_modifier",
+      "y": 90
+    },
+    "facing=east,powered=true": {
+      "model": "aforce:block/force_modifier_powered",
+      "y": 90
+    },
+    "facing=north,powered=false": {
+      "model": "aforce:block/force_modifier"
+    },
+    "facing=north,powered=true": {
+      "model": "aforce:block/force_modifier_powered"
+    },
+    "facing=south,powered=false": {
+      "model": "aforce:block/force_modifier",
+      "y": 180
+    },
+    "facing=south,powered=true": {
+      "model": "aforce:block/force_modifier_powered",
+      "y": 180
+    },
+    "facing=west,powered=false": {
+      "model": "aforce:block/force_modifier",
+      "y": 270
+    },
+    "facing=west,powered=true": {
+      "model": "aforce:block/force_modifier_powered",
+      "y": 270
+    }
+  }
+}

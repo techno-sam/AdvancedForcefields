@@ -1,10 +1,8 @@
 package com.slimeist.aforce.common.blocks;
 
 import com.google.common.collect.Sets;
-import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
-import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import net.minecraft.block.*;
 import net.minecraft.block.material.PushReaction;

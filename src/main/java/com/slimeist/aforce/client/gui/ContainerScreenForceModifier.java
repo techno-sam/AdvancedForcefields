@@ -136,7 +136,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     tag.putInt(ForceModifierTileEntity.TAG_PRIORITY, tile.priority);
                     handleButtonClick(tag, listOffset);
                 }).setHoverOffset(9,0));
-        this.addButton(new GuiButtonIE(leftPos+74+sideX, topPos+84+extraY, 7,7, new StringTextComponent(""), ELEMENTS, 9, 96,
+        this.addButton(new GuiButtonIE(leftPos+74+sideX, topPos+86+extraY, 7,7, new StringTextComponent(""), ELEMENTS, 9, 96,
                 btn -> {
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
@@ -196,8 +196,8 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                 PLAYER_INV_LABEL_XPOS, PLAYER_INV_LABEL_YPOS, Color.darkGray.getRGB());
 
         // draw the label for the priority
-        this.font.draw(matrixStack, String.valueOf(tile.priority),
-                leftPos+74+50, topPos+7+79, 0xE0E0E0);
+        this.font.drawShadow(matrixStack, new TranslationTextComponent("gui.aforce.modifier.priority", tile.priority),
+                75+50, 7+78, 0xE0E0E0);
     }
 
     @Override

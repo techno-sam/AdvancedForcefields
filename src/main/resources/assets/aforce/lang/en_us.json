@@ -12,5 +12,6 @@
   "gui.aforce.modifier.blacklist": "Blacklist",
   "gui.aforce.modifier.animals": "Animals",
   "gui.aforce.modifier.players": "Players",
-  "gui.aforce.modifier.neutrals": "Neutrals"
+  "gui.aforce.modifier.neutrals": "Neutrals",
+  "gui.aforce.modifier.priority": "%d Priority"
 }

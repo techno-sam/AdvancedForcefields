@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "aforce:block/force_modifier_top_powered",
+    "front": "aforce:block/force_modifier_front",
+    "side": "aforce:block/force_modifier_side"
+  }
+}

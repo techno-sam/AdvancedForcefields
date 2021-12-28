@@ -330,6 +330,8 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
             targetPlayers = nbt.getBoolean(TAG_TARGET_PLAYERS);
         if(nbt.contains(TAG_TARGET_NEUTRALS, Constants.NBT.TAG_BYTE))
             targetNeutrals = nbt.getBoolean(TAG_TARGET_NEUTRALS);
+        if(nbt.contains(TAG_PRIORITY, Constants.NBT.TAG_INT))
+            priority = nbt.getInt(TAG_PRIORITY);
         log("Received message from client: "+nbt);
         this.handleUpgrades();
         this.markDirtyFast();
