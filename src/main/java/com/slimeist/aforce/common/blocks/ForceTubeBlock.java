@@ -285,16 +285,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
             //this.markTEDirty(world, pos);
             //LOGGER.warn("Distance is now: "+this.getDistance(world, pos));
 
-            Set<BlockPos> set = Sets.newHashSet();
-            set.add(pos);
-
-            for (Direction direction : Direction.values()) {
-                set.add(pos.relative(direction));
-            }
-
-            for (BlockPos blockpos : set) {
-                world.updateNeighborsAt(blockpos, this);
-            }
+            world.updateNeighborsAt(pos, this);
         }
     }
 
