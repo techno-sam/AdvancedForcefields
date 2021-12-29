@@ -186,10 +186,13 @@ public class ForceModifierSelector {
     }
 
     public static void info(String msg) {
-        AdvancedForcefields.LOGGER.info(msg);
+        //AdvancedForcefields.LOGGER.info(msg);
     }
 
     public static String listToString(List<String> list) {
+        if (list.size()<=0) {
+            return "{}";
+        }
         StringBuilder ret = new StringBuilder("[");
 
         for (String s : list) {

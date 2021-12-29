@@ -4,10 +4,13 @@ import com.google.common.collect.Sets;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
+import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
 import com.slimeist.aforce.core.enums.CollisionType;
+import com.slimeist.aforce.core.enums.FallDamageType;
+import com.slimeist.aforce.core.enums.ForceInteractionType;
 import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
@@ -16,13 +19,18 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.client.renderer.chunk.ChunkRenderCache;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.BoatEntity;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.EntitySelectionContext;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -30,13 +38,11 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock {
 
@@ -343,6 +349,54 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
+    public void fallOn(World world, BlockPos pos, Entity entity, float fallDistance) {
+        if (entity.isSuppressingBounce()) {
+            super.fallOn(world, pos, entity, fallDistance);
+        } else {
+            TileEntity tile = world.getBlockEntity(pos);
+            if (tile instanceof ForceTubeTileEntity) {
+                ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
+                if (this.getFallDamageType(entity, forceTile) == FallDamageType.DAMAGE) {
+                    super.fallOn(world, pos, entity, fallDistance);
+                } else {
+                    entity.causeFallDamage(fallDistance, 0.0F);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void updateEntityAfterFallOn(IBlockReader world, Entity entity) {
+        BlockPos pos = entity.getOnPos();
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceTubeTileEntity) {
+            ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
+            this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.LAND_ON);
+        }
+    }
+
+    @Override
+    public void stepOn(World world, BlockPos pos, Entity entity) {
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceTubeTileEntity) {
+            ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
+            this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.STEP_ON);
+        }
+
+        super.stepOn(world, pos, entity);
+    }
+
+    @Override
+    public void entityInside(BlockState state, World world, BlockPos pos, Entity entity) {
+        super.entityInside(state, world, pos, entity);
+        TileEntity tile = world.getBlockEntity(pos);
+        if (tile instanceof ForceTubeTileEntity) {
+            ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
+            this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.INSIDE);
+        }
+    }
+
+    @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
         VoxelShape shape = super.getCollisionShape(state, blockReader, pos, context);
         VoxelShape empty = VoxelShapes.empty();
@@ -355,42 +409,130 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
                 ForceTubeTileEntity forceTubeTile = (ForceTubeTileEntity) tile;
                 if (forceTubeTile.hasMasterPos()) {
 
-                    info("Entity ["+entity.getName().getString()+"] colliding with ForceTubeTileEntity at "+pos.toShortString());
+                    //info("Entity [" + entity.getName().getString() + "] colliding with ForceTubeTileEntity at " + pos.toShortString());
 
-                    CollisionType collisionType = CollisionType.SOLID;
-                    HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
-                    if (selectors.size() > 0) {
-                        int max = Collections.max(selectors.keySet());
-                        int min = Collections.min(selectors.keySet());
+                    CollisionType collisionType = this.getCollisionType(entity, forceTubeTile);
 
-                        for (int i = min; i <= max; i++) {
-                            ArrayList<ForceModifierSelector> temp = selectors.get(i);
-                            if (temp == null || temp.isEmpty()) {
-                                continue;
-                            }
-                            for (ForceModifierSelector sel : temp) {
-                                if (sel.validForEntity(entity)) {
-                                    ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
-                                    if (registered != null) {
-                                        CollisionType test = registered.getAction().collisionType();
-                                        if (test != CollisionType.INHERIT) {
-                                            collisionType = test;
-                                        }
-                                    }
-                                }
-                            }
+                    this.runOnCollide(entity, forceTubeTile, collisionType, ForceInteractionType.NEARBY);
+
+                    boolean isColliding = false;
+                    boolean isVeryNearby = false;
+
+                    List<AxisAlignedBB> boxes = shape.move(pos.getX(), pos.getY(), pos.getZ()).toAabbs();
+
+                    AxisAlignedBB entityBox = entity.getBoundingBox();
+
+                    for (AxisAlignedBB box : boxes) {
+                        AxisAlignedBB box2 = box.inflate(0.01);
+                        AxisAlignedBB box3 = box.inflate(0.5);
+                        if (entityBox.intersects(box2)) {
+                            isColliding = true;
                         }
-                        if (collisionType == CollisionType.SOLID) {
-                            return shape;
-                        } else if (collisionType == CollisionType.EMPTY) {
-                            return empty;
-                        } else {
-                            LOGGER.error("CollisionType of: " + collisionType.name() + ". Not sure how this happened, but it shouldn't have.");
+                        if (entityBox.intersects(box3)) {
+                            isVeryNearby = true;
                         }
+                        if (isColliding&&isVeryNearby) {
+                            break;
+                        }
+                    }
+
+                    if (isColliding) {
+                        this.runOnCollide(entity, forceTubeTile, collisionType, ForceInteractionType.COLLIDE);
+                    }
+
+                    if (isVeryNearby) {
+                        this.runOnCollide(entity, forceTubeTile, collisionType, ForceInteractionType.VERY_CLOSE);
+                    }
+
+                    if (collisionType == CollisionType.SOLID) {
+                        return shape;
+                    } else if (collisionType == CollisionType.EMPTY) {
+                        return empty;
+                    } else {
+                        LOGGER.error("CollisionType of: " + collisionType.name() + ". Not sure how this happened, but it shouldn't have.");
                     }
                 }
             }
         }
         return shape;
+    }
+
+    public CollisionType getCollisionType(Entity entity, ForceTubeTileEntity forceTubeTile) {
+        CollisionType collisionType = CollisionType.SOLID;
+        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        if (selectors.size() > 0) {
+            int max = Collections.max(selectors.keySet());
+            int min = Collections.min(selectors.keySet());
+
+            for (int i = min; i <= max; i++) {
+                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                if (temp == null || temp.isEmpty()) {
+                    continue;
+                }
+                for (ForceModifierSelector sel : temp) {
+                    if (sel.validForEntity(entity)) {
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        if (registered != null) {
+                            CollisionType test = registered.getAction().collisionType();
+                            if (test != CollisionType.INHERIT) {
+                                collisionType = test;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return collisionType;
+    }
+
+    public FallDamageType getFallDamageType(Entity entity, ForceTubeTileEntity forceTubeTile) {
+        FallDamageType damageType = FallDamageType.DAMAGE;
+        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        if (selectors.size() > 0) {
+            int max = Collections.max(selectors.keySet());
+            int min = Collections.min(selectors.keySet());
+
+            for (int i = min; i <= max; i++) {
+                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                if (temp == null || temp.isEmpty()) {
+                    continue;
+                }
+                for (ForceModifierSelector sel : temp) {
+                    if (sel.validForEntity(entity)) {
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        if (registered != null) {
+                            FallDamageType test = registered.getAction().fallDamageType();
+                            if (test != FallDamageType.INHERIT) {
+                                damageType = test;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return damageType;
+    }
+
+    public void runOnCollide(Entity entity, ForceTubeTileEntity forceTubeTile, CollisionType collisionType, ForceInteractionType interactionType) {
+        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        if (selectors.size() > 0) {
+            int max = Collections.max(selectors.keySet());
+            int min = Collections.min(selectors.keySet());
+
+            for (int i = max; i >= min; i--) {
+                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                if (temp == null || temp.isEmpty()) {
+                    continue;
+                }
+                for (ForceModifierSelector sel : temp) {
+                    if (sel.validForEntity(entity)) {
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        if (registered != null) {
+                            registered.getAction().onCollide(entity.level, forceTubeTile.getBlockPos(), entity, collisionType, interactionType);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
