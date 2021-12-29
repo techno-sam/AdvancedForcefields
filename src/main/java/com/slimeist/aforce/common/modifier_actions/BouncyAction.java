@@ -9,6 +9,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.SlimeBlock;
 import net.minecraft.block.SoundType;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
@@ -23,7 +24,7 @@ public class BouncyAction implements IForceModifierAction {
     }
 
     @Override
-    public void onCollide(IBlockReader blockReader, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType) {
+    public void onCollide(IBlockReader blockReader, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
         if (collisionType!=CollisionType.SOLID) {
             return;
         }

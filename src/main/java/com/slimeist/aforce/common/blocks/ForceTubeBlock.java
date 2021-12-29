@@ -528,7 +528,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
                     if (sel.validForEntity(entity)) {
                         ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
-                            registered.getAction().onCollide(entity.level, forceTubeTile.getBlockPos(), entity, collisionType, interactionType);
+                            registered.getAction().onCollide(entity.level, forceTubeTile.getBlockPos(), entity, collisionType, interactionType, sel.getTriggerStack());
                         }
                     }
                 }

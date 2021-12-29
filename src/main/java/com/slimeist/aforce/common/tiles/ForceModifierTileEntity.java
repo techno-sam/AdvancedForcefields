@@ -159,7 +159,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         if (this.sendActionsCountdown==0) {
             AdvancedForcefields.LOGGER.info("sendActionsCountdown is zero!");
             for (ForceModifierRegistry action : this.actions) {
-                ForceModifierSelector selector = new ForceModifierSelector(this.targetList, this.whitelist, this.targetAnimals, this.targetPlayers, this.targetNeutrals, action.getRegistryName().toString(), priority, this.getBlockPos());
+                ForceModifierSelector selector = new ForceModifierSelector(this.targetList, this.whitelist, this.targetAnimals, this.targetPlayers, this.targetNeutrals, action.getRegistryName().toString(), priority, this.getBlockPos(), this.upgradeZoneContents.getItem(0));
                 CompoundNBT message = selector.toNBT();
 
                 CompoundNBT data = new CompoundNBT();

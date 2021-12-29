@@ -1,5 +1,6 @@
 package com.slimeist.aforce.common.tiles.helpers;
 
+import com.mojang.datafixers.kinds.Const;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.core.util.TagUtil;
 import net.minecraft.entity.Entity;
@@ -8,12 +9,14 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.Constants;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,11 +47,14 @@ public class ForceModifierSelector {
     public static String TAG_ORIGIN_POSITION = "originPosition";
     protected BlockPos originPosition = null;
 
+    public static String TAG_TRIGGER_STACK = "triggerStack";
+    protected ItemStack triggerStack = ItemStack.EMPTY;
+
     public ForceModifierSelector(BlockPos originPosition) {
         this.originPosition = originPosition;
     }
 
-    public ForceModifierSelector(List<String> targetList, boolean whitelist, boolean targetAnimals, boolean targetPlayers, boolean targetNeutrals, String action, int priority, BlockPos originPosition) {
+    public ForceModifierSelector(List<String> targetList, boolean whitelist, boolean targetAnimals, boolean targetPlayers, boolean targetNeutrals, String action, int priority, BlockPos originPosition, ItemStack triggerStack) {
         this.targetList = targetList;
         this.whitelist = whitelist;
         this.targetAnimals = targetAnimals;
@@ -57,6 +63,7 @@ public class ForceModifierSelector {
         this.action = action;
         this.priority = priority;
         this.originPosition = originPosition;
+        this.triggerStack = triggerStack;
     }
 
     public static ForceModifierSelector fromNBT(CompoundNBT nbt) {
@@ -95,6 +102,10 @@ public class ForceModifierSelector {
             selector.setPriority(nbt.getInt(TAG_PRIORITY));
         }
 
+        if (nbt.contains(TAG_TRIGGER_STACK, Constants.NBT.TAG_COMPOUND)) {
+            selector.setTriggerStack(ItemStack.of(nbt.getCompound(TAG_TRIGGER_STACK)));
+        }
+
         return selector;
     }
 
@@ -117,6 +128,12 @@ public class ForceModifierSelector {
         nbt.putInt(TAG_PRIORITY, this.getPriority());
 
         nbt.put(TAG_ORIGIN_POSITION, TagUtil.writePos(this.getOriginPosition()));
+
+        CompoundNBT itemNBT = new CompoundNBT();
+
+        this.getTriggerStack().save(itemNBT);
+
+        nbt.put(TAG_TRIGGER_STACK, itemNBT);
 
         return nbt;
     }
@@ -185,6 +202,14 @@ public class ForceModifierSelector {
         this.originPosition = originPosition;
     }
 
+    public ItemStack getTriggerStack() {
+        return triggerStack;
+    }
+
+    public void setTriggerStack(ItemStack triggerStack) {
+        this.triggerStack = triggerStack;
+    }
+
     public static void info(String msg) {
         //AdvancedForcefields.LOGGER.info(msg);
     }
@@ -206,9 +231,9 @@ public class ForceModifierSelector {
     }
 
     //the following method, validForEntity is from ImmersiveEngineering turret validation check, credit to BluSunrize
-    public boolean validForEntity(Entity entity) {
+    public boolean validForEntity(@Nonnull Entity entity) {
         info("Checking for entity: "+entity.getName().getString());
-        if (entity==null || entity.level==null) {
+        if (entity.level == null) {
             info("Entity does not exist or it has no level");
             return false;
         }
