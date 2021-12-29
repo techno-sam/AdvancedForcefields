@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 
 public class BouncyAction implements IForceModifierAction {
 
@@ -24,7 +25,7 @@ public class BouncyAction implements IForceModifierAction {
     }
 
     @Override
-    public void onCollide(IBlockReader blockReader, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+    public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
         if (collisionType!=CollisionType.SOLID) {
             return;
         }
@@ -44,7 +45,7 @@ public class BouncyAction implements IForceModifierAction {
                 SoundType soundType = SoundType.SLIME_BLOCK;
                 collider.playSound(soundType.getFallSound(), (float) (soundType.getVolume() * 0.5F * Math.min(1.0d, Math.abs(collider.getDeltaMovement().y) * 2.0d)), soundType.getPitch() * 0.75F);
             }
-            ((SlimeBlock) Blocks.SLIME_BLOCK).updateEntityAfterFallOn(blockReader, collider);
+            ((SlimeBlock) Blocks.SLIME_BLOCK).updateEntityAfterFallOn(world, collider);
         }
     }
 

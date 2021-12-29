@@ -19,6 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class LingeringPotionAction implements IForceModifierAction {
     public LingeringPotionAction() {}
 
     @Override
-    public void onCollide(IBlockReader blockReader, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+    public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
         if (interactionType == ForceInteractionType.NEARBY && triggerStack.getItem() instanceof LingeringPotionItem && collider instanceof LivingEntity) {
             List<EffectInstance> effects = PotionUtils.getMobEffects(triggerStack);
 

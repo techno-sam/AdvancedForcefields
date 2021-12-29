@@ -5,6 +5,8 @@
     "minecraft:magma_block",
     "minecraft:lingering_potion",
     "minecraft:blaze_rod",
-    "minecraft:oak_trapdoor"
+    "minecraft:oak_trapdoor",
+    "minecraft:cobblestone",
+    "minecraft:shulker_shell"
   ]
 }
