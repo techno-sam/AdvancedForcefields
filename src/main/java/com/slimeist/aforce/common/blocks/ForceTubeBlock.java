@@ -8,6 +8,7 @@ import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
+import com.slimeist.aforce.core.enums.BurningType;
 import com.slimeist.aforce.core.enums.CollisionType;
 import com.slimeist.aforce.core.enums.FallDamageType;
 import com.slimeist.aforce.core.enums.ForceInteractionType;
@@ -388,12 +389,13 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
 
     @Override
     public void entityInside(BlockState state, World world, BlockPos pos, Entity entity) {
-        super.entityInside(state, world, pos, entity);
         TileEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
             this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.INSIDE);
         }
+
+        super.entityInside(state, world, pos, entity);
     }
 
     @Override
@@ -483,6 +485,34 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
             }
         }
         return collisionType;
+    }
+
+    public BurningType getBurningType(Entity entity, ForceTubeTileEntity forceTubeTile) {
+        BurningType burningType = BurningType.NO_BURN;
+        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        if (selectors.size() > 0) {
+            int max = Collections.max(selectors.keySet());
+            int min = Collections.min(selectors.keySet());
+
+            for (int i = min; i <= max; i++) {
+                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                if (temp == null || temp.isEmpty()) {
+                    continue;
+                }
+                for (ForceModifierSelector sel : temp) {
+                    if (sel.validForEntity(entity)) {
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        if (registered != null) {
+                            BurningType test = registered.getAction().burningType();
+                            if (test != BurningType.INHERIT) {
+                                burningType = test;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return burningType;
     }
 
     public FallDamageType getFallDamageType(Entity entity, ForceTubeTileEntity forceTubeTile) {

@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "aforce.refmap.json",
   "mixins": [
-    "MixinCreeperEntity"
+    "MixinCreeperEntity",
+    "MixinEntity"
   ],
   "minVersion": "0.8"
 }

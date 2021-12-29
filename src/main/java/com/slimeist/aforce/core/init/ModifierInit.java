@@ -13,6 +13,8 @@ public final class ModifierInit {
     public static ForceModifierRegistry PASS_THROUGH_ACTION;
     public static ForceModifierRegistry LINGERING_POTION_ACTION;
     public static ForceModifierRegistry SHULKER_LEVITATION_ACTION;
+    public static ForceModifierRegistry MAGMA_ACTION;
+    public static ForceModifierRegistry BLAZE_FIRE_ACTION;
 
     private ModifierInit() {}
 
@@ -22,6 +24,8 @@ public final class ModifierInit {
         PASS_THROUGH_ACTION = register("pass_through_action", new ForceModifierRegistry(Items.OAK_TRAPDOOR, new PassThroughAction()));
         LINGERING_POTION_ACTION = register("lingering_potion_action", new ForceModifierRegistry(Items.LINGERING_POTION, new LingeringPotionAction()));
         SHULKER_LEVITATION_ACTION = register("shulker_levitation_action", new ForceModifierRegistry(Items.SHULKER_SHELL, new ShulkerLevitationAction()));
+        MAGMA_ACTION = register("magma_action", new ForceModifierRegistry(Items.MAGMA_BLOCK, new MagmaAction()));
+        BLAZE_FIRE_ACTION = register("blaze_fire_action", new ForceModifierRegistry(Items.BLAZE_ROD, new BlazeFireAction(1.0f)));
     }
 
     private static <T extends ForceModifierRegistry> T register(String name, T modifier) {

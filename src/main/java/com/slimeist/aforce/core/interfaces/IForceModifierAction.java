@@ -1,5 +1,6 @@
 package com.slimeist.aforce.core.interfaces;
 
+import com.slimeist.aforce.core.enums.BurningType;
 import com.slimeist.aforce.core.enums.CollisionType;
 import com.slimeist.aforce.core.enums.FallDamageType;
 import com.slimeist.aforce.core.enums.ForceInteractionType;
@@ -20,5 +21,9 @@ public interface IForceModifierAction {
 
     default FallDamageType fallDamageType() {
         return FallDamageType.INHERIT;
+    }
+
+    default BurningType burningType() {
+        return BurningType.INHERIT;
     }
 }
