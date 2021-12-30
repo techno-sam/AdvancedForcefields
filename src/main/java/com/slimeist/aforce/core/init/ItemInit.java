@@ -27,13 +27,13 @@ public final class ItemInit {
 
         //BlockItems
         FORCE_TUBE = register("force_tube", new BlockItem(BlockInit.FORCE_TUBE, new Item.Properties()
-                .tab(ItemGroup.TAB_MISC)
+                .tab(CreativeTabInit.FORCE_NETWORK)
         ));
         FORCE_CONTROLLER = register("force_controller", new BlockItem(BlockInit.FORCE_CONTROLLER, new Item.Properties()
-                .tab(ItemGroup.TAB_MISC)
+                .tab(CreativeTabInit.FORCE_NETWORK)
         ));
         FORCE_MODIFIER = register("force_modifier", new BlockItem(BlockInit.FORCE_MODIFIER, new Item.Properties()
-                .tab(ItemGroup.TAB_MISC)
+                .tab(CreativeTabInit.FORCE_NETWORK)
         ));
 
         //Shimmering Armor

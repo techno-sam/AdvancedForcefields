@@ -19,5 +19,7 @@
   "gui.aforce.modifier.animals": "Animals",
   "gui.aforce.modifier.players": "Players",
   "gui.aforce.modifier.neutrals": "Neutrals",
-  "gui.aforce.modifier.priority": "%d Priority"
+  "gui.aforce.modifier.priority": "%d Priority",
+
+  "itemGroup.force_network": "Advanced Forcefields"
 }
