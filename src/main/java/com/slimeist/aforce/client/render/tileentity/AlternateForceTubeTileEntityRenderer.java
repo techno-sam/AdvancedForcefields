@@ -8,6 +8,7 @@ import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ColorUtil;
+import com.slimeist.aforce.core.util.MiscUtil;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.AtlasTexture;
@@ -28,6 +29,9 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
 
     public static final ResourceLocation SHIMMER_LOCATION = AdvancedForcefields.getId("entity/force_field_shimmer");
     public static final RenderMaterial SHIMMER_MATERIAL = new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, SHIMMER_LOCATION);
+
+    public static final ResourceLocation OUTLINE_LOCATION = AdvancedForcefields.getId("entity/force_field_outline");
+    public static final RenderMaterial OUTLINE_MATERIAL = new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, OUTLINE_LOCATION);
 
     public AlternateForceTubeTileEntityRenderer(TileEntityRendererDispatcher dispatch) {
         super(dispatch);
@@ -64,22 +68,25 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
         float y2 = (float) (0.5f * scale);
         float z2 = (float) (0.5f * scale);
 
-        float u1 = 0.0f;
-        float v1 = 0.0f;
+        float u1 = SHIMMER_MATERIAL.sprite().getU0();
+        float v1 = SHIMMER_MATERIAL.sprite().getV0();
 
-        float u2 = 1.0f;
-        float v2 = 1.0f;
+        float u2 = SHIMMER_MATERIAL.sprite().getU1();
+        float v2 = SHIMMER_MATERIAL.sprite().getV1();
 
-        u1 = SHIMMER_MATERIAL.sprite().getU0();
-        v1 = SHIMMER_MATERIAL.sprite().getV0();
+        float ou1 = OUTLINE_MATERIAL.sprite().getU0();
+        float ov1 = OUTLINE_MATERIAL.sprite().getV0();
 
-        u2 = SHIMMER_MATERIAL.sprite().getU1();
-        v2 = SHIMMER_MATERIAL.sprite().getV1();
+        float ou2 = OUTLINE_MATERIAL.sprite().getU1();
+        float ov2 = OUTLINE_MATERIAL.sprite().getV1();
 
         if (te.getDistance()>0) {
             matrix.pushPose();
             matrix.translate(0.5, 0.5, 0.5);
             renderCube(te, matrix, SHIMMER_MATERIAL.buffer(rtbuffer, RenderTypes::simpleForceField), red, green, blue, alpha, x1, y1, z1, x2, y2, z2, u1, v1, u2, v2);
+            if (ClientUtils.mc().player!=null && MiscUtil.isPlayerWearingShimmeringHelmet(ClientUtils.mc().player)) {
+                renderCube(te, matrix, OUTLINE_MATERIAL.buffer(rtbuffer, RenderTypes::simpleForceField), red, green, blue, Math.max(alpha, 0.2f), -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, ou1, ov1, ou2, ov2);
+            }
             matrix.popPose();
         }
     }

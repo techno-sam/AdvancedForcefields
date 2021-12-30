@@ -24,6 +24,7 @@ public class StartupClient {
     public static void loadExtraTextures(final TextureStitchEvent.Pre event) {
         if (event.getMap().location().equals(PlayerContainer.BLOCK_ATLAS)) {
             event.addSprite(AlternateForceTubeTileEntityRenderer.SHIMMER_LOCATION);
+            event.addSprite(AlternateForceTubeTileEntityRenderer.OUTLINE_LOCATION);
         }
     }
 }

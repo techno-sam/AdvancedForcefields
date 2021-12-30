@@ -26,4 +26,8 @@ public class MiscUtil {
                 player.getItemBySlot(EquipmentSlotType.LEGS).getItem().is(AdvancedForcefieldsTags.Items.SHIMMERING_LEGGINGS)&&
                 player.getItemBySlot(EquipmentSlotType.FEET).getItem().is(AdvancedForcefieldsTags.Items.SHIMMERING_BOOTS);
     }
+
+    public static boolean isPlayerWearingShimmeringHelmet(PlayerEntity player) {
+        return player.getItemBySlot(EquipmentSlotType.HEAD).getItem().is(AdvancedForcefieldsTags.Items.SHIMMERING_HELMET);
+    }
 }
