@@ -40,6 +40,8 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
@@ -331,10 +333,20 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return hasCloser ? d : -1;
     }
 
-    /*@Override
+    @Override
     public VoxelShape getVisualShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
         return VoxelShapes.empty();
-    }*/
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState p_200123_1_, IBlockReader p_200123_2_, BlockPos p_200123_3_) {
+        return true;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public float getShadeBrightness(BlockState p_220080_1_, IBlockReader p_220080_2_, BlockPos p_220080_3_) {
+        return 1.0F;
+    }
 
     public static void info(String msg) {
         AdvancedForcefields.LOGGER.info(msg);

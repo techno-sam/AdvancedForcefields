@@ -7,7 +7,9 @@ import com.slimeist.aforce.common.blocks.ForceTubeBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.EntityType;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -38,13 +40,16 @@ public final class BlockInit {
             .dynamicShape()
             .strength(1.0f)
             .noOcclusion()
+            .sound(SoundType.GLASS)
             .isViewBlocking(BlockInit::never)
+            .isValidSpawn(BlockInit::never)
+            .isRedstoneConductor(BlockInit::never)
+            .isSuffocating(BlockInit::never)
             //.noCollission()
             //.speedFactor(0.2F)
             .harvestTool(ToolType.PICKAXE)
             .requiresCorrectToolForDrops()
             .lightLevel(enabledBlockEmission(3))
-            //.hasPostProcess(BlockInit::always)
             .emissiveRendering(BlockInit::always)
             .randomTicks()
     ));
@@ -59,6 +64,7 @@ public final class BlockInit {
             .strength(3.5F)
             .requiresCorrectToolForDrops()
             .harvestTool(ToolType.PICKAXE)
+            .sound(SoundType.LODESTONE)
     ));
 
         //RenderLayerHandler.setRenderType(BASE_PIPE, RenderLayerHandler.RenderTypeSkeleton.CUTOUT_MIPPED);
@@ -78,6 +84,14 @@ public final class BlockInit {
 
     private static boolean never(BlockState p_235436_0_, IBlockReader p_235436_1_, BlockPos p_235436_2_) {
         return false;
+    }
+
+    private static boolean never(BlockState p_235427_0_, IBlockReader p_235427_1_, BlockPos p_235427_2_, EntityType<?> p_235427_3_) {
+        return false;
+    }
+
+    private static boolean always(BlockState p_235437_0_, IBlockReader p_235437_1_, BlockPos p_235437_2_, EntityType<?> p_235437_3_) {
+        return true;
     }
 
     private static ToIntFunction<BlockState> enabledBlockEmission(int p_235420_0_) {

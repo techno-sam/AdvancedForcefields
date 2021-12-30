@@ -84,7 +84,7 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
             matrix.pushPose();
             matrix.translate(0.5, 0.5, 0.5);
             renderCube(te, matrix, SHIMMER_MATERIAL.buffer(rtbuffer, RenderTypes::simpleForceField), red, green, blue, alpha, x1, y1, z1, x2, y2, z2, u1, v1, u2, v2);
-            if (ClientUtils.mc().player!=null && MiscUtil.isPlayerWearingShimmeringHelmet(ClientUtils.mc().player)) {
+            if (ClientUtils.mc().player!=null && MiscUtil.isPlayerWearingShimmeringHelmet(ClientUtils.mc().player) && ClientUtils.mc().player.isShiftKeyDown()) {
                 renderCube(te, matrix, OUTLINE_MATERIAL.buffer(rtbuffer, RenderTypes::simpleForceField), red, green, blue, Math.max(alpha, 0.2f), -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, ou1, ov1, ou2, ov2);
             }
             matrix.popPose();
