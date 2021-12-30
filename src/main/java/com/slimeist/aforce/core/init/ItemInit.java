@@ -19,6 +19,8 @@ public final class ItemInit {
     public static ArmorItem SHIMMERING_LEGGINGS;
     public static ArmorItem SHIMMERING_BOOTS;
 
+    public static Item SHIMMERING_CLOTH;
+
     private ItemInit() {}
 
     public static void registerAll(RegistryEvent.Register<Item> event) {
@@ -43,6 +45,9 @@ public final class ItemInit {
                 (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
         SHIMMERING_BOOTS = register("shimmering_boots", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.FEET,
                 (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
+
+        //Misc items
+        SHIMMERING_CLOTH = register("shimmering_cloth", new Item(new Item.Properties().tab(ItemGroup.TAB_MISC)));
     }
 
     private static <T extends Item> T register(String name, T item) {

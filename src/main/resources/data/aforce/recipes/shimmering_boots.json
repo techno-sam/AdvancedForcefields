@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smithing",
+  "base": {
+    "item": "minecraft:golden_boots"
+  },
+  "addition": {
+    "item": "aforce:shimmering_cloth"
+  },
+  "result": {
+    "item": "aforce:shimmering_boots"
+  }
+}

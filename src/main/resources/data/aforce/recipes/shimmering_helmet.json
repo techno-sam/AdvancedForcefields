@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "XOX",
+    "S S"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:gold_ingot"
+    },
+    "O": {
+      "item": "minecraft:ender_eye"
+    },
+    "S": {
+      "item": "aforce:shimmering_cloth"
+    }
+  },
+  "result": {
+    "item": "aforce:shimmering_helmet"
+  }
+}

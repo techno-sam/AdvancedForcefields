@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "aforce:shimmering_leggings"
+    ]
+  },
+  "criteria": {
+    "has_shimmering_cloth": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "aforce:shimmering_cloth"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "aforce:shimmering_leggings"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_shimmering_cloth",
+      "has_the_recipe"
+    ]
+  ]
+}
