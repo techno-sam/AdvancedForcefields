@@ -37,6 +37,10 @@ public class AdvancedForcefieldsTags {
 
         public static final Tags.IOptionalNamedTag<Item> ENDER_FUEL = tag("ender_fuel");
         public static final Tags.IOptionalNamedTag<Item> MODIFIER_UPGRADE = tag("modifier_upgrade");
+        public static final Tags.IOptionalNamedTag<Item> SHIMMERING_HELMET = tag("shimmering_helmet");
+        public static final Tags.IOptionalNamedTag<Item> SHIMMERING_CHESTPLATE = tag("shimmering_chestplate");
+        public static final Tags.IOptionalNamedTag<Item> SHIMMERING_LEGGINGS = tag("shimmering_leggings");
+        public static final Tags.IOptionalNamedTag<Item> SHIMMERING_BOOTS = tag("shimmering_boots");
 
         private static Tags.IOptionalNamedTag<Item> tag(String name) {
             return ItemTags.createOptional(AdvancedForcefields.getId(name));
