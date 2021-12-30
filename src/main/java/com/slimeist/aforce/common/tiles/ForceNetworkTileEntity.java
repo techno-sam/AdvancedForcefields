@@ -5,6 +5,7 @@ import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
 import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
+import com.slimeist.aforce.core.init.BlockInit;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.TagUtil;
 import net.minecraft.block.BlockState;
@@ -28,18 +29,6 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     protected static final String TAG_PACKET_TYPE = "packetType"; //things such as 'DATA_SYNC', 'COLLISION_DETECTED'
 
     protected static final String TAG_PACKET_MESSAGE = "packetMessage"; //where the actual message goes in a packet
-
-    protected static final String TAG_BLOCKING_MODE = "blockingMode"; //can be 1:'NONE', 2:'ALL', 3:'PLAYERS', 4:'MOBS'
-
-    protected int blockingMode = 1;
-
-    protected void setBlockingMode(int blockingMode) {
-        this.blockingMode = blockingMode;
-    }
-
-    protected int getBlockingMode() {
-        return this.blockingMode;
-    }
 
     protected static final String TAG_COLOR = "color"; //int representing packed rgba color
 
@@ -333,6 +322,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         } else if (packet.data.getString(TAG_PACKET_TYPE).equals("NETWORK_RELEASE")) {
             this.onNetworkBuild(null);
             this.setLocked(false);
+            this.reset();
             BlockPos pos = this.getBlockPos();
             World world = this.getLevel();
             BlockState state = world.getBlockState(pos);
@@ -340,6 +330,11 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                 world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, false), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.NO_RERENDER);
             }
         }
+    }
+
+    protected void reset() {
+        this.setColor(16711680);
+        this.clearActionSelectors();
     }
 
     public void handlePackets() {
@@ -497,7 +492,6 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     }
 
     public void loadShared(BlockState state, CompoundNBT nbt) {
-        this.setBlockingMode(nbt.getInt(TAG_BLOCKING_MODE));
         this.setColor(nbt.getInt(TAG_COLOR));
 
         ListNBT actionList = nbt.getList(TAG_ACTION_SELECTORS, Constants.NBT.TAG_COMPOUND);
@@ -509,7 +503,6 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     }
 
     public void writeSyncedShared(CompoundNBT nbt) {
-        nbt.putInt(TAG_BLOCKING_MODE, this.getBlockingMode());
         nbt.putInt(TAG_COLOR, this.getColor());
 
         ListNBT actionList = new ListNBT();

@@ -8,6 +8,11 @@
   "block.aforce.force_tube": "Force Tube",
   "block.aforce.force_modifier": "Force Modifier",
 
+  "item.aforce.shimmering_helmet": "Shimmering Helmet",
+  "item.aforce.shimmering_chestplate": "Shimmering Chestplate",
+  "item.aforce.shimmering_leggings": "Shimmering Leggings",
+  "item.aforce.shimmering_boots": "Shimmering Boots",
+
   "gui.aforce.modifier.add": "Add",
   "gui.aforce.modifier.blacklist": "Blacklist",
   "gui.aforce.modifier.animals": "Animals",

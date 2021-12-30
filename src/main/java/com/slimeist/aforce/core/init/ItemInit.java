@@ -1,11 +1,9 @@
 package com.slimeist.aforce.core.init;
 
 import com.slimeist.aforce.AdvancedForcefields;
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Foods;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
+import com.slimeist.aforce.common.items.ArmorMaterials;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -15,6 +13,11 @@ public final class ItemInit {
     public static BlockItem FORCE_TUBE;
     public static BlockItem FORCE_CONTROLLER;
     public static BlockItem FORCE_MODIFIER;
+
+    public static ArmorItem SHIMMERING_HELMET;
+    public static ArmorItem SHIMMERING_CHESTPLATE;
+    public static ArmorItem SHIMMERING_LEGGINGS;
+    public static ArmorItem SHIMMERING_BOOTS;
 
     private ItemInit() {}
 
@@ -31,10 +34,15 @@ public final class ItemInit {
                 .tab(ItemGroup.TAB_MISC)
         ));
 
-        /*BASE_PIPE = register("base_pipe", new BlockItem(BlockInit.BASE_PIPE, new Item.Properties()
-                .tab(ItemGroup.TAB_MISC)
-        ));*/
-        //initializeSpawnEggs();
+        //Shimmering Armor
+        SHIMMERING_HELMET = register("shimmering_helmet", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.HEAD,
+                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
+        SHIMMERING_CHESTPLATE = register("shimmering_chestplate", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.CHEST,
+                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
+        SHIMMERING_LEGGINGS = register("shimmering_leggings", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.LEGS,
+                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
+        SHIMMERING_BOOTS = register("shimmering_boots", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.FEET,
+                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
     }
 
     private static <T extends Item> T register(String name, T item) {
@@ -43,8 +51,4 @@ public final class ItemInit {
         ForgeRegistries.ITEMS.register(item);
         return item;
     }
-
-    //public static void initializeSpawnEggs() {
-    //    ModSpawnEggItem.initUnaddedEggs();
-    //}
 }
