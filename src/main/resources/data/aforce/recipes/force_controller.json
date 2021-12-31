@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "EEE",
+    "EOE",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "aforce:shimmering_cloth"
+    },
+    "O": {
+      "item": "minecraft:ender_eye"
+    },
+    "E": {
+      "item": "minecraft:end_stone"
+    }
+  },
+  "result": {
+    "item": "aforce:force_controller"
+  }
+}

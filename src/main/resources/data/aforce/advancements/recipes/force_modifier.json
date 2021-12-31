@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "aforce:force_modifier"
+    ]
+  },
+  "criteria": {
+    "has_force_controller": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "aforce:force_controller"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "aforce:force_modifier"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_force_controller",
+      "has_the_recipe"
+    ]
+  ]
+}

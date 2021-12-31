@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    ".F.",
+    "TCT"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "F": {
+      "item": "aforce:force_controller"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    ".": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "item": "aforce:force_modifier"
+  }
+}
