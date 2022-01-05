@@ -276,7 +276,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         }
     }
 
-    private void updateDistance(World world, BlockPos pos, BlockState state) {
+    public void updateDistance(World world, BlockPos pos, BlockState state) {
         int targetDistance = this.calculateTargetDistance(world, pos);
         if (this.getDistance(world, pos) != targetDistance) {
             //LOGGER.warn("Distance is: "+this.getDistance(world, pos)+", target is: "+targetDistance);
@@ -377,6 +377,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
             ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
             this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.LAND_ON);
         }
+        super.updateEntityAfterFallOn(world, entity);
     }
 
     @Override

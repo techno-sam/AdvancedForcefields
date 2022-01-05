@@ -20,6 +20,7 @@ public class MagmaAction implements IForceModifierAction {
 
     @Override
     public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+        if (!this.canApplyToEntity(collider)) {return;}
         if ((interactionType == ForceInteractionType.STEP_ON || interactionType == ForceInteractionType.INSIDE)&& collider instanceof LivingEntity) {
             LivingEntity livingCollider = (LivingEntity) collider;
 

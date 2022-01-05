@@ -23,6 +23,7 @@ public class BlazeFireAction implements IForceModifierAction {
 
     @Override
     public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+        if (!this.canApplyToEntity(collider)) {return;}
         if (interactionType == ForceInteractionType.VERY_CLOSE) {
             if (!collider.fireImmune()) {
                 collider.setRemainingFireTicks(collider.getRemainingFireTicks() + 2);

@@ -4,6 +4,7 @@ package com.slimeist.aforce.common.tiles;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.StartupCommon;
+import com.slimeist.aforce.common.blocks.ForceModifierBlock;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
 import com.slimeist.aforce.common.containers.force_controller.ContainerForceController;
 import com.slimeist.aforce.common.containers.force_controller.ForceControllerStateData;
@@ -366,8 +367,12 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     public boolean validComponent(BlockState state, IBlockReader world, BlockPos pos) {
         boolean ok = state.is(AdvancedForcefieldsTags.Blocks.FORCE_COMPONENT_NO_CONTROLLER);
         //AdvancedForcefields.LOGGER.info("Checking if ["+state.getBlock().toString()+"] is a valid component, and the answer is: "+ok);
+        TileEntity tile = world.getBlockEntity(pos);
         if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
             ok = ok && !state.getValue(ForceTubeBlock.ENABLED);
+        }
+        if (tile instanceof ForceNetworkTileEntity) {
+            ok = ok && !((ForceNetworkTileEntity) tile).isLocked();
         }
         return ok;
     }
@@ -397,7 +402,19 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                 }
             }
         }
+        this.setDistance(0);
         for (BlockPos pos : blocks) {
+            if (this.getLevel()!=null) {
+                BlockState state = this.getLevel().getBlockState(pos);
+                if (state.getBlock() instanceof ForceTubeBlock) {
+                    ((ForceTubeBlock) state.getBlock()).updateDistance(this.getLevel(), pos, state);
+                }
+                if (state.getBlock() instanceof ForceModifierBlock) {
+                    ((ForceModifierBlock) state.getBlock()).updateDistance(this.getLevel(), pos, state);
+                }
+            }
+        }
+        /*for (BlockPos pos : blocks) {
             if (this.getLevel()!=null) {
                 TileEntity tile = this.getLevel().getBlockEntity(pos);
                 if (tile instanceof ForceNetworkTileEntity) {
@@ -407,7 +424,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                     }
                 }
             }
-        }
+        }*/
         this.updateStainedGlass();
         this.markDirtyFast();
         this.markAsDirty();

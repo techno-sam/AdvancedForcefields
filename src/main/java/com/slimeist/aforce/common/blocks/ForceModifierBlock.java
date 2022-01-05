@@ -182,7 +182,7 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         }
     }
 
-    private void updateDistance(World world, BlockPos pos, BlockState state) {
+    public void updateDistance(World world, BlockPos pos, BlockState state) {
         int targetDistance = this.calculateTargetDistance(world, pos);
         if (this.getDistance(world, pos) != targetDistance) {
             //LOGGER.warn("Distance is: "+this.getDistance(world, pos)+", target is: "+targetDistance);

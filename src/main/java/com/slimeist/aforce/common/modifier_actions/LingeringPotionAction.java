@@ -29,6 +29,7 @@ public class LingeringPotionAction implements IForceModifierAction {
 
     @Override
     public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+        if (!this.canApplyToEntity(collider)) {return;}
         if (interactionType == ForceInteractionType.NEARBY && triggerStack.getItem() instanceof LingeringPotionItem && collider instanceof LivingEntity) {
             List<EffectInstance> effects = PotionUtils.getMobEffects(triggerStack);
 

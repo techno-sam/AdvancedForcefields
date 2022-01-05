@@ -22,6 +22,7 @@ public class AdvancedForcefieldsTags {
         public static final Tags.IOptionalNamedTag<Block> FORCE_COMPONENT_NO_CONTROLLER = tag("force_component_no_controller");
         public static final Tags.IOptionalNamedTag<Block> FORCE_TUBE = tag("force_tube");
         public static final Tags.IOptionalNamedTag<Block> FORCE_MODIFIER = tag("force_modifier");
+        public static final Tags.IOptionalNamedTag<Block> FORCE_CONTROLLER = tag("force_controller");
 
         private static Tags.IOptionalNamedTag<Block> tag(String name) {
             return BlockTags.createOptional(AdvancedForcefields.getId(name));

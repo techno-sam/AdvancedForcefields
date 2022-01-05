@@ -433,11 +433,29 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         AdvancedForcefields.LOGGER.info(msg);
     }
 
+    protected boolean sharesMasterPos(BlockPos otherPos) {
+        BlockPos myPos = this.getBlockPos();
+        if (this.getLevel()==null)
+            return false;
+        TileEntity tile = this.getLevel().getBlockEntity(otherPos);
+        if (tile instanceof ForceNetworkTileEntity) {
+            ForceNetworkTileEntity networkTile = (ForceNetworkTileEntity) tile;
+            if (this.hasMasterPos()==networkTile.hasMasterPos()) {
+                if (this.hasMasterPos() && networkTile.hasMasterPos()) {
+                    return this.getMasterPos().equals(networkTile.getMasterPos());
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected boolean canConnect(BlockPos otherPos, boolean recursed) {
         boolean isOk = false;
         BlockPos myPos = this.getBlockPos();
         Direction direction = Direction.fromNormal(myPos.getX()-otherPos.getX(), myPos.getY()-otherPos.getY(), myPos.getZ()-otherPos.getZ());
         World world = this.getLevel();
+        String reason = "NONE";
         if (world!=null) {
             BlockState otherBlock = world.getBlockState(otherPos);
             if (otherBlock.is(AdvancedForcefieldsTags.Blocks.FORCE_COMPONENT)) {
@@ -445,20 +463,38 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                     isOk = true;
                 } else {
                     isOk = this.isConnected(direction);
+                    if (!isOk)
+                        reason = "Not connected to the "+direction.getName();
                     //info("["+this.getBlockPos()+"]->["+otherPos+"] isOk1: "+isOk);
                 }
                 TileEntity otherTile = world.getBlockEntity(otherPos);
                 if (otherTile instanceof ForceNetworkTileEntity && !recursed) {
+                    boolean changeReason = isOk;
                     isOk = isOk && ((ForceNetworkTileEntity) otherTile).canConnect(myPos, true);
+                    if (changeReason&&!isOk)
+                        reason += ", recursive connection check failed";
                     //info("["+this.getBlockPos()+"]->["+otherPos+"] isOk2: "+isOk);
+                    changeReason = isOk;
                     isOk = isOk && this.hasMasterPos() == ((ForceNetworkTileEntity) otherTile).hasMasterPos();
+                    if (changeReason&&!isOk)
+                        reason += ", hasMasterPos state differs";
                     //info("["+this.getBlockPos()+"]->["+otherPos+"] isOk3: "+isOk);
                     if (this.hasMasterPos() && ((ForceNetworkTileEntity) otherTile).hasMasterPos()) {
+                        changeReason = isOk;
                         isOk = isOk && this.getMasterPos().equals(((ForceNetworkTileEntity) otherTile).getMasterPos());
+                        if (changeReason&&!isOk)
+                            reason += ", masterPos differs";
                         //info("["+this.getBlockPos()+"]->["+otherPos+"] isOk4 "+isOk);
                     }
                 }
+            } else {
+                reason += ", non-force component adjacent";
             }
+        } else {
+            reason += ", no level!";
+        }
+        if (!recursed && isOk != sharesMasterPos(otherPos)) {
+            info("DISAGREEMENT: canConnect returning: "+isOk+", and simple masterPos check returns: "+sharesMasterPos(otherPos)+", for block at "+this.getBlockPos().toShortString()+", connecting to "+otherPos.toShortString()+", giving reason: "+reason);
         }
         this.setConnected(direction, isOk);
         return isOk;

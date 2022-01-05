@@ -23,6 +23,7 @@ public class ShulkerLevitationAction implements IForceModifierAction {
 
     @Override
     public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+        if (!this.canApplyToEntity(collider)) {return;}
         if (interactionType == ForceInteractionType.NEARBY && collider instanceof LivingEntity && !world.isClientSide) {
             LivingEntity livingCollider = (LivingEntity) collider;
 

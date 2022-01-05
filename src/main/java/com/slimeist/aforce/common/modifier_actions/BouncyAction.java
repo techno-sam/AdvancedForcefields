@@ -26,6 +26,7 @@ public class BouncyAction implements IForceModifierAction {
 
     @Override
     public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+        if (!this.canApplyToEntity(collider)) {return;}
         if (collisionType!=CollisionType.SOLID) {
             return;
         }
