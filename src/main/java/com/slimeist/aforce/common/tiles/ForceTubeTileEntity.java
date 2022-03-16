@@ -29,7 +29,7 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
         CompoundNBT data = new CompoundNBT();
         data.putString(TAG_PACKET_TYPE, "NETWORK_RELEASE");
         data.put(TAG_PACKET_MESSAGE, new CompoundNBT());
-        ForceNetworkPacket release_packet = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, true);
+        ForceNetworkPacket release_packet = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, this.getBlockPos(), true);
         this.onReceiveToServantsPacket(this.getBlockPos(), this.getDistance(), release_packet);
     }
 }

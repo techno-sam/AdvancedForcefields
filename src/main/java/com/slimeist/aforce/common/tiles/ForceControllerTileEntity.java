@@ -173,7 +173,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
 
         int packedColor = ColorUtil.packRGBA(red, green, blue, alpha);
         this.setColor(packedColor);
-        this.markAsDirty();
+        this.markAsDirty(); //only color needs syncing
         this.markDirtyFast();
     }
 
@@ -329,7 +329,15 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         data.putString(TAG_PACKET_TYPE, "DATA_SYNC");
         data.put(TAG_PACKET_MESSAGE, shareddata);
 
-        this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data));
+        ForceNetworkPacket dataSyncPacket = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, this.getBlockPos());
+
+        if (this.getLevel() != null) {
+            if (!this.getLevel().isClientSide()) {
+                dataSyncPacket.setCreatedGameTime(this.getLevel().getGameTime());
+            }
+        }
+
+        this.addPacket(dataSyncPacket);
         this.markAsClean();
     }
 
@@ -341,15 +349,16 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         if (this.getLevel()!=null) {
             if (packet.data.getString(TAG_PACKET_TYPE).equals("DATA_SYNC")) {
                 this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
-                this.markAsDirty();
+                this.markAsDirty(); //everything needs syncing
+                AdvancedForcefields.LOGGER.warn("ForceControllerTileEntity received DATA_SYNC packet, this should not happen in current implementation.");
             } else if (packet.data.getString(TAG_PACKET_TYPE).equals("CLEAR_ACTIONS")) {
                 this.clearActionSelectors(TagUtil.readPos(packet.data.getCompound(TAG_PACKET_MESSAGE)));
-                this.markAsDirty();
+                this.markAsDirty(); //everything needs syncing
                 this.markDirtyFast();
             } else if (packet.data.getString(TAG_PACKET_TYPE).equals("ADD_ACTION")) {
                 this.addActionSelector(ForceModifierSelector.fromNBT(packet.data.getCompound(TAG_PACKET_MESSAGE)));
                 AdvancedForcefields.LOGGER.info("Loading add_action, and marking as dirty");
-                this.markAsDirty();
+                this.markAsDirty(); //everything needs syncing
                 this.markDirtyFast();
             }
         }
@@ -427,7 +436,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         }*/
         this.updateStainedGlass();
         this.markDirtyFast();
-        this.markAsDirty();
+        this.markAsDirty(); //everything needs syncing
         this.setChanged();
     }
 
@@ -436,7 +445,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         data.putString(TAG_PACKET_TYPE, "NETWORK_RELEASE");
         data.put(TAG_PACKET_MESSAGE, new CompoundNBT());
 
-        this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, true));
+        this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, this.getBlockPos(), true));
         this.handlePackets();
         this.onNetworkBuild(null);
         this.setDistance(-1);

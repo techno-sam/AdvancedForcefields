@@ -71,7 +71,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         CompoundNBT data = new CompoundNBT();
         data.putString(TAG_PACKET_TYPE, "NETWORK_RELEASE");
         data.put(TAG_PACKET_MESSAGE, new CompoundNBT());
-        ForceNetworkPacket release_packet = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, true);
+        ForceNetworkPacket release_packet = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, this.getBlockPos(), true);
         this.onReceiveToServantsPacket(this.getBlockPos(), this.getDistance(), release_packet);
     }
 
@@ -166,7 +166,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
                 data.putString(TAG_PACKET_TYPE, "ADD_ACTION");
                 data.put(TAG_PACKET_MESSAGE, message);
 
-                this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data));
+                this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data, this.getBlockPos()));
                 AdvancedForcefields.LOGGER.info("Sent ADD_ACTION packet with action of: "+action.getRegistryName().toString());
             }
         }
@@ -198,10 +198,10 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         data.putString(TAG_PACKET_TYPE, "CLEAR_ACTIONS");
         data.put(TAG_PACKET_MESSAGE, TagUtil.writePos(this.getBlockPos()));
 
-        this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data));
+        this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data, this.getBlockPos()));
         this.sendActionsCountdown = 5;
 
-        this.markAsDirty();
+        //this.markAsDirty(); //unnecessary, no shared data changed
         this.markDirtyFast();
     }
 
