@@ -4,13 +4,24 @@ import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.ArrayList;
 
 public class ForceTubeTileEntity extends ForceNetworkTileEntity {
 
     protected boolean shouldSignal = true;
+    protected long lastToMasterPacketGT = 0; //we don't need a toServant variable, because FNTE does that already
+
+    protected ArrayList<BlockPos> closerNodes = new ArrayList<>();
+    protected ArrayList<BlockPos> fartherNodes = new ArrayList<>();
+    protected boolean nodesNeedUpdating = false;
 
     public ForceTubeTileEntity() {
         super(TileEntityTypeInit.FORCE_TUBE_TYPE);
+        this.updateNodeLists();
     }
 
     public int getComparatorOutput() {
@@ -23,6 +34,50 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
 
     public void setSignalling(boolean shouldSignal) {
         this.shouldSignal = shouldSignal;
+    }
+
+    @Override
+    public void setDistance(int distance) {
+        super.setDistance(distance);
+        this.nodesNeedUpdating = true;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.nodesNeedUpdating) {
+            this.updateNodeLists();
+        }
+    }
+
+    protected void updateNodeLists() {
+        this.closerNodes.clear();
+        this.fartherNodes.clear();
+        if (this.getLevel() != null && this.getLevel().isClientSide()) {
+            BlockPos myPos = this.getBlockPos();
+            for (Direction dir : Direction.values()) {
+                if (this.isConnected(dir)) {
+                    TileEntity te = this.getLevel().getBlockEntity(myPos.relative(dir));
+                    if (te instanceof ForceNetworkTileEntity) {
+                        ForceNetworkTileEntity otherFNTE = (ForceNetworkTileEntity) te;
+                        if (otherFNTE.getDistance()<this.getDistance()) {
+                            this.closerNodes.add(myPos.relative(dir));
+                        } else if (otherFNTE.getDistance()>this.getDistance()) {
+                            this.fartherNodes.add(myPos.relative(dir));
+                        }
+                    }
+                }
+            }
+        }
+        this.nodesNeedUpdating = false;
+    }
+
+    @Override
+    public void onReceiveToMasterPacket(BlockPos myPos, int myDist, ForceNetworkPacket packet) {
+        if (this.getLevel()!=null) {
+            this.lastToMasterPacketGT = this.getLevel().getGameTime();
+        }
+        super.onReceiveToMasterPacket(myPos, myDist, packet);
     }
 
     public void networkDisconnect() {

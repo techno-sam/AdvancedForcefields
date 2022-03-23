@@ -318,7 +318,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     @Override
     public void onNetworkBuild(BlockPos masterPos) {
         super.onNetworkBuild(masterPos);
-        this.distance = 0;
+        this.setDistance(0);
     }
 
     @Override

@@ -569,4 +569,16 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
             }
         }
     }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void animateTick(BlockState blockState, World world, BlockPos pos, Random rand) {
+        super.animateTick(blockState, world, pos, rand);
+        TileEntity te = world.getBlockEntity(pos);
+        if (te instanceof ForceTubeTileEntity) {
+            ForceTubeTileEntity ftte = (ForceTubeTileEntity) te;
+            //if received to servant or to master particle, spawn particles in respective direction, see below
+            //spawn DUST particles going from lower blocks to me, and from me to higher blocks (edges of this block to center, and vice versa)
+        }
+    }
 }

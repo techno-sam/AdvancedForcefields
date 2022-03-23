@@ -5,12 +5,9 @@ import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
 import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
-import com.slimeist.aforce.core.init.BlockInit;
-import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.TagUtil;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
@@ -172,22 +169,22 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         return this.isLocked;
     }
 
-    protected static final String TAG_LATEST_PACKET_GAME_TIME = "latestPacketGT"; //gametime of latest packet received, master always sends full shared data in DATA_SYNC, so this solves double packet issues
+    protected static final String TAG_LATEST_TO_SERVANT_PACKET_GAME_TIME = "latestToServantPacketGT"; //gametime of latest packet received, master always sends full shared data in DATA_SYNC, so this solves double packet issues
 
-    protected long latest_packet_game_time = 0;
+    protected long latest_to_servant_packet_game_time = 0;
 
-    protected void setLatestPacketGameTime(long gameTime) {
-        if (gameTime > this.latest_packet_game_time) {
-            this.latest_packet_game_time = gameTime;
+    protected void setLatestToServantPacketGameTime(long gameTime) {
+        if (gameTime > this.latest_to_servant_packet_game_time) {
+            this.latest_to_servant_packet_game_time = gameTime;
         }
     }
 
-    protected void resetLatestPacketGameTime() {
-        this.latest_packet_game_time = 0;
+    protected void resetLatestToServantPacketGameTime() {
+        this.latest_to_servant_packet_game_time = 0;
     }
 
-    protected long getLatestPacketGameTime() {
-        return this.latest_packet_game_time;
+    protected long getLatestToServantPacketGameTime() {
+        return this.latest_to_servant_packet_game_time;
     }
 
     protected HashMap<Integer, ArrayList<ForceModifierSelector>> sortedActionSelectors = new HashMap<>();
@@ -336,14 +333,14 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
 
     public void onReceiveToServantsPacket(BlockPos myPos, int myDist, ForceNetworkPacket packet) {
         if (this.getLevel()!=null && packet.data.getString(TAG_PACKET_TYPE).equals("DATA_SYNC")) {
-            if (packet.createdGameTime > this.getLatestPacketGameTime()) {
+            if (packet.createdGameTime > this.getLatestToServantPacketGameTime()) {
                 BlockPos acceptingBlockPos = null;
                 for (Direction dir : Direction.values()) {
                     BlockPos testPos = this.getBlockPos().relative(dir);
                     TileEntity te = this.getLevel().getBlockEntity(testPos);
                     if (te instanceof ForceNetworkTileEntity) {
                         ForceNetworkTileEntity fnte = (ForceNetworkTileEntity) te;
-                        if (fnte.getDistance()<this.getDistance()) {
+                        if (fnte.getDistance()<this.getDistance() && this.sharesMasterPos(testPos)) {
                             acceptingBlockPos = testPos;
                             break;
                         }
@@ -353,10 +350,10 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                 if (acceptingBlockPos==null || acceptingBlockPos.equals(packet.originPos)) {
                     this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
                     this.markDirtyFast();
-                    this.setLatestPacketGameTime(packet.createdGameTime);
+                    this.setLatestToServantPacketGameTime(packet.createdGameTime);
                 }
             } else {
-                AdvancedForcefields.LOGGER.info("ForceNetworkTileEntity discarding late packet, latest time: "+this.getLatestPacketGameTime()+", packet time: "+packet.createdGameTime);
+                AdvancedForcefields.LOGGER.info("ForceNetworkTileEntity discarding late packet, latest time: "+this.getLatestToServantPacketGameTime()+", packet time: "+packet.createdGameTime);
             }
         } else if (packet.data.getString(TAG_PACKET_TYPE).equals("NETWORK_RELEASE")) {
             this.onNetworkBuild(null);
@@ -374,7 +371,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     protected void reset() {
         this.setColor(16711680);
         this.clearActionSelectors();
-        this.resetLatestPacketGameTime();
+        this.resetLatestToServantPacketGameTime();
     }
 
     public void handlePackets() {
@@ -450,7 +447,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     }
 
     public void onNetworkBuild(BlockPos masterPos) {
-        this.distance = -1;
+        this.setDistance(-1);
         //this.connections = new byte[] {1, 1, 1, 1, 1, 1};
         this.masterPos = masterPos;
         this.packetList = new ArrayList<ForceNetworkPacket>();
@@ -552,8 +549,8 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         this.loadPacketList(nbt.getList(TAG_PACKET_LIST, Constants.NBT.TAG_COMPOUND));
         this.setDirty(nbt.getBoolean(TAG_IS_DIRTY));
         this.setLocked(nbt.getBoolean(TAG_IS_LOCKED));
-        this.resetLatestPacketGameTime();
-        this.setLatestPacketGameTime(nbt.getLong(TAG_LATEST_PACKET_GAME_TIME));
+        this.resetLatestToServantPacketGameTime();
+        this.setLatestToServantPacketGameTime(nbt.getLong(TAG_LATEST_TO_SERVANT_PACKET_GAME_TIME));
     }
 
     public void writeSyncedInternal(CompoundNBT nbt) {
@@ -567,7 +564,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         nbt.put(TAG_PACKET_LIST, this.savePacketList());
         nbt.putBoolean(TAG_IS_DIRTY, this.isDirty());
         nbt.putBoolean(TAG_IS_LOCKED, this.isLocked());
-        nbt.putLong(TAG_LATEST_PACKET_GAME_TIME, this.getLatestPacketGameTime());
+        nbt.putLong(TAG_LATEST_TO_SERVANT_PACKET_GAME_TIME, this.getLatestToServantPacketGameTime());
     }
 
     public void loadShared(BlockState state, CompoundNBT nbt) {
