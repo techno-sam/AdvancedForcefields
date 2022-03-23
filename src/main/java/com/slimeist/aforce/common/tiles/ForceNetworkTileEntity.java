@@ -183,7 +183,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         this.latest_to_servant_packet_game_time = 0;
     }
 
-    protected long getLatestToServantPacketGameTime() {
+    public long getLatestToServantPacketGameTime() {
         return this.latest_to_servant_packet_game_time;
     }
 
@@ -346,14 +346,14 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                         }
                     }
                 } //accept from one side only, should fix some problems
-                AdvancedForcefields.LOGGER.warn("ABP: "+(acceptingBlockPos!=null ? acceptingBlockPos.toShortString() : "Nothing")+", OP: "+packet.originPos.toShortString());
+                //AdvancedForcefields.LOGGER.warn("ABP: "+(acceptingBlockPos!=null ? acceptingBlockPos.toShortString() : "Nothing")+", OP: "+packet.originPos.toShortString());
                 if (acceptingBlockPos==null || acceptingBlockPos.equals(packet.originPos)) {
                     this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
                     this.markDirtyFast();
                     this.setLatestToServantPacketGameTime(packet.createdGameTime);
                 }
             } else {
-                AdvancedForcefields.LOGGER.info("ForceNetworkTileEntity discarding late packet, latest time: "+this.getLatestToServantPacketGameTime()+", packet time: "+packet.createdGameTime);
+                //AdvancedForcefields.LOGGER.info("ForceNetworkTileEntity discarding late packet, latest time: "+this.getLatestToServantPacketGameTime()+", packet time: "+packet.createdGameTime);
             }
         } else if (packet.data.getString(TAG_PACKET_TYPE).equals("NETWORK_RELEASE")) {
             this.onNetworkBuild(null);

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 public class ForceTubeTileEntity extends ForceNetworkTileEntity {
 
     protected boolean shouldSignal = true;
+
     protected long lastToMasterPacketGT = 0; //we don't need a toServant variable, because FNTE does that already
 
     protected ArrayList<BlockPos> closerNodes = new ArrayList<>();
@@ -72,10 +73,23 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
         this.nodesNeedUpdating = false;
     }
 
+    public long getLastToMasterPacketGT() {
+        return lastToMasterPacketGT;
+    }
+
+    public ArrayList<BlockPos> getCloserNodes() {
+        return closerNodes;
+    }
+
+    public ArrayList<BlockPos> getFartherNodes() {
+        return fartherNodes;
+    }
+
     @Override
     public void onReceiveToMasterPacket(BlockPos myPos, int myDist, ForceNetworkPacket packet) {
         if (this.getLevel()!=null) {
             this.lastToMasterPacketGT = this.getLevel().getGameTime();
+            this.nodesNeedUpdating = true;
         }
         super.onReceiveToMasterPacket(myPos, myDist, packet);
     }

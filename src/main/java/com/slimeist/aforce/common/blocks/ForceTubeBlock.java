@@ -8,12 +8,11 @@ import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
-import com.slimeist.aforce.core.enums.BurningType;
-import com.slimeist.aforce.core.enums.CollisionType;
-import com.slimeist.aforce.core.enums.FallDamageType;
-import com.slimeist.aforce.core.enums.ForceInteractionType;
+import com.slimeist.aforce.core.enums.*;
 import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
+import com.slimeist.aforce.core.util.ColorUtil;
+import com.slimeist.aforce.core.util.MiscUtil;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -24,6 +23,8 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.BoatEntity;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -37,12 +38,14 @@ import net.minecraft.util.math.shapes.EntitySelectionContext;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
+import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -570,6 +573,55 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         }
     }
 
+    protected void doParticlesForDirection(ForceNetworkDirection networkDirection, ForceTubeTileEntity ftte, World world, BlockPos pos, Random rand) {
+        int limit = 30;
+        long now = world.getGameTime();
+        long last_packet = networkDirection==ForceNetworkDirection.TO_MASTER ? ftte.getLastToMasterPacketGT() : ftte.getLatestToServantPacketGameTime();
+        //LOGGER.log((now-last_packet)<= limit ? Level.ERROR : Level.INFO, "Trying particles for direction " + networkDirection.name() + ", last packet at: " + last_packet + ", time between then and now: " + (now-last_packet));
+        if (now-last_packet <= limit) {
+            //ramp up from 0% particles at 0% time to 100% particles at 15% time, and back down from 100% particles at 60% time to 0% particles at 100% time
+            float percentTime = ((float) (now-last_packet)) / limit;
+            double percentParticles = 0;
+            if (percentTime > 0.00 && percentTime < 0.15) {
+                percentParticles = percentTime * (1/0.15);
+            } else if (percentTime >= 0.15 && percentTime <= 0.60) {
+                percentParticles = 1.00;
+            } else if (percentTime > 0.60 && percentTime < 1.00) {
+                percentParticles = (1.00-percentTime)*(1/0.4);
+            }
+            //LOGGER.info("Starting to look for positions, there are: "+(networkDirection==ForceNetworkDirection.TO_MASTER ? ftte.getCloserNodes() : ftte.getFartherNodes()).size());
+            for (BlockPos otherPos : (networkDirection==ForceNetworkDirection.TO_MASTER ? ftte.getCloserNodes() : ftte.getFartherNodes())) {
+                for (int i = 0; i < 10; i++) {
+                    if (rand.nextDouble()<percentParticles) {
+                        Vector3i dir = new Vector3i(pos.getX() - otherPos.getX(), pos.getY() - otherPos.getY(), pos.getZ() - otherPos.getZ()); //from me to otherPos
+                        double offsetX = (dir.getX() == 0 ? MiscUtil.randomSignedDouble(0.48, 0.6, rand) : 0);
+                        double offsetY = (dir.getY() == 0 ? MiscUtil.randomSignedDouble(0.48, 0.6, rand) : 0);
+                        double offsetZ = (dir.getZ() == 0 ? MiscUtil.randomSignedDouble(0.48, 0.6, rand) : 0);
+
+                        double startX = pos.getX() + offsetX + 0.5;
+                        double startY = pos.getY() + offsetY + 0.5;
+                        double startZ = pos.getZ() + offsetZ + 0.5;
+
+                        double endX = otherPos.getX() + offsetX + 0.5;
+                        double endY = otherPos.getY() + offsetY + 0.5;
+                        double endZ = otherPos.getZ() + offsetZ + 0.5;
+
+                        int[] intcolor = ColorUtil.unpackRGBA(ftte.getColor());
+
+                        float red = intcolor[0] / 255.0f;
+                        float green = intcolor[1] / 255.0f;
+                        float blue = intcolor[2] / 255.0f;
+                        float alpha = intcolor[3] / 255.0f;
+                        float scale = Math.max(1.0f, (1 - alpha) * 2.0f);
+                        if (alpha > 0.001) {
+                            world.addParticle(new RedstoneParticleData(red, green, blue, scale), startX, startY, startZ, startX-endX, startY-endY, startZ-endZ);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     @OnlyIn(Dist.CLIENT)
     public void animateTick(BlockState blockState, World world, BlockPos pos, Random rand) {
@@ -577,7 +629,9 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         TileEntity te = world.getBlockEntity(pos);
         if (te instanceof ForceTubeTileEntity) {
             ForceTubeTileEntity ftte = (ForceTubeTileEntity) te;
-            //if received to servant or to master particle, spawn particles in respective direction, see below
+            doParticlesForDirection(ForceNetworkDirection.TO_MASTER, ftte, world, pos, rand);
+            doParticlesForDirection(ForceNetworkDirection.TO_SERVANTS, ftte, world, pos, rand);
+            //if received to servant or to master packet, spawn particles in respective direction, see below (we show the directions we are propogating)
             //spawn DUST particles going from lower blocks to me, and from me to higher blocks (edges of this block to center, and vice versa)
         }
     }

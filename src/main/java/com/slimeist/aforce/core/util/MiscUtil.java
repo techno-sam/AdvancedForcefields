@@ -9,6 +9,8 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.Random;
+
 public class MiscUtil {
 
     public static void syncTE(TileEntity tile) {
@@ -29,5 +31,17 @@ public class MiscUtil {
 
     public static boolean isPlayerWearingShimmeringHelmet(PlayerEntity player) {
         return player.getItemBySlot(EquipmentSlotType.HEAD).getItem().is(AdvancedForcefieldsTags.Items.SHIMMERING_HELMET);
+    }
+
+    public static double randomDouble(double lowerBound, double upperBound, Random rand) {
+        double zero_to_1 = rand.nextDouble();
+        double zero_to_scaled = zero_to_1 * (upperBound-lowerBound);
+        return zero_to_scaled + lowerBound;
+    }
+
+    public static double randomSignedDouble(double lowerBound, double upperBound, Random rand) {
+        double zero_to_1 = rand.nextDouble();
+        double zero_to_scaled = zero_to_1 * (upperBound-lowerBound);
+        return (zero_to_scaled + lowerBound) * (rand.nextBoolean() ? -1 : 1);
     }
 }
