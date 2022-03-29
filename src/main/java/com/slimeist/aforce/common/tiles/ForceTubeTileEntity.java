@@ -1,6 +1,8 @@
 package com.slimeist.aforce.common.tiles;
 
+import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
+import com.slimeist.aforce.core.init.BlockInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import net.minecraft.nbt.CompoundNBT;
@@ -19,6 +21,7 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
     protected ArrayList<BlockPos> closerNodes = new ArrayList<>();
     protected ArrayList<BlockPos> fartherNodes = new ArrayList<>();
     protected boolean nodesNeedUpdating = false;
+    protected long lastUpdate = 0;
 
     public ForceTubeTileEntity() {
         super(TileEntityTypeInit.FORCE_TUBE_TYPE);
@@ -46,6 +49,10 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
     @Override
     public void tick() {
         super.tick();
+        if (this.getLevel()!=null && this.getLevel().getGameTime()>this.lastUpdate+60) {
+            this.nodesNeedUpdating = true;
+            this.lastUpdate = this.getLevel().getGameTime();
+        }
         if (this.nodesNeedUpdating) {
             this.updateNodeLists();
         }
@@ -61,10 +68,12 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
                     TileEntity te = this.getLevel().getBlockEntity(myPos.relative(dir));
                     if (te instanceof ForceNetworkTileEntity) {
                         ForceNetworkTileEntity otherFNTE = (ForceNetworkTileEntity) te;
-                        if (otherFNTE.getDistance()<this.getDistance()) {
-                            this.closerNodes.add(myPos.relative(dir));
-                        } else if (otherFNTE.getDistance()>this.getDistance()) {
-                            this.fartherNodes.add(myPos.relative(dir));
+                        if (this.sharesMasterPos(myPos.relative(dir))) {
+                            if (otherFNTE.getDistance() < this.getDistance()) {
+                                this.closerNodes.add(myPos.relative(dir));
+                            } else if (otherFNTE.getDistance() > this.getDistance()) {
+                                this.fartherNodes.add(myPos.relative(dir));
+                            }
                         }
                     }
                 }
@@ -85,6 +94,17 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
         return fartherNodes;
     }
 
+    public ArrayList<BlockPos> getConnectedNodes() {
+        ArrayList<BlockPos> connected = new ArrayList<>();
+        for (Direction dir : Direction.values()) {
+            BlockPos otherPos = this.getBlockPos().relative(dir);
+            if (this.isConnected(otherPos)) {
+                connected.add(otherPos);
+            }
+        }
+        return connected;
+    }
+
     @Override
     public void onReceiveToMasterPacket(BlockPos myPos, int myDist, ForceNetworkPacket packet) {
         if (this.getLevel()!=null) {
@@ -100,5 +120,21 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
         data.put(TAG_PACKET_MESSAGE, new CompoundNBT());
         ForceNetworkPacket release_packet = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, this.getBlockPos(), true);
         this.onReceiveToServantsPacket(this.getBlockPos(), this.getDistance(), release_packet);
+        this.updateBlockState();
+    }
+
+    @Override
+    public void postNetworkBuild() {
+        super.postNetworkBuild();
+        this.nodesNeedUpdating = true;
+        this.updateBlockState();
+    }
+
+    protected void updateBlockState() {
+        if (this.getLevel() != null) {
+            if (this.getLevel().getBlockState(this.getBlockPos()).is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
+                BlockInit.FORCE_TUBE.doUpdate(this.getLevel().getBlockState(this.getBlockPos()), this.getLevel(), this.getBlockPos());
+            }
+        }
     }
 }

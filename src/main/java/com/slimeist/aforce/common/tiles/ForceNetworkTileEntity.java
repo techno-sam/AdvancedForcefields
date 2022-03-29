@@ -452,6 +452,9 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         this.masterPos = masterPos;
         this.packetList = new ArrayList<ForceNetworkPacket>();
     }
+
+    public void postNetworkBuild() {}
+
     public boolean isConnected(BlockPos otherPos) {
         BlockPos myPos = this.getBlockPos();
         Direction direction = Direction.fromNormal(myPos.getX()-otherPos.getX(), myPos.getY()-otherPos.getY(), myPos.getZ()-otherPos.getZ());

@@ -9,6 +9,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class MiscUtil {
@@ -40,8 +41,21 @@ public class MiscUtil {
     }
 
     public static double randomSignedDouble(double lowerBound, double upperBound, Random rand) {
-        double zero_to_1 = rand.nextDouble();
-        double zero_to_scaled = zero_to_1 * (upperBound-lowerBound);
-        return (zero_to_scaled + lowerBound) * (rand.nextBoolean() ? -1 : 1);
+        return randomDouble(lowerBound, upperBound, rand) * (rand.nextBoolean() ? -1 : 1);
+    }
+
+    public static Object randomChoice(ArrayList<?> list, Random rand) {
+        int index = rand.nextInt(list.size());
+        return list.get(index);
+    }
+
+    /**
+     * 0.0d percent is a.
+     * 1.0d percent is b.
+     * 0.5d percent is evenly mixed, etc..
+     */
+    public static double lerp(double a, double b, double percent) {
+        percent = Math.min(1.0d, Math.max(0.0d, percent));
+        return (b*percent)+(a*(1.0d-percent));
     }
 }

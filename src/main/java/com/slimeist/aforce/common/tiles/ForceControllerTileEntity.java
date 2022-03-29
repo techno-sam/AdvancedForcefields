@@ -423,17 +423,18 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                 }
             }
         }
-        /*for (BlockPos pos : blocks) {
+        for (BlockPos pos : blocks) {
             if (this.getLevel()!=null) {
                 TileEntity tile = this.getLevel().getBlockEntity(pos);
                 if (tile instanceof ForceNetworkTileEntity) {
-                    BlockState state = this.getLevel().getBlockState(pos);
+                    /*BlockState state = this.getLevel().getBlockState(pos);
                     if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
                         this.getLevel().setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, true), Constants.BlockFlags.BLOCK_UPDATE);
-                    }
+                    }*/
+                    ((ForceNetworkTileEntity) tile).postNetworkBuild();
                 }
             }
-        }*/
+        }
         this.updateStainedGlass();
         this.markDirtyFast();
         this.markAsDirty(); //everything needs syncing
