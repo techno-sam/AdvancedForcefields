@@ -205,6 +205,12 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         this.markDirtyFast();
     }
 
+    @Override
+    public void postNetworkBuild() {
+        super.postNetworkBuild();
+        this.handleUpgrades();
+    }
+
     private static void log(String msg) {
         AdvancedForcefields.LOGGER.info(msg);
     }
