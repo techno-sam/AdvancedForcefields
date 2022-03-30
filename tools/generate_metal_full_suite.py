@@ -27,7 +27,7 @@ def cut(LIST,MAX,MIN):
 def cutsingle(INT,MAX,MIN):
     return min(max(INT,MIN),MAX)
 
-def convert(infile, outfile, hue, darken):
+def convert(infile, outfile, hue, saturate):
     src = pygame.image.load(infile)
     dest = pygame.Surface((src.get_width(),src.get_height()), pygame.SRCALPHA)
     for x in range(src.get_width()):
@@ -35,7 +35,21 @@ def convert(infile, outfile, hue, darken):
             c = src.get_at((x,y))
             hsv = colorsys.rgb_to_hsv(c[0], c[1], c[2])
             hsv = (0, hsv[1], hsv[2])
-            color = colorsys.hsv_to_rgb(hsv[0]+hue, hsv[1]+darken, hsv[2])
+            color = colorsys.hsv_to_rgb(hsv[0]+hue, hsv[1]+saturate, hsv[2])
+            color = (color[0], color[1], color[2], c[3])
+            #print(f"rgb {c}, hsv {hsv}, color {color}")
+            dest.set_at((x,y),cut(color, 255, 0))
+    pygame.image.save(dest, outfile)
+
+def convert_with_darken(infile, outfile, hue, saturate, darken):
+    src = pygame.image.load(infile)
+    dest = pygame.Surface((src.get_width(),src.get_height()), pygame.SRCALPHA)
+    for x in range(src.get_width()):
+        for y in range(src.get_height()):
+            c = src.get_at((x,y))
+            hsv = colorsys.rgb_to_hsv(c[0], c[1], c[2])
+            hsv = (0, hsv[1], hsv[2])
+            color = colorsys.hsv_to_rgb(hsv[0]+hue, hsv[1]+saturate, hsv[2]-(darken*255))
             color = (color[0], color[1], color[2], c[3])
             #print(f"rgb {c}, hsv {hsv}, color {color}")
             dest.set_at((x,y),cut(color, 255, 0))
@@ -44,13 +58,14 @@ def convert(infile, outfile, hue, darken):
 '''
 #Enderite values
 h = 0.4525
-d = 0.605
+s = 0.605
 ore_stone = "end_stone"
 name = "enderite"
 '''
 #Enderite values
 h = 0.4525
-d = 0.605
+s = 0.605
+d = 0.45
 ore_stone = "end_stone"
 name = "enderite"
 
@@ -59,13 +74,22 @@ def convert_item(original_name):
         "/home/sam/MinecraftForge/AdvancedForcefields/tools/metal_src/"+original_name+".png",
         "/home/sam/MinecraftForge/AdvancedForcefields/tools/metal_dest/"+original_name.replace("netherite", name)+".png",
         h,
+        s
+        )
+
+def convert_item_with_darken(original_name):
+    convert_with_darken(
+        "/home/sam/MinecraftForge/AdvancedForcefields/tools/metal_src/"+original_name+".png",
+        "/home/sam/MinecraftForge/AdvancedForcefields/tools/metal_dest/"+original_name.replace("netherite", name)+".png",
+        h,
+        s,
         d
         )
 
 
 convert_item("netherite_ingot")
 convert_item("netherite_block")
-convert_item("netherite_overlay")
+convert_item_with_darken("netherite_overlay")
 convert_item("netherite_bars")
 convert_item("netherite_door_bottom")
 convert_item("netherite_door_top")
