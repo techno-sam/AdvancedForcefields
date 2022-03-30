@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "enderite_ingot",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "aforce:enderite_nugget"
+    }
+  },
+  "result": {
+    "item": "aforce:enderite_ingot"
+  }
+}

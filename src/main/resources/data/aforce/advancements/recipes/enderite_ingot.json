@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "aforce:enderite_ingot"
+    ]
+  },
+  "criteria": {
+    "has_enderite_ore": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "aforce:enderite_ore"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "aforce:enderite_ingot"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_enderite_ore",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -1,14 +1,13 @@
 package com.slimeist.aforce.core.init;
 
 import com.slimeist.aforce.AdvancedForcefields;
+import com.slimeist.aforce.common.blocks.CustomOreBlock;
 import com.slimeist.aforce.common.blocks.ForceControllerBlock;
 import com.slimeist.aforce.common.blocks.ForceModifierBlock;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.ResourceLocation;
@@ -25,6 +24,8 @@ public final class BlockInit {
     public static ForceTubeBlock FORCE_TUBE;
     public static ForceControllerBlock FORCE_CONTROLLER;
     public static ForceModifierBlock FORCE_MODIFIER;
+    public static OreBlock ENDERITE_ORE;
+    public static Block ENDERITE_BLOCK;
 
     private BlockInit() {}
 
@@ -67,8 +68,19 @@ public final class BlockInit {
             .sound(SoundType.LODESTONE)
     ));
 
-        //RenderLayerHandler.setRenderType(BASE_PIPE, RenderLayerHandler.RenderTypeSkeleton.CUTOUT_MIPPED);
-        //initializeSpawnEggs();
+    ENDERITE_ORE = register("enderite_ore", new CustomOreBlock(AbstractBlock.Properties.of(Material.STONE, MaterialColor.SAND)
+            .requiresCorrectToolForDrops()
+            .strength(3.0F, 9.0F)
+    ));
+
+    ENDERITE_BLOCK = register("enderite_block", new Block(AbstractBlock.Properties.of(Material.METAL, MaterialColor.COLOR_GREEN)
+            .requiresCorrectToolForDrops()
+            .strength(25.0F, 600.0F)
+            .sound(SoundType.NETHERITE_BLOCK)
+    ));
+
+    // RenderLayerHandler.setRenderType(BASE_PIPE, RenderLayerHandler.RenderTypeSkeleton.CUTOUT_MIPPED);
+        // initializeSpawnEggs();
     }
 
     private static <T extends Block> T register(String name, T block) {

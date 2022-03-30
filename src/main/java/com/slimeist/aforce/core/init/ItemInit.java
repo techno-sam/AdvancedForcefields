@@ -14,12 +14,18 @@ public final class ItemInit {
     public static BlockItem FORCE_CONTROLLER;
     public static BlockItem FORCE_MODIFIER;
 
+    public static BlockItem ENDERITE_ORE;
+    public static BlockItem ENDERITE_BLOCK;
+
     public static ArmorItem SHIMMERING_HELMET;
     public static ArmorItem SHIMMERING_CHESTPLATE;
     public static ArmorItem SHIMMERING_LEGGINGS;
     public static ArmorItem SHIMMERING_BOOTS;
 
     public static Item SHIMMERING_CLOTH;
+
+    public static Item ENDERITE_INGOT;
+    public static Item ENDERITE_NUGGET;
 
     private ItemInit() {}
 
@@ -35,6 +41,12 @@ public final class ItemInit {
         FORCE_MODIFIER = register("force_modifier", new BlockItem(BlockInit.FORCE_MODIFIER, new Item.Properties()
                 .tab(CreativeTabInit.FORCE_NETWORK)
         ));
+        ENDERITE_ORE = register("enderite_ore", new BlockItem(BlockInit.ENDERITE_ORE, new Item.Properties()
+                .tab(CreativeTabInit.FORCE_NETWORK)
+        ));
+        ENDERITE_BLOCK = register("enderite_block", new BlockItem(BlockInit.ENDERITE_BLOCK, new Item.Properties()
+                .tab(CreativeTabInit.FORCE_NETWORK)
+        ));
 
         //Shimmering Armor
         SHIMMERING_HELMET = register("shimmering_helmet", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.HEAD,
@@ -47,7 +59,9 @@ public final class ItemInit {
                 (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
 
         //Misc items
-        SHIMMERING_CLOTH = register("shimmering_cloth", new Item(new Item.Properties().tab(ItemGroup.TAB_MISC)));
+        SHIMMERING_CLOTH = register("shimmering_cloth", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
+        ENDERITE_INGOT = register("enderite_ingot", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
+        ENDERITE_NUGGET = register("enderite_nugget", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
     }
 
     private static <T extends Item> T register(String name, T item) {
