@@ -233,9 +233,9 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     {
         //log("Checking if "+itemStack.toString()+" is part of ENDER_FUEL tag");
         //log("ENDER_FUEL tag contains:");
-        for (Item item : AdvancedForcefieldsTags.Items.ENDER_FUEL.getValues()) {
+        /*for (Item item : AdvancedForcefieldsTags.Items.ENDER_FUEL.getValues()) {
             log(item.toString());
-        }
+        }*/
         return itemStack.getItem().is(AdvancedForcefieldsTags.Items.ENDER_FUEL);
     }
 

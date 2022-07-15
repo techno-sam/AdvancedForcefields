@@ -10,7 +10,6 @@ import net.minecraft.entity.IAngerable;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -56,7 +55,7 @@ public class CommonEventHandler {
             }
             if (player!=null && MiscUtil.isPlayerWearingFullShimmeringArmor(player)) {
                 MobHelper.resetTarget(mob, true);
-                MobHelper.resetPersistantAnger(mob);
+                MobHelper.resetPersistentAnger(mob);
             }
         }
     }

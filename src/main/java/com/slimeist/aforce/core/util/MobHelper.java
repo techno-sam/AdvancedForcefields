@@ -28,7 +28,7 @@ public class MobHelper {
     }
 
     //following method added by Slimeist
-    public static void resetPersistantAnger(MobEntity entity) {
+    public static void resetPersistentAnger(MobEntity entity) {
         if (entity instanceof IAngerable) {
             ((IAngerable) entity).stopBeingAngry();
         }

@@ -31,7 +31,7 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
         this.input = input;
         this.fuelTicks = fuelTicks;
 
-        AdvancedForcefields.LOGGER.info("Loaded recipe: " + this.toString());
+        //AdvancedForcefields.LOGGER.info("Loaded recipe: " + this.toString());
     }
 
     @Override
