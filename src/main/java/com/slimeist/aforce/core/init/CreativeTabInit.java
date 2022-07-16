@@ -1,11 +1,11 @@
 package com.slimeist.aforce.core.init;
 
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 
 public class CreativeTabInit {
 
-    public static final ItemGroup FORCE_NETWORK = new ItemGroup("force_network") {
+    public static final CreativeModeTab FORCE_NETWORK = new CreativeModeTab("force_network") {
         @Override
         public ItemStack makeIcon() {
             return new ItemStack(ItemInit.FORCE_CONTROLLER);

@@ -1,11 +1,11 @@
 package com.slimeist.aforce.core.util;
 
 import com.slimeist.aforce.AdvancedForcefields;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelAccessor;
 
 import java.util.*;
 
@@ -13,16 +13,16 @@ public class NetworkBlockChain {
 
     protected static Direction[] DIRECTIONS = Direction.values();
 
-    protected IWorld world;
+    protected LevelAccessor world;
     protected BlockPos masterPos;
     protected int maxSearch; //how long to search before giving up
-    protected AbstractBlock.IPositionPredicate validTube;
-    protected AbstractBlock.IPositionPredicate validComponent;
+    protected BlockBehaviour.StatePredicate validTube;
+    protected BlockBehaviour.StatePredicate validComponent;
     protected ArrayList<BlockPos> tubeBlocks; //positions of blocks linking our network together
     protected ArrayList<BlockPos> componentBlocks; //positions of blocks attached to our network (tubeBlocks + modifiers)
     protected HashMap<BlockPos, Integer> distances; //how far in network space each position is from the master
 
-    public NetworkBlockChain(IWorld world, BlockPos start, int maxSearch, AbstractBlock.IPositionPredicate validTube, AbstractBlock.IPositionPredicate validComponent) {
+    public NetworkBlockChain(LevelAccessor world, BlockPos start, int maxSearch, BlockBehaviour.StatePredicate validTube, BlockBehaviour.StatePredicate validComponent) {
         this.world = world;
         this.masterPos = start;
         this.maxSearch = maxSearch;
@@ -34,7 +34,7 @@ public class NetworkBlockChain {
         this.distances = new HashMap<BlockPos, Integer>();
     }
 
-    public IWorld getWorld() {
+    public LevelAccessor getWorld() {
         return this.world;
     }
 

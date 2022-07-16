@@ -1,7 +1,9 @@
 package com.slimeist.aforce.client.render.tileentity;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.render.RenderTypes;
 import com.slimeist.aforce.client.util.ClientUtils;
@@ -9,35 +11,32 @@ import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ColorUtil;
 import com.slimeist.aforce.core.util.MiscUtil;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.RenderMaterial;
-import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix3f;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Random;
 
-public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<ForceTubeTileEntity> {
+public class AlternateForceTubeTileEntityRenderer implements BlockEntityRenderer<ForceTubeTileEntity> {
 
     public static final ResourceLocation SHIMMER_LOCATION = AdvancedForcefields.getId("entity/force_field_shimmer");
-    public static final RenderMaterial SHIMMER_MATERIAL = new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, SHIMMER_LOCATION);
+    public static final Material SHIMMER_MATERIAL = new Material(TextureAtlas.LOCATION_BLOCKS, SHIMMER_LOCATION);
 
     public static final ResourceLocation OUTLINE_LOCATION = AdvancedForcefields.getId("entity/force_field_outline");
-    public static final RenderMaterial OUTLINE_MATERIAL = new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, OUTLINE_LOCATION);
+    public static final Material OUTLINE_MATERIAL = new Material(TextureAtlas.LOCATION_BLOCKS, OUTLINE_LOCATION);
 
-    public AlternateForceTubeTileEntityRenderer(TileEntityRendererDispatcher dispatch) {
-        super(dispatch);
+    public AlternateForceTubeTileEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
 
-    public void render(ForceTubeTileEntity te, float partialTicks, MatrixStack matrix, IRenderTypeBuffer rtbuffer, int combinedLight, int combinedOverlay) {
+    public void render(ForceTubeTileEntity te, float partialTicks, PoseStack matrix, MultiBufferSource rtbuffer, int combinedLight, int combinedOverlay) {
         int looplength = 100;
 
         long gt = te.getLevel().getGameTime();
@@ -91,8 +90,8 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
         }
     }
 
-    private void renderCube(ForceTubeTileEntity te, MatrixStack matrix, IVertexBuilder builder, float red, float green, float blue, float alpha, float x1, float y1, float z1, float x2, float y2, float z2, float u1, float v1, float u2, float v2) {
-        MatrixStack.Entry matrixstack$entry = matrix.last();
+    private void renderCube(ForceTubeTileEntity te, PoseStack matrix, VertexConsumer builder, float red, float green, float blue, float alpha, float x1, float y1, float z1, float x2, float y2, float z2, float u1, float v1, float u2, float v2) {
+        PoseStack.Pose matrixstack$entry = matrix.last();
         Matrix4f poseMatrix = matrixstack$entry.pose();
         Matrix3f normalMatrix = matrixstack$entry.normal();
 
@@ -104,7 +103,7 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
         this.renderFace(te, poseMatrix, normalMatrix, builder, x1, x2, y2, y2, z2, z2, z1, z1, red, green, blue, alpha, u1, v1, u2, v2, Direction.UP);
     }
 
-    private void renderFace(ForceTubeTileEntity te, Matrix4f poseMatrix, Matrix3f normalMatrix, IVertexBuilder builder, float x1, float x2, float y1, float y2, float z1, float z2, float z3, float z4, float red, float green, float blue, float alpha, float u1, float v1, float u2, float v2, Direction dir) {
+    private void renderFace(ForceTubeTileEntity te, Matrix4f poseMatrix, Matrix3f normalMatrix, VertexConsumer builder, float x1, float x2, float y1, float y2, float z1, float z2, float z3, float z4, float red, float green, float blue, float alpha, float u1, float v1, float u2, float v2, Direction dir) {
         /*builder.vertex(poseMatrix, x1, y1, z1).color(red, green, blue, alpha).endVertex();
         builder.vertex(poseMatrix, x2, y1, z2).color(red, green, blue, alpha).endVertex();
         builder.vertex(poseMatrix, x2, y2, z3).color(red, green, blue, alpha).endVertex();
@@ -118,7 +117,7 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
         vertex(poseMatrix, normalMatrix, builder, red, green, blue, alpha, x1, y2, z4, u2, v1);
     }
 
-    private static void vertex(Matrix4f poseMatrix, Matrix3f normalMatrix, IVertexBuilder builder, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v) {
+    private static void vertex(Matrix4f poseMatrix, Matrix3f normalMatrix, VertexConsumer builder, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v) {
         builder.vertex(poseMatrix, x, y, z).color(red, green, blue, alpha).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0.0F, 1.0F, 0.0F).endVertex();
     }
 
@@ -128,8 +127,8 @@ public class AlternateForceTubeTileEntityRenderer extends TileEntityRenderer<For
         return true;
     }
 
-    public static void register() {
-        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.FORCE_TUBE_TYPE, AlternateForceTubeTileEntityRenderer::new);
+    public static void register(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(TileEntityTypeInit.FORCE_TUBE_TYPE, AlternateForceTubeTileEntityRenderer::new);
     }
 
 

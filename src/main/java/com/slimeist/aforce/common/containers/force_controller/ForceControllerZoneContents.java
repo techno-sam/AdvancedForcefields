@@ -1,14 +1,14 @@
 package com.slimeist.aforce.common.containers.force_controller;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.function.Predicate;
 
-public class ForceControllerZoneContents implements IInventory {
+public class ForceControllerZoneContents implements Container {
 
     /**
      * Use this constructor to create a FurnaceZoneContents which is linked to its parent TileEntity.
@@ -26,7 +26,7 @@ public class ForceControllerZoneContents implements IInventory {
      * @return the new ChestContents.
      */
     public static ForceControllerZoneContents createForTileEntity(int size,
-                                                                  Predicate<PlayerEntity> canPlayerAccessInventoryLambda,
+                                                                  Predicate<Player> canPlayerAccessInventoryLambda,
                                                                   Notify markDirtyNotificationLambda) {
         return new ForceControllerZoneContents(size, canPlayerAccessInventoryLambda, markDirtyNotificationLambda);
     }
@@ -49,7 +49,7 @@ public class ForceControllerZoneContents implements IInventory {
      * Writes the chest contents to a CompoundNBT tag (used to save the contents to disk)
      * @return the tag containing the contents
      */
-    public CompoundNBT serializeNBT()  {
+    public CompoundTag serializeNBT()  {
         return forceControllerComponentContents.serializeNBT();
     }
 
@@ -57,7 +57,7 @@ public class ForceControllerZoneContents implements IInventory {
      * Fills the chest contents from the nbt; resizes automatically to fit.  (used to load the contents from disk)
      * @param nbt
      */
-    public void deserializeNBT(CompoundNBT nbt)   {
+    public void deserializeNBT(CompoundTag nbt)   {
         forceControllerComponentContents.deserializeNBT(nbt);
     }
 
@@ -79,7 +79,7 @@ public class ForceControllerZoneContents implements IInventory {
      * sets the function that the container should call in order to decide if the given player can access the container's
      *   contents not.  The lambda function is only used on the server side
      */
-    public void setCanPlayerAccessInventoryLambda(Predicate<PlayerEntity> canPlayerAccessInventoryLambda) {
+    public void setCanPlayerAccessInventoryLambda(Predicate<Player> canPlayerAccessInventoryLambda) {
         this.canPlayerAccessInventoryLambda = canPlayerAccessInventoryLambda;
     }
 
@@ -109,7 +109,7 @@ public class ForceControllerZoneContents implements IInventory {
     //    or ask the parent TileEntity.
 
     @Override
-    public boolean stillValid(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         return canPlayerAccessInventoryLambda.test(player);  // on the client, this does nothing. on the server, ask our parent TileEntity.
     }
 
@@ -133,12 +133,12 @@ public class ForceControllerZoneContents implements IInventory {
     }
 
     @Override
-    public void startOpen(PlayerEntity player) {
+    public void startOpen(Player player) {
         openInventoryNotificationLambda.invoke();
     }
 
     @Override
-    public void stopOpen(PlayerEntity player) {
+    public void stopOpen(Player player) {
         closeInventoryNotificationLambda.invoke();
     }
 
@@ -218,7 +218,7 @@ public class ForceControllerZoneContents implements IInventory {
         this.forceControllerComponentContents = new ItemStackHandler(size);
     }
 
-    private ForceControllerZoneContents(int size, Predicate<PlayerEntity> canPlayerAccessInventoryLambda, Notify markDirtyNotificationLambda) {
+    private ForceControllerZoneContents(int size, Predicate<Player> canPlayerAccessInventoryLambda, Notify markDirtyNotificationLambda) {
         this.forceControllerComponentContents = new ItemStackHandler(size);
         this.canPlayerAccessInventoryLambda = canPlayerAccessInventoryLambda;
         this.markDirtyNotificationLambda = markDirtyNotificationLambda;
@@ -227,7 +227,7 @@ public class ForceControllerZoneContents implements IInventory {
     // the function that the container should call in order to decide if the
     // given player can access the container's Inventory or not.  Only valid server side
     //  default is "true".
-    private Predicate<PlayerEntity> canPlayerAccessInventoryLambda = x-> true;
+    private Predicate<Player> canPlayerAccessInventoryLambda = x-> true;
 
     // the function that the container should call in order to tell the parent TileEntity that the
     // contents of its inventory have been changed.

@@ -4,21 +4,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.StartupCommon;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
-public class EnderFuelRecipe implements IRecipe<IInventory> {
+public class EnderFuelRecipe implements Recipe<Container> {
 
     public static final Serializer SERIALIZER = new Serializer();
 
@@ -42,14 +42,14 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
     }
 
     @Override
-    public boolean matches(IInventory inv, World worldIn) {
+    public boolean matches(Container inv, Level worldIn) {
 
         // This method is ignored by our custom recipe system, and only has partial
         // functionality. isValid is used instead.
         return this.input.test(inv.getItem(36));
     }
 
-    public boolean matches(ItemStack stack, World world) {
+    public boolean matches(ItemStack stack, Level world) {
         return this.input.test(stack);
     }
 
@@ -58,7 +58,7 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
     }
 
     @Override
-    public ItemStack assemble(IInventory p_77572_1_) {
+    public ItemStack assemble(Container p_77572_1_) {
         return ItemStack.EMPTY;
     }
 
@@ -73,23 +73,23 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(IInventory p_179532_1_) {
-        return IRecipe.super.getRemainingItems(p_179532_1_);
+    public NonNullList<ItemStack> getRemainingItems(Container p_179532_1_) {
+        return Recipe.super.getRemainingItems(p_179532_1_);
     }
 
     @Override
     public NonNullList<Ingredient> getIngredients() {
-        return IRecipe.super.getIngredients();
+        return Recipe.super.getIngredients();
     }
 
     @Override
     public boolean isSpecial() {
-        return IRecipe.super.isSpecial();
+        return Recipe.super.isSpecial();
     }
 
     @Override
     public String getGroup() {
-        return IRecipe.super.getGroup();
+        return Recipe.super.getGroup();
     }
 
     @Override
@@ -98,12 +98,12 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<?> getSerializer() {
         return SERIALIZER;
     }
 
     @Override
-    public IRecipeType<?> getType() {
+    public RecipeType<?> getType() {
         return StartupCommon.ENDER_FUEL_RECIPE;
     }
 
@@ -112,7 +112,7 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
         return new ItemStack(Items.ENDER_PEARL);
     }
 
-    private static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>> implements IRecipeSerializer<EnderFuelRecipe> {
+    private static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<EnderFuelRecipe> {
 
         Serializer() {
             this.setRegistryName(AdvancedForcefields.getId("ender_fuel_recipe"));
@@ -120,16 +120,16 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
 
         @Override
         public EnderFuelRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-            final JsonElement inputElement = JSONUtils.isArrayNode(json, "input") ? JSONUtils.getAsJsonArray(json, "input") : JSONUtils.getAsJsonObject(json, "input");
+            final JsonElement inputElement = GsonHelper.isArrayNode(json, "input") ? GsonHelper.getAsJsonArray(json, "input") : GsonHelper.getAsJsonObject(json, "input");
             final Ingredient input = Ingredient.fromJson(inputElement);
 
-            final int fuelTicks = JSONUtils.getAsInt(json, "fuelTicks");
+            final int fuelTicks = GsonHelper.getAsInt(json, "fuelTicks");
 
             return new EnderFuelRecipe(recipeId, input, fuelTicks);
         }
 
         @Override
-        public EnderFuelRecipe fromNetwork(ResourceLocation recipeId, PacketBuffer buffer) {
+        public EnderFuelRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
             final Ingredient input = Ingredient.fromNetwork(buffer);
 
             final int fuelTicks = buffer.readInt();
@@ -138,7 +138,7 @@ public class EnderFuelRecipe implements IRecipe<IInventory> {
         }
 
         @Override
-        public void toNetwork(PacketBuffer buffer, EnderFuelRecipe recipe) {
+        public void toNetwork(FriendlyByteBuf buffer, EnderFuelRecipe recipe) {
             recipe.input.toNetwork(buffer);
             buffer.writeInt(recipe.fuelTicks);
         }

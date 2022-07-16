@@ -1,17 +1,14 @@
 package com.slimeist.aforce.common.modifier_actions;
 
-import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.core.enums.BurningType;
 import com.slimeist.aforce.core.enums.CollisionType;
 import com.slimeist.aforce.core.enums.ForceInteractionType;
 import com.slimeist.aforce.core.interfaces.IForceModifierAction;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class BlazeFireAction implements IForceModifierAction {
 
@@ -22,7 +19,7 @@ public class BlazeFireAction implements IForceModifierAction {
     }
 
     @Override
-    public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+    public void onCollide(Level world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
         if (!this.canApplyToEntity(collider)) {return;}
         if (interactionType == ForceInteractionType.VERY_CLOSE) {
             if (!collider.fireImmune()) {

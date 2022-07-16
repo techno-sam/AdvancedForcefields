@@ -8,12 +8,12 @@
 
 package com.slimeist.aforce.client.gui.ie_elements;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
 public class GuiButtonBoolean extends GuiButtonState<Boolean>
 {
-	public GuiButtonBoolean(int x, int y, int w, int h, ITextComponent name, boolean state, ResourceLocation texture, int u, int v,
+	public GuiButtonBoolean(int x, int y, int w, int h, Component name, boolean state, ResourceLocation texture, int u, int v,
                             int offsetDir, IIEPressable<GuiButtonState<Boolean>> handler)
 	{
 		super(x, y, w, h, name, new Boolean[]{false, true}, state?1: 0, texture, u, v, offsetDir, handler);

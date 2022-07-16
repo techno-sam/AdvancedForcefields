@@ -1,9 +1,9 @@
 package com.slimeist.aforce.core.util;
 
-import net.minecraft.entity.IAngerable;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 import java.util.Optional;
 
@@ -12,11 +12,11 @@ import java.util.Optional;
 public class MobHelper {
     private MobHelper() {}
 
-    public static void resetTarget(MobEntity entity) {
+    public static void resetTarget(Mob entity) {
         resetTarget(entity, false);
     }
 
-    public static void resetTarget(MobEntity entity, boolean resetRevengeTarget) {
+    public static void resetTarget(Mob entity, boolean resetRevengeTarget) {
         Brain<?> brain = entity.getBrain();
         brain.setMemory(MemoryModuleType.ATTACK_TARGET, Optional.empty());
         brain.setMemory(MemoryModuleType.ANGRY_AT, Optional.empty());
@@ -28,9 +28,9 @@ public class MobHelper {
     }
 
     //following method added by Slimeist
-    public static void resetPersistentAnger(MobEntity entity) {
-        if (entity instanceof IAngerable) {
-            ((IAngerable) entity).stopBeingAngry();
+    public static void resetPersistentAnger(Mob entity) {
+        if (entity instanceof NeutralMob) {
+            ((NeutralMob) entity).stopBeingAngry();
         }
     }
 }

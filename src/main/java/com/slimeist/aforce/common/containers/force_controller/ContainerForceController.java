@@ -2,14 +2,14 @@ package com.slimeist.aforce.common.containers.force_controller;
 
 import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
 import com.slimeist.aforce.core.init.ContainerTypeInit;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,9 +33,9 @@ import org.apache.logging.log4j.Logger;
  * Glass (For determining what color the forcefield is)
  */
 
-public class ContainerForceController extends Container {
+public class ContainerForceController extends AbstractContainerMenu {
 
-    public static ContainerForceController createContainerServerSide(int windowID, PlayerInventory playerInventory,
+    public static ContainerForceController createContainerServerSide(int windowID, Inventory playerInventory,
                                                                      ForceControllerZoneContents glassZoneContents,
                                                                      ForceControllerZoneContents fuelZoneContents,
                                                                      ForceControllerStateData forceControllerStateData) {
@@ -43,7 +43,7 @@ public class ContainerForceController extends Container {
                 glassZoneContents, fuelZoneContents, forceControllerStateData);
     }
 
-    public static ContainerForceController createContainerClientSide(int windowID, PlayerInventory playerInventory, net.minecraft.network.PacketBuffer extraData) {
+    public static ContainerForceController createContainerClientSide(int windowID, Inventory playerInventory, net.minecraft.network.FriendlyByteBuf extraData) {
         //  don't need extraData for this example; if you want you can use it to provide extra information from the server, that you can use
         //  when creating the client container
         //  eg String detailedDescription = extraData.readString(128);
@@ -91,7 +91,7 @@ public class ContainerForceController extends Container {
     // i.e. invPlayer slots 0 - 35 (hotbar 0 - 8 then main inventory 9 to 35)
     // and furnace: inputZone slots 0 - 4, outputZone slots 0 - 4, fuelZone 0 - 3
 
-    public ContainerForceController(int windowID, PlayerInventory invPlayer,
+    public ContainerForceController(int windowID, Inventory invPlayer,
                                     ForceControllerZoneContents glassZoneContents,
                                     ForceControllerZoneContents fuelZoneContents,
                                     ForceControllerStateData forceControllerStateData) {
@@ -141,7 +141,7 @@ public class ContainerForceController extends Container {
 
     // Checks each tick to make sure the player is still able to access the inventory and if not closes the gui
     @Override
-    public boolean stillValid(PlayerEntity player)
+    public boolean stillValid(Player player)
     {
         return fuelZoneContents.stillValid(player) && glassZoneContents.stillValid(player);
     }
@@ -155,7 +155,7 @@ public class ContainerForceController extends Container {
     //   otherwise, returns a copy of the source stack
     //  Code copied & refactored from vanilla furnace AbstractFurnaceContainer
     @Override
-    public ItemStack quickMoveStack(PlayerEntity player, int sourceSlotIndex)
+    public ItemStack quickMoveStack(Player player, int sourceSlotIndex)
     {
         Slot sourceSlot = slots.get(sourceSlotIndex);
         if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;
@@ -240,7 +240,7 @@ public class ContainerForceController extends Container {
     public double fractionOfFuelRemaining() {
         if (forceControllerStateData.burnTimeInitialValue <= 0 ) return 0;
         double fraction = forceControllerStateData.burnTimeRemaining / (double) forceControllerStateData.burnTimeInitialValue;
-        return MathHelper.clamp(fraction, 0.0, 1.0);
+        return Mth.clamp(fraction, 0.0, 1.0);
     }
 
     /**
@@ -257,7 +257,7 @@ public class ContainerForceController extends Container {
 
     // SlotFuel is a slot for fuel items
     public class SlotFuel extends Slot {
-        public SlotFuel(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+        public SlotFuel(Container inventoryIn, int index, int xPosition, int yPosition) {
             super(inventoryIn, index, xPosition, yPosition);
         }
 
@@ -270,7 +270,7 @@ public class ContainerForceController extends Container {
 
     // SlotGlass is a slot that will only accept glass
     public class SlotGlass extends Slot {
-        public SlotGlass(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+        public SlotGlass(Container inventoryIn, int index, int xPosition, int yPosition) {
             super(inventoryIn, index, xPosition, yPosition);
         }
 
@@ -285,7 +285,7 @@ public class ContainerForceController extends Container {
     private ForceControllerZoneContents fuelZoneContents;
     private ForceControllerStateData forceControllerStateData;
 
-    private World world; //needed for some helper methods
+    private Level world; //needed for some helper methods
     private static final Logger LOGGER = LogManager.getLogger();
 
     /**

@@ -2,9 +2,12 @@ package com.slimeist.aforce.core.init;
 
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.items.ArmorMaterials;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.*;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -49,14 +52,14 @@ public final class ItemInit {
         ));
 
         //Shimmering Armor
-        SHIMMERING_HELMET = register("shimmering_helmet", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.HEAD,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
-        SHIMMERING_CHESTPLATE = register("shimmering_chestplate", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.CHEST,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
-        SHIMMERING_LEGGINGS = register("shimmering_leggings", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.LEGS,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
-        SHIMMERING_BOOTS = register("shimmering_boots", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.FEET,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
+        SHIMMERING_HELMET = register("shimmering_helmet", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.HEAD,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
+        SHIMMERING_CHESTPLATE = register("shimmering_chestplate", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.CHEST,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
+        SHIMMERING_LEGGINGS = register("shimmering_leggings", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.LEGS,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
+        SHIMMERING_BOOTS = register("shimmering_boots", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.FEET,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
 
         //Misc items
         SHIMMERING_CLOTH = register("shimmering_cloth", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));

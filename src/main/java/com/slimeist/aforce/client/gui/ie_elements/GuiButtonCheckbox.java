@@ -8,24 +8,23 @@
 
 package com.slimeist.aforce.client.gui.ie_elements;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.util.ResourceLocation;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.slimeist.aforce.AdvancedForcefields;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class GuiButtonCheckbox extends GuiButtonBoolean
 {
 	private static final ResourceLocation TEXTURE = AdvancedForcefields.getId("textures/gui/hud_elements.png");
 
-	public GuiButtonCheckbox(int x, int y, ITextComponent name, boolean state, IIEPressable<GuiButtonState<Boolean>> handler)
+	public GuiButtonCheckbox(int x, int y, Component name, boolean state, IIEPressable<GuiButtonState<Boolean>> handler)
 	{
 		super(x, y, 8, 8, name, state, TEXTURE, 0, 128, -1, handler);
 	}
 
 	@Override
-	public void render(MatrixStack transform, int mouseX, int mouseY, float partialTicks)
+	public void render(PoseStack transform, int mouseX, int mouseY, float partialTicks)
 	{
 		super.render(transform, mouseX, mouseY, partialTicks);
 		if(this.visible&&getState())

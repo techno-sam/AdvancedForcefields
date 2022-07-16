@@ -9,16 +9,18 @@
 package com.slimeist.aforce.client.gui.ie_elements;
 
 import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.slimeist.aforce.client.util.ClientUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+
+import net.minecraft.client.gui.components.Button.OnPress;
 
 public class GuiButtonIE extends Button
 {
@@ -26,7 +28,7 @@ public class GuiButtonIE extends Button
 	protected final int texU;
 	protected final int texV;
 
-	public GuiButtonIE(int x, int y, int w, int h, ITextComponent name, ResourceLocation texture, int u, int v, IIEPressable<? extends GuiButtonIE> handler)
+	public GuiButtonIE(int x, int y, int w, int h, Component name, ResourceLocation texture, int u, int v, IIEPressable<? extends GuiButtonIE> handler)
 	{
 		super(x, y, w, h, name, handler);
 		this.texture = texture;
@@ -48,13 +50,13 @@ public class GuiButtonIE extends Button
 	}
 
 	@Override
-	public void render(MatrixStack transform, int mouseX, int mouseY, float partialTicks)
+	public void render(PoseStack transform, int mouseX, int mouseY, float partialTicks)
 	{
 		if(this.visible)
 		{
 			Minecraft mc = Minecraft.getInstance();
-			mc.getTextureManager().bind(texture);
-			FontRenderer fontrenderer = mc.font;
+			ClientUtils.bindTexture(texture);
+			Font fontrenderer = mc.font;
 			this.isHovered = isPressable(mouseX, mouseY);
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
@@ -81,7 +83,7 @@ public class GuiButtonIE extends Button
 		this.onPress.onPress(this);
 	}
 
-	public interface IIEPressable<B extends GuiButtonIE> extends IPressable
+	public interface IIEPressable<B extends GuiButtonIE> extends OnPress
 	{
 		void onIEPress(B var1);
 

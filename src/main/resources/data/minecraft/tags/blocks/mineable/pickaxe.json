@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "aforce:force_tube",
+    "aforce:force_controller",
+    "aforce:force_modifier",
+    "aforce:enderite_ore",
+    "aforce:enderite_block"
+  ]
+}

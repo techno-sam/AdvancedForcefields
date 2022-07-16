@@ -3,9 +3,9 @@ package com.slimeist.aforce.core.init;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.modifier_actions.*;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
-import net.minecraft.item.Items;
+import net.minecraft.world.item.Items;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 
 public final class ModifierInit {

@@ -1,22 +1,20 @@
 package com.slimeist.aforce.common.tiles;
 
-import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.core.util.MiscUtil;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
-public class ModTileEntity extends TileEntity {
-
-    public ModTileEntity(TileEntityType<?> tileEntityType) {
-        super(tileEntityType);
+public class ModTileEntity extends BlockEntity {
+    public ModTileEntity(BlockEntityType<?> tileEntityType, BlockPos pos, BlockState state) {
+        super(tileEntityType, pos, state);
     }
 
     public boolean isClient() {
@@ -25,7 +23,7 @@ public class ModTileEntity extends TileEntity {
 
     public void markDirtyFast() {
         if (level!=null) {
-            level.blockEntityChanged(worldPosition, this);
+            level.blockEntityChanged(worldPosition);
             //AdvancedForcefields.LOGGER.info("Marked "+this+" @ [" + worldPosition + "] as dirty");
             if (shouldSyncOnUpdate()) {
                 MiscUtil.syncTE(this);
@@ -39,22 +37,22 @@ public class ModTileEntity extends TileEntity {
 
     @Override
     @Nullable
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        return shouldSyncOnUpdate() ? new SUpdateTileEntityPacket(this.worldPosition, -1, this.getUpdateTag()) : null;
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return shouldSyncOnUpdate() ? new ClientboundBlockEntityDataPacket(this.worldPosition, -1, this.getUpdateTag()) : null;
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        this.load(this.getBlockState(), pkt.getTag());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        this.load(pkt.getTag());
     }
 
-    protected void writeSynced(CompoundNBT nbt) {}
+    protected void writeSynced(CompoundTag nbt) {}
 
     @Override
-    public CompoundNBT getUpdateTag() {
-        CompoundNBT nbt = super.getUpdateTag();
-        if (nbt.contains("ForgeData", Constants.NBT.TAG_COMPOUND)) {
-            CompoundNBT forgeData = nbt.getCompound("ForgeData");
+    public CompoundTag getUpdateTag() {
+        CompoundTag nbt = super.getUpdateTag();
+        if (nbt.contains("ForgeData", Tag.TAG_COMPOUND)) {
+            CompoundTag forgeData = nbt.getCompound("ForgeData");
             if (forgeData==this.getTileData()) {
                 nbt.put("ForgeData", forgeData.copy());
             }
@@ -64,7 +62,7 @@ public class ModTileEntity extends TileEntity {
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT nbt) {
+    public CompoundTag save(CompoundTag nbt) {
         nbt = super.save(nbt);
         writeSynced(nbt);
         return nbt;

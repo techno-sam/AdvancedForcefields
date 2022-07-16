@@ -1,15 +1,16 @@
 package com.slimeist.aforce.core.util;
 
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.util.Constants;
 
 public class ForceNetworkPacket {
 
     public ForceNetworkDirection direction;
 
-    public CompoundNBT data;
+    public CompoundTag data;
 
     public boolean active;
 
@@ -27,7 +28,7 @@ public class ForceNetworkPacket {
 
     private static final String TAG_ORIGIN_POS = "originPos";
 
-    public ForceNetworkPacket(ForceNetworkDirection direction, CompoundNBT data, BlockPos originPos, boolean active) {
+    public ForceNetworkPacket(ForceNetworkDirection direction, CompoundTag data, BlockPos originPos, boolean active) {
         this.direction = direction;
         this.data = data;
         this.active = active;
@@ -35,15 +36,15 @@ public class ForceNetworkPacket {
         this.originPos = originPos;
     }
 
-    public ForceNetworkPacket(ForceNetworkDirection direction, CompoundNBT data, BlockPos originPos) {
+    public ForceNetworkPacket(ForceNetworkDirection direction, CompoundTag data, BlockPos originPos) {
         this(direction, data, originPos,false);
     }
 
-    public ForceNetworkPacket(CompoundNBT nbt) {
+    public ForceNetworkPacket(CompoundTag nbt) {
         this.direction = ForceNetworkDirection.valueOf(nbt.getString(TAG_DIRECTION));
         this.data = nbt.getCompound(TAG_DATA);
         this.active = nbt.getBoolean(TAG_ACTIVE);
-        if (nbt.contains(TAG_GAME_TIME, Constants.NBT.TAG_LONG)) {
+        if (nbt.contains(TAG_GAME_TIME, Tag.TAG_LONG)) {
             this.createdGameTime = nbt.getLong(TAG_GAME_TIME);
         } else {
             this.createdGameTime = -1;
@@ -61,8 +62,8 @@ public class ForceNetworkPacket {
         return this;
     }
 
-    public CompoundNBT toNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag toNBT() {
+        CompoundTag nbt = new CompoundTag();
         nbt.putString(TAG_DIRECTION, this.direction.name());
         nbt.put(TAG_DATA, this.data);
         nbt.putBoolean(TAG_ACTIVE, this.active);

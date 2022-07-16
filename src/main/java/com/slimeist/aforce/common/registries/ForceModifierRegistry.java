@@ -1,10 +1,10 @@
 package com.slimeist.aforce.common.registries;
 
 import com.slimeist.aforce.core.interfaces.IForceModifierAction;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.tags.ITag;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.tags.Tag;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import java.util.function.Supplier;
@@ -13,7 +13,7 @@ public class ForceModifierRegistry extends ForgeRegistryEntry<ForceModifierRegis
     protected final Supplier<Ingredient> trigger;
     protected final IForceModifierAction action;
 
-    public ForceModifierRegistry(ITag<Item> trigger, IForceModifierAction action) {
+    public ForceModifierRegistry(Tag<Item> trigger, IForceModifierAction action) {
         this(() -> Ingredient.of(trigger), action);
     }
 
