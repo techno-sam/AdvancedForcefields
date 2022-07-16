@@ -178,14 +178,14 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
     public void handleUpgrades() {
         this.setChanged();
 
-        Item item = this.upgradeZoneContents.getItem(0).getItem();
+        ItemStack stack = this.upgradeZoneContents.getItem(0);
 
         this.actions.clear();
         this.clearActionSelectors(this.getBlockPos());
 
         for (ResourceLocation id : RegistryInit.MODIFIER_REGISTRY.getKeys()) {
             ForceModifierRegistry reg = RegistryInit.MODIFIER_REGISTRY.getValue(id);
-            if (reg != null && item == reg.getTrigger()) {
+            if (reg != null && reg.matches(stack)) {
                 this.actions.add(reg);
             }
         }
