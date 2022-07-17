@@ -10,7 +10,8 @@ import com.slimeist.aforce.common.containers.force_controller.ContainerForceCont
 import com.slimeist.aforce.common.containers.force_controller.ForceControllerStateData;
 import com.slimeist.aforce.common.containers.force_controller.ForceControllerZoneContents;
 import com.slimeist.aforce.common.recipies.EnderFuelRecipe;
-import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.BaseForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.SimpleForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ColorUtil;
@@ -356,7 +357,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
                 this.markAsDirty(); //everything needs syncing
                 this.markDirtyFast();
             } else if (packet.data.getString(TAG_PACKET_TYPE).equals("ADD_ACTION")) {
-                this.addActionSelector(ForceModifierSelector.fromNBT(packet.data.getCompound(TAG_PACKET_MESSAGE)));
+                this.addActionSelector(BaseForceModifierSelector.fromNBT(packet.data.getCompound(TAG_PACKET_MESSAGE)));
                 AdvancedForcefields.LOGGER.info("Loading add_action, and marking as dirty");
                 this.markAsDirty(); //everything needs syncing
                 this.markDirtyFast();

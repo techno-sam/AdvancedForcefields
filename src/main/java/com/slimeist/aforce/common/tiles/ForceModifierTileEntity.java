@@ -6,14 +6,13 @@ import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierStateData;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierZoneContents;
-import com.slimeist.aforce.common.modifier_actions.BlockAction;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
-import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.BaseForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.SimpleForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.init.ModifierInit;
 import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
-import com.slimeist.aforce.core.interfaces.IForceModifierAction;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.TagUtil;
 import net.minecraft.block.BlockState;
@@ -23,7 +22,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
@@ -83,22 +81,22 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
 
     public static final int TOTAL_SLOTS_COUNT = UPGRADE_SLOTS_COUNT; //upgrade slots
 
-    public static String TAG_TARGET_LIST = ForceModifierSelector.TAG_TARGET_LIST;
+    public static String TAG_TARGET_LIST = SimpleForceModifierSelector.TAG_TARGET_LIST;
     public List<String> targetList = new ArrayList<>();
-    public static String TAG_WHITELIST = ForceModifierSelector.TAG_WHITELIST;
+    public static String TAG_WHITELIST = SimpleForceModifierSelector.TAG_WHITELIST;
     public boolean whitelist = false;
 
 
-    public static String TAG_TARGET_ANIMALS = ForceModifierSelector.TAG_TARGET_ANIMALS;
+    public static String TAG_TARGET_ANIMALS = SimpleForceModifierSelector.TAG_TARGET_ANIMALS;
     public boolean targetAnimals = false;
 
-    public static String TAG_TARGET_PLAYERS = ForceModifierSelector.TAG_TARGET_PLAYERS;
+    public static String TAG_TARGET_PLAYERS = SimpleForceModifierSelector.TAG_TARGET_PLAYERS;
     public boolean targetPlayers = false;
 
-    public static String TAG_TARGET_NEUTRALS = ForceModifierSelector.TAG_TARGET_NEUTRALS;
+    public static String TAG_TARGET_NEUTRALS = SimpleForceModifierSelector.TAG_TARGET_NEUTRALS;
     public boolean targetNeutrals = false;
 
-    public static String TAG_PRIORITY = ForceModifierSelector.TAG_PRIORITY;
+    public static String TAG_PRIORITY = BaseForceModifierSelector.TAG_PRIORITY;
     public int priority = 0;
 
     public List<ForceModifierRegistry> actions = new ArrayList<>();
@@ -159,7 +157,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements I
         if (this.sendActionsCountdown==0) {
             AdvancedForcefields.LOGGER.info("sendActionsCountdown is zero!");
             for (ForceModifierRegistry action : this.actions) {
-                ForceModifierSelector selector = new ForceModifierSelector(this.targetList, this.whitelist, this.targetAnimals, this.targetPlayers, this.targetNeutrals, action.getRegistryName().toString(), priority, this.getBlockPos(), this.upgradeZoneContents.getItem(0));
+                SimpleForceModifierSelector selector = new SimpleForceModifierSelector(this.targetList, this.whitelist, this.targetAnimals, this.targetPlayers, this.targetNeutrals, action.getRegistryName().toString(), priority, this.getBlockPos(), this.upgradeZoneContents.getItem(0));
                 CompoundNBT message = selector.toNBT();
 
                 CompoundNBT data = new CompoundNBT();

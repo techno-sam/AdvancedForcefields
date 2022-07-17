@@ -1,14 +1,12 @@
 package com.slimeist.aforce.common.blocks;
 
-import com.google.common.collect.Sets;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
-import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
-import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
-import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.BaseForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.SimpleForceModifierSelector;
 import com.slimeist.aforce.core.enums.*;
 import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
@@ -16,21 +14,15 @@ import com.slimeist.aforce.core.util.ColorUtil;
 import com.slimeist.aforce.core.util.MiscUtil;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.client.renderer.chunk.ChunkRenderCache;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.BoatEntity;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -42,11 +34,9 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
-import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -469,17 +459,17 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
 
     public CollisionType getCollisionType(Entity entity, ForceTubeTileEntity forceTubeTile) {
         CollisionType collisionType = CollisionType.SOLID;
-        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        HashMap<Integer, ArrayList<BaseForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
         if (selectors.size() > 0) {
             int max = Collections.max(selectors.keySet());
             int min = Collections.min(selectors.keySet());
 
             for (int i = min; i <= max; i++) {
-                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                ArrayList<BaseForceModifierSelector> temp = selectors.get(i);
                 if (temp == null || temp.isEmpty()) {
                     continue;
                 }
-                for (ForceModifierSelector sel : temp) {
+                for (BaseForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
                         ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
@@ -497,17 +487,17 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
 
     public BurningType getBurningType(Entity entity, ForceTubeTileEntity forceTubeTile) {
         BurningType burningType = BurningType.NO_BURN;
-        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        HashMap<Integer, ArrayList<BaseForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
         if (selectors.size() > 0) {
             int max = Collections.max(selectors.keySet());
             int min = Collections.min(selectors.keySet());
 
             for (int i = min; i <= max; i++) {
-                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                ArrayList<BaseForceModifierSelector> temp = selectors.get(i);
                 if (temp == null || temp.isEmpty()) {
                     continue;
                 }
-                for (ForceModifierSelector sel : temp) {
+                for (BaseForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
                         ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
@@ -525,17 +515,17 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
 
     public FallDamageType getFallDamageType(Entity entity, ForceTubeTileEntity forceTubeTile) {
         FallDamageType damageType = FallDamageType.DAMAGE;
-        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        HashMap<Integer, ArrayList<BaseForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
         if (selectors.size() > 0) {
             int max = Collections.max(selectors.keySet());
             int min = Collections.min(selectors.keySet());
 
             for (int i = min; i <= max; i++) {
-                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                ArrayList<BaseForceModifierSelector> temp = selectors.get(i);
                 if (temp == null || temp.isEmpty()) {
                     continue;
                 }
-                for (ForceModifierSelector sel : temp) {
+                for (BaseForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
                         ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
@@ -552,17 +542,17 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     public void runOnCollide(Entity entity, ForceTubeTileEntity forceTubeTile, CollisionType collisionType, ForceInteractionType interactionType) {
-        HashMap<Integer, ArrayList<ForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
+        HashMap<Integer, ArrayList<BaseForceModifierSelector>> selectors = forceTubeTile.getSortedActionSelectors();
         if (selectors.size() > 0) {
             int max = Collections.max(selectors.keySet());
             int min = Collections.min(selectors.keySet());
 
             for (int i = max; i >= min; i--) {
-                ArrayList<ForceModifierSelector> temp = selectors.get(i);
+                ArrayList<BaseForceModifierSelector> temp = selectors.get(i);
                 if (temp == null || temp.isEmpty()) {
                     continue;
                 }
-                for (ForceModifierSelector sel : temp) {
+                for (BaseForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
                         ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {

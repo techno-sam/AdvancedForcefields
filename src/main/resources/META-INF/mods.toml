@@ -7,7 +7,7 @@ modId="aforce"
 version="${version}"
 displayName="Advanced Forcefields"
 logoFile="aforce.png"
-credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod, GUI element classes and network classes (com.slimeist.aforce.client.gui.ie_elements, com.slimeist.aforce.common.network) to BluSunrize, com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector#validForEntity to BluSunrize, com.slimeist.aforce.core.util.MobHelper to P3pp3rF1y from Reliquary"
+credits="Code and textures by Slimeist, pipe models and shape code to vazkii's Quark mod, GUI element classes and network classes (com.slimeist.aforce.client.gui.ie_elements, com.slimeist.aforce.common.network) to BluSunrize, com.slimeist.aforce.common.tiles.helpers.SimpleForceModifierSelector#validForEntity to BluSunrize, com.slimeist.aforce.core.util.MobHelper to P3pp3rF1y from Reliquary"
 authors="Slimeist"
 description='''
 Advanced Forcefields creates modular, configurable forcefields!
