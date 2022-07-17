@@ -13,6 +13,7 @@ public class RenderTypes extends RenderType {
 
     public static RenderType simpleForceField(ResourceLocation texture) {
         RenderType.CompositeState rendertype$state = RenderType.CompositeState.builder()
+                .setShaderState(RenderStateShard.RENDERTYPE_BEACON_BEAM_SHADER)
                 .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                 .setWriteMaskState(COLOR_WRITE)

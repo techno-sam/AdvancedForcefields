@@ -131,6 +131,5 @@ public class AlternateForceTubeTileEntityRenderer implements BlockEntityRenderer
         event.registerBlockEntityRenderer(TileEntityTypeInit.FORCE_TUBE_TYPE, AlternateForceTubeTileEntityRenderer::new);
     }
 
-
     private static final Logger LOGGER = LogManager.getLogger();
 }

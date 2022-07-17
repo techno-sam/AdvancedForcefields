@@ -16,6 +16,7 @@ public final class ModifierInit {
     public static ForceModifierRegistry SHULKER_LEVITATION_ACTION;
     public static ForceModifierRegistry MAGMA_ACTION;
     public static ForceModifierRegistry BLAZE_FIRE_ACTION;
+    public static ForceModifierRegistry SNOW_FREEZING_ACTION;
 
     private ModifierInit() {}
 
@@ -27,6 +28,7 @@ public final class ModifierInit {
         SHULKER_LEVITATION_ACTION = register("shulker_levitation_action", new ForceModifierRegistry(Items.SHULKER_SHELL, new ShulkerLevitationAction()));
         MAGMA_ACTION = register("magma_action", new ForceModifierRegistry(Items.MAGMA_BLOCK, new MagmaAction()));
         BLAZE_FIRE_ACTION = register("blaze_fire_action", new ForceModifierRegistry(Items.BLAZE_ROD, new BlazeFireAction(1.0f)));
+        SNOW_FREEZING_ACTION = register("snow_freezing_action", new ForceModifierRegistry(Items.POWDER_SNOW_BUCKET, new FreezingAction()));
     }
 
     private static <T extends ForceModifierRegistry> T register(String name, T modifier) {

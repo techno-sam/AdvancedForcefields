@@ -19,6 +19,7 @@ public final class ItemInit {
 
     public static BlockItem ENDERITE_ORE;
     public static BlockItem ENDERITE_BLOCK;
+    public static BlockItem RAW_ENDERITE_BLOCK;
 
     public static ArmorItem SHIMMERING_HELMET;
     public static ArmorItem SHIMMERING_CHESTPLATE;
@@ -29,6 +30,7 @@ public final class ItemInit {
 
     public static Item ENDERITE_INGOT;
     public static Item ENDERITE_NUGGET;
+    public static Item RAW_ENDERITE;
 
     private ItemInit() {}
 
@@ -50,6 +52,9 @@ public final class ItemInit {
         ENDERITE_BLOCK = register("enderite_block", new BlockItem(BlockInit.ENDERITE_BLOCK, new Item.Properties()
                 .tab(CreativeTabInit.FORCE_NETWORK)
         ));
+        RAW_ENDERITE_BLOCK = register("raw_enderite_block", new BlockItem(BlockInit.RAW_ENDERITE_BLOCK, new Item.Properties()
+                .tab(CreativeTabInit.FORCE_NETWORK)
+        ));
 
         //Shimmering Armor
         SHIMMERING_HELMET = register("shimmering_helmet", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.HEAD,
@@ -65,6 +70,7 @@ public final class ItemInit {
         SHIMMERING_CLOTH = register("shimmering_cloth", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
         ENDERITE_INGOT = register("enderite_ingot", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
         ENDERITE_NUGGET = register("enderite_nugget", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
+        RAW_ENDERITE = register("raw_enderite", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
     }
 
     private static <T extends Item> T register(String name, T item) {

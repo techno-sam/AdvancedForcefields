@@ -30,8 +30,10 @@ public final class BlockInit {
     public static ForceModifierBlock FORCE_MODIFIER;
     public static OreBlock ENDERITE_ORE;
     public static Block ENDERITE_BLOCK;
+    public static Block RAW_ENDERITE_BLOCK;
 
-    private BlockInit() {}
+    private BlockInit() {
+    }
 
     public static void registerAll(RegistryEvent.Register<Block> event) {
         /*BASE_PIPE = register("base_pipe", new BasePipeBlock(AbstractBlock.Properties.of(Material.GLASS)
@@ -41,47 +43,52 @@ public final class BlockInit {
                 .isViewBlocking(BlockInit::never)
         ));*/
 
-    FORCE_TUBE = register("force_tube", new ForceTubeBlock(BlockBehaviour.Properties.of(Material.GLASS)
-            .dynamicShape()
-            .strength(1.0f)
-            .noOcclusion()
-            .sound(SoundType.GLASS)
-            .isViewBlocking(BlockInit::never)
-            .isValidSpawn(BlockInit::never)
-            .isRedstoneConductor(BlockInit::never)
-            .isSuffocating(BlockInit::never)
-            //.noCollission()
-            //.speedFactor(0.2F)
-            .requiresCorrectToolForDrops()
-            .lightLevel(enabledBlockEmission(3))
-            .emissiveRendering(BlockInit::always)
-            .randomTicks()
-    ));
+        FORCE_TUBE = register("force_tube", new ForceTubeBlock(BlockBehaviour.Properties.of(Material.GLASS)
+                .dynamicShape()
+                .strength(1.0f)
+                .noOcclusion()
+                .sound(SoundType.GLASS)
+                .isViewBlocking(BlockInit::never)
+                .isValidSpawn(BlockInit::never)
+                .isRedstoneConductor(BlockInit::never)
+                .isSuffocating(BlockInit::never)
+                //.noCollission()
+                //.speedFactor(0.2F)
+                .requiresCorrectToolForDrops()
+                .lightLevel(enabledBlockEmission(3))
+                .emissiveRendering(BlockInit::always)
+                .randomTicks()
+        ));
 
-    FORCE_CONTROLLER = register("force_controller", new ForceControllerBlock(BlockBehaviour.Properties.of(Material.STONE)
-            .strength(3.5F)
-            .requiresCorrectToolForDrops()
-    ));
+        FORCE_CONTROLLER = register("force_controller", new ForceControllerBlock(BlockBehaviour.Properties.of(Material.STONE)
+                .strength(3.5F)
+                .requiresCorrectToolForDrops()
+        ));
 
-    FORCE_MODIFIER = register("force_modifier", new ForceModifierBlock(BlockBehaviour.Properties.of(Material.STONE)
-            .strength(3.5F)
-            .requiresCorrectToolForDrops()
-            .sound(SoundType.LODESTONE)
-    ));
+        FORCE_MODIFIER = register("force_modifier", new ForceModifierBlock(BlockBehaviour.Properties.of(Material.STONE)
+                .strength(3.5F)
+                .requiresCorrectToolForDrops()
+                .sound(SoundType.LODESTONE)
+        ));
 
-    ENDERITE_ORE = register("enderite_ore", new CustomOreBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.SAND)
-            .requiresCorrectToolForDrops()
-            .strength(3.0F, 9.0F),
-            UniformInt.of(0, 0)
-    ));
+        ENDERITE_ORE = register("enderite_ore", new CustomOreBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.SAND)
+                .requiresCorrectToolForDrops()
+                .strength(3.0F, 9.0F),
+                UniformInt.of(0, 0)
+        ));
 
-    ENDERITE_BLOCK = register("enderite_block", new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_GREEN)
-            .requiresCorrectToolForDrops()
-            .strength(25.0F, 600.0F)
-            .sound(SoundType.NETHERITE_BLOCK)
-    ));
+        ENDERITE_BLOCK = register("enderite_block", new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_GREEN)
+                .requiresCorrectToolForDrops()
+                .strength(17.0F, 408.0F)
+                .sound(SoundType.NETHERITE_BLOCK)
+        ));
 
-    // RenderLayerHandler.setRenderType(BASE_PIPE, RenderLayerHandler.RenderTypeSkeleton.CUTOUT_MIPPED);
+        RAW_ENDERITE_BLOCK = register("raw_enderite_block", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_GREEN)
+                .requiresCorrectToolForDrops()
+                .strength(15.0F, 360.0F)
+        ));
+
+        // RenderLayerHandler.setRenderType(BASE_PIPE, RenderLayerHandler.RenderTypeSkeleton.CUTOUT_MIPPED);
         // initializeSpawnEggs();
     }
 
@@ -116,4 +123,3 @@ public final class BlockInit {
     //    ModSpawnEggItem.initUnaddedEggs();
     //}
 }
-

@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "aforce:raw_enderite_block"
+    ]
+  },
+  "criteria": {
+    "has_raw_enderite": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "aforce:raw_enderite"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "aforce:raw_enderite_block"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_raw_enderite",
+      "has_the_recipe"
+    ]
+  ]
+}
