@@ -1,20 +1,18 @@
 package com.slimeist.aforce.common.tiles.helpers;
 
-import com.mojang.datafixers.kinds.Const;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.core.util.TagUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -66,11 +64,11 @@ public class ForceModifierSelector {
         this.triggerStack = triggerStack;
     }
 
-    public static ForceModifierSelector fromNBT(CompoundNBT nbt) {
+    public static ForceModifierSelector fromNBT(CompoundTag nbt) {
         ForceModifierSelector selector = new ForceModifierSelector(TagUtil.readPos(nbt.getCompound(TAG_ORIGIN_POSITION)));
 
-        if (nbt.contains(TAG_TARGET_LIST, Constants.NBT.TAG_LIST)) {
-            ListNBT list = nbt.getList(TAG_TARGET_LIST, Constants.NBT.TAG_STRING);
+        if (nbt.contains(TAG_TARGET_LIST, Tag.TAG_LIST)) {
+            ListTag list = nbt.getList(TAG_TARGET_LIST, Tag.TAG_STRING);
             List<String> tlist = new ArrayList<>();
             for (int i=0; i<list.size(); i++) {
                 tlist.add(list.getString(i));
@@ -78,43 +76,43 @@ public class ForceModifierSelector {
             selector.setTargetList(tlist);
         }
 
-        if (nbt.contains(TAG_WHITELIST, Constants.NBT.TAG_BYTE)) {
+        if (nbt.contains(TAG_WHITELIST, Tag.TAG_BYTE)) {
             selector.setWhitelist(nbt.getBoolean(TAG_WHITELIST));
         }
 
-        if (nbt.contains(TAG_TARGET_ANIMALS, Constants.NBT.TAG_BYTE)) {
+        if (nbt.contains(TAG_TARGET_ANIMALS, Tag.TAG_BYTE)) {
             selector.setTargetAnimals(nbt.getBoolean(TAG_TARGET_ANIMALS));
         }
 
-        if (nbt.contains(TAG_TARGET_PLAYERS, Constants.NBT.TAG_BYTE)) {
+        if (nbt.contains(TAG_TARGET_PLAYERS, Tag.TAG_BYTE)) {
             selector.setTargetPlayers(nbt.getBoolean(TAG_TARGET_PLAYERS));
         }
 
-        if (nbt.contains(TAG_TARGET_NEUTRALS, Constants.NBT.TAG_BYTE)) {
+        if (nbt.contains(TAG_TARGET_NEUTRALS, Tag.TAG_BYTE)) {
             selector.setTargetNeutrals(nbt.getBoolean(TAG_TARGET_NEUTRALS));
         }
 
-        if (nbt.contains(TAG_MODIFIER_ACTION, Constants.NBT.TAG_STRING)) {
+        if (nbt.contains(TAG_MODIFIER_ACTION, Tag.TAG_STRING)) {
             selector.setAction(nbt.getString(TAG_MODIFIER_ACTION));
         }
 
-        if (nbt.contains(TAG_PRIORITY, Constants.NBT.TAG_INT)) {
+        if (nbt.contains(TAG_PRIORITY, Tag.TAG_INT)) {
             selector.setPriority(nbt.getInt(TAG_PRIORITY));
         }
 
-        if (nbt.contains(TAG_TRIGGER_STACK, Constants.NBT.TAG_COMPOUND)) {
+        if (nbt.contains(TAG_TRIGGER_STACK, Tag.TAG_COMPOUND)) {
             selector.setTriggerStack(ItemStack.of(nbt.getCompound(TAG_TRIGGER_STACK)));
         }
 
         return selector;
     }
 
-    public CompoundNBT toNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag toNBT() {
+        CompoundTag nbt = new CompoundTag();
 
-        ListNBT tlist = new ListNBT();
+        ListTag tlist = new ListTag();
         for (String target : this.getTargetList()) {
-            tlist.add(StringNBT.valueOf(target));
+            tlist.add(StringTag.valueOf(target));
         }
         nbt.put(TAG_TARGET_LIST, tlist);
 
@@ -129,7 +127,7 @@ public class ForceModifierSelector {
 
         nbt.put(TAG_ORIGIN_POSITION, TagUtil.writePos(this.getOriginPosition()));
 
-        CompoundNBT itemNBT = new CompoundNBT();
+        CompoundTag itemNBT = new CompoundTag();
 
         this.getTriggerStack().save(itemNBT);
 
@@ -248,15 +246,15 @@ public class ForceModifierSelector {
             return false;
         }
 
-        if (entity instanceof AnimalEntity &&!this.shouldTargetAnimals()) {
+        if (entity instanceof Animal &&!this.shouldTargetAnimals()) {
             info("Entity is an animal, and we don't target them.");
             return false;
         }
-        if (entity instanceof PlayerEntity &&!this.shouldTargetPlayers()) {
+        if (entity instanceof Player &&!this.shouldTargetPlayers()) {
             info("Entity is a player, and we don't target them.");
             return false;
         }
-        if (!(entity instanceof PlayerEntity)&&!(entity instanceof AnimalEntity)&&!(entity instanceof IMob)&&!this.shouldTargetNeutrals()&&(entity instanceof LivingEntity)) {
+        if (!(entity instanceof Player)&&!(entity instanceof Animal)&&!(entity instanceof Enemy)&&!this.shouldTargetNeutrals()&&(entity instanceof LivingEntity)) {
             info("Entity is neutral, and we don't target them");
             return false;
         }

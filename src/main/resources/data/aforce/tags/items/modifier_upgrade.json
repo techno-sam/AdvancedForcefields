@@ -7,6 +7,7 @@
     "minecraft:blaze_rod",
     "#minecraft:trapdoors",
     "minecraft:cobblestone",
-    "minecraft:shulker_shell"
+    "minecraft:shulker_shell",
+    "minecraft:powder_snow_bucket"
   ]
 }

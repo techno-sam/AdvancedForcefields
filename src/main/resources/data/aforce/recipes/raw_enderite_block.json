@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "aforce:raw_enderite"
+    }
+  },
+  "result": {
+    "item": "aforce:raw_enderite_block"
+  }
+}

@@ -1,10 +1,12 @@
 package com.slimeist.aforce.core.util;
 
 import com.slimeist.aforce.AdvancedForcefields;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -19,7 +21,7 @@ public class TileEntityHelper {
      * @param <T>    Tile entity type
      * @return  Optional of the tile entity, empty if missing or wrong class
      */
-    public static <T> Optional<T> getTile(Class<T> clazz, @Nullable IBlockReader world, BlockPos pos) {
+    public static <T> Optional<T> getTile(Class<T> clazz, @Nullable BlockGetter world, BlockPos pos) {
         return getTile(clazz, world, pos, false);
     }
 
@@ -32,13 +34,13 @@ public class TileEntityHelper {
      * @param <T>    Tile entity type
      * @return  Optional of the tile entity, empty if missing or wrong class
      */
-    public static <T> Optional<T>  getTile(Class<T> clazz, @Nullable IBlockReader world, BlockPos pos, boolean logWrongType) {
+    public static <T> Optional<T>  getTile(Class<T> clazz, @Nullable BlockGetter world, BlockPos pos, boolean logWrongType) {
         if (!isBlockLoaded(world, pos)) {
             return Optional.empty();
         }
 
         //TODO: This causes freezes if being called from onLoad
-        TileEntity tile = world.getBlockEntity(pos);
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile == null) {
             return Optional.empty();
         }
@@ -58,13 +60,19 @@ public class TileEntityHelper {
      * @param pos    Position to check
      * @return  True if its loaded
      */
-    public static boolean isBlockLoaded(@Nullable IBlockReader world, BlockPos pos) {
+    public static boolean isBlockLoaded(@Nullable BlockGetter world, BlockPos pos) {
         if (world == null) {
             return false;
         }
-        if (world instanceof IWorldReader) {
-            return ((IWorldReader) world).hasChunkAt(pos);
+        if (world instanceof LevelReader) {
+            return ((LevelReader) world).hasChunkAt(pos);
         }
         return true;
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> type, BlockEntityType<E> expected, BlockEntityTicker<? super E> tick_method) {
+        return expected == type ? (BlockEntityTicker<A>)tick_method : null;
     }
 }

@@ -1,57 +1,53 @@
 package com.slimeist.aforce.common.blocks;
 
-import com.google.common.collect.Sets;
+import com.mojang.math.Vector3f;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
-import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
-import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
 import com.slimeist.aforce.core.enums.*;
 import com.slimeist.aforce.core.init.RegistryInit;
+import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import com.slimeist.aforce.core.util.ColorUtil;
 import com.slimeist.aforce.core.util.MiscUtil;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.PushReaction;
-import net.minecraft.client.renderer.chunk.ChunkRenderCache;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.BoatEntity;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.particles.RedstoneParticleData;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.EntitySelectionContext;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import com.slimeist.aforce.core.util.TileEntityHelper;
+import net.minecraft.client.renderer.chunk.RenderChunkRegion;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
-import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
-public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock {
+public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock, EntityBlock {
 
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
@@ -69,24 +65,36 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(ENABLED);
     }
 
+    @Nullable
     @Override
-    public void onPlace(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ForceTubeTileEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return TileEntityHelper.createTickerHelper(type, TileEntityTypeInit.FORCE_TUBE_TYPE, ForceTubeTileEntity::tick);
+    }
+
+    @Override
+    public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, worldIn, pos, oldState, isMoving);
         this.doUpdate(state, worldIn, pos);
     }
 
     @Override
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         //super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
         this.doUpdate(state, worldIn, pos);
     }
 
-    public void doUpdate(BlockState state, World worldIn, BlockPos pos) {
+    public void doUpdate(BlockState state, Level worldIn, BlockPos pos) {
         if (!worldIn.isClientSide) {
             this.updateDistance(worldIn, pos, state);
             this.markTEDirty(worldIn, pos);
@@ -94,11 +102,11 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
 
         BlockState targetState = getTargetState(worldIn, pos, state.getValue(WATERLOGGED), this.getInternalDistance(worldIn, pos)!=-1);
         if(!targetState.equals(state)) {
-            worldIn.setBlock(pos, targetState, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.NO_RERENDER);
+            worldIn.setBlock(pos, targetState, UPDATE_ALL | UPDATE_INVISIBLE);
         }
     }
 
-    private BlockState getTargetState(World worldIn, BlockPos pos, boolean waterlog, boolean enabled) {
+    private BlockState getTargetState(Level worldIn, BlockPos pos, boolean waterlog, boolean enabled) {
         BlockState newState = defaultBlockState();
         newState = newState.setValue(WATERLOGGED, waterlog);
         newState = newState.setValue(ENABLED, enabled);
@@ -117,35 +125,27 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         if (state.getValue(ENABLED)) {
-            return VoxelShapes.block();
+            return Shapes.block();
         }
         return super.getShape(state, worldIn, pos, context);
     }
 
     @Override
-    public boolean isMatchingBlock(BlockState mystate, BlockState neighborstate, BlockPos mypos, BlockPos neighborpos, IBlockReader blockReader) {
+    public boolean isMatchingBlock(BlockState mystate, BlockState neighborstate, BlockPos mypos, BlockPos neighborpos, BlockGetter blockReader) {
         return this.isMatchingBlock(mypos, neighborpos, blockReader);
     }
 
-    public boolean isMatchingBlock(BlockPos mypos, BlockPos neighborpos, IBlockReader blockReader) {
-        TileEntity myTile = blockReader.getBlockEntity(mypos);
+    public boolean isMatchingBlock(BlockPos mypos, BlockPos neighborpos, BlockGetter blockReader) {
+        BlockEntity myTile = blockReader.getBlockEntity(mypos);
         if (myTile instanceof ForceTubeTileEntity) {
             return ((ForceTubeTileEntity) myTile).canConnect(neighborpos);
         }
         return false;
     }
 
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
-    }
 
-    @Override
-    public TileEntity createTileEntity(BlockState block, IBlockReader world) {
-        return new ForceTubeTileEntity();
-    }
 
     @Override
     public boolean hasAnalogOutputSignal(BlockState state) {
@@ -153,8 +153,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, World worldIn, BlockPos pos) {
-        TileEntity tile = worldIn.getBlockEntity(pos);
+    public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos) {
+        BlockEntity tile = worldIn.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             return ((ForceTubeTileEntity) tile).getComparatorOutput();
         }
@@ -162,8 +162,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public int getDistance(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public int getDistance(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity && this.shouldSignal(world, pos)) {
             int distance = ((ForceNetworkTileEntity) tile).getDistance();
             //LOGGER.info("getDistance @ "+pos.toShortString()+" (shouldSignal: "+this.shouldSignal(world, pos)+"), returning "+distance);
@@ -173,8 +173,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return -1;
     }
 
-    private int getInternalDistance(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    private int getInternalDistance(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             int distance = ((ForceNetworkTileEntity) tile).getDistance();
             //LOGGER.info("getInteranlDistance @ "+pos.toShortString()+" returning "+distance);
@@ -185,15 +185,15 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public void setDistance(World world, BlockPos pos, int distance) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public void setDistance(Level world, BlockPos pos, int distance) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             ((ForceNetworkTileEntity) tile).setDistance(distance);
         }
     }
 
     @Override
-    public boolean hasCloser(World world, BlockPos pos, BlockPos bannedPos, int distance) {
+    public boolean hasCloser(Level world, BlockPos pos, BlockPos bannedPos, int distance) {
         for (Direction dir : Direction.values()) {
             BlockPos testPos = pos.relative(dir);
             if (!testPos.equals(bannedPos) && this.canConnect(world, pos, testPos)) {
@@ -210,8 +210,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return false;
     }
 
-    public boolean isConnected(World world, BlockPos pos, BlockPos otherPos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public boolean isConnected(Level world, BlockPos pos, BlockPos otherPos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             return ((ForceNetworkTileEntity) tile).isConnected(otherPos);
         } else {
@@ -220,8 +220,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return false;
     }
 
-    public boolean hasMasterPos(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public boolean hasMasterPos(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             return ((ForceNetworkTileEntity) tile).hasMasterPos();
         } else {
@@ -230,8 +230,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return false;
     }
 
-    public boolean canConnect(World world, BlockPos pos, BlockPos otherPos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public boolean canConnect(Level world, BlockPos pos, BlockPos otherPos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             return ((ForceNetworkTileEntity) tile).canConnect(otherPos);
         } else {
@@ -240,8 +240,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return false;
     }
 
-    public boolean shouldSignal(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public boolean shouldSignal(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             return ((ForceTubeTileEntity) tile).isSignalling();
         } else {
@@ -250,8 +250,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         return false;
     }
 
-    public void setSignalling(World world, BlockPos pos, boolean shouldSignal) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public void setSignalling(Level world, BlockPos pos, boolean shouldSignal) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             ((ForceTubeTileEntity) tile).setSignalling(shouldSignal);
         } else {
@@ -259,8 +259,8 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         }
     }
 
-    private void networkDisconnect(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    private void networkDisconnect(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             ((ForceTubeTileEntity) tile).networkDisconnect();
         } else {
@@ -268,19 +268,19 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         }
     }
 
-    private void markTEDirty(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    private void markTEDirty(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             ((ForceTubeTileEntity) tile).setChanged();
             BlockState state = world.getBlockState(pos);
-            world.sendBlockUpdated(pos, state, state, Constants.BlockFlags.BLOCK_UPDATE);
+            world.sendBlockUpdated(pos, state, state, UPDATE_CLIENTS);
             //LOGGER.info("Marked ForceTubeTileEntity at [" + pos + "] as dirty");
         } else {
             LOGGER.error("Did not find expected ForceTubeTileEntity at [" + pos + "], when marking TE as dirty");
         }
     }
 
-    public void updateDistance(World world, BlockPos pos, BlockState state) {
+    public void updateDistance(Level world, BlockPos pos, BlockState state) {
         int targetDistance = this.calculateTargetDistance(world, pos);
         if (this.getDistance(world, pos) != targetDistance) {
             //LOGGER.warn("Distance is: "+this.getDistance(world, pos)+", target is: "+targetDistance);
@@ -295,7 +295,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         }
     }
 
-    private int calculateTargetDistance(World world, BlockPos pos) {
+    private int calculateTargetDistance(Level world, BlockPos pos) {
         this.setSignalling(world, pos, false);
         int dist = this.getLeastNeighborDistance(world, pos);
         this.setSignalling(world, pos, true);
@@ -306,7 +306,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         }
     }
 
-    private int getLeastNeighborDistance(World world, BlockPos pos) {
+    private int getLeastNeighborDistance(Level world, BlockPos pos) {
         int d = -1;
         boolean hasCloser = false;
         int myd = this.getInternalDistance(world, pos);
@@ -338,17 +338,17 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public VoxelShape getVisualShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
-        return VoxelShapes.empty();
+    public VoxelShape getVisualShape(BlockState state, BlockGetter blockReader, BlockPos pos, CollisionContext context) {
+        return Shapes.empty();
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState p_200123_1_, IBlockReader p_200123_2_, BlockPos p_200123_3_) {
+    public boolean propagatesSkylightDown(BlockState p_200123_1_, BlockGetter p_200123_2_, BlockPos p_200123_3_) {
         return true;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public float getShadeBrightness(BlockState p_220080_1_, IBlockReader p_220080_2_, BlockPos p_220080_3_) {
+    public float getShadeBrightness(BlockState p_220080_1_, BlockGetter p_220080_2_, BlockPos p_220080_3_) {
         return 1.0F;
     }
 
@@ -357,26 +357,26 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public void fallOn(World world, BlockPos pos, Entity entity, float fallDistance) {
+    public void fallOn(Level world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
         if (entity.isSuppressingBounce()) {
-            super.fallOn(world, pos, entity, fallDistance);
+            super.fallOn(world, state, pos, entity, fallDistance);
         } else {
-            TileEntity tile = world.getBlockEntity(pos);
+            BlockEntity tile = world.getBlockEntity(pos);
             if (tile instanceof ForceTubeTileEntity) {
                 ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
                 if (this.getFallDamageType(entity, forceTile) == FallDamageType.DAMAGE) {
-                    super.fallOn(world, pos, entity, fallDistance);
+                    super.fallOn(world, state, pos, entity, fallDistance);
                 } else {
-                    entity.causeFallDamage(fallDistance, 0.0F);
+                    entity.causeFallDamage(fallDistance, 0.0F, DamageSource.FALL);
                 }
             }
         }
     }
 
     @Override
-    public void updateEntityAfterFallOn(IBlockReader world, Entity entity) {
+    public void updateEntityAfterFallOn(BlockGetter world, Entity entity) {
         BlockPos pos = entity.getOnPos();
-        TileEntity tile = world.getBlockEntity(pos);
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
             this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.LAND_ON);
@@ -385,19 +385,19 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public void stepOn(World world, BlockPos pos, Entity entity) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public void stepOn(Level world, BlockPos pos, BlockState state, Entity entity) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
             this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.STEP_ON);
         }
 
-        super.stepOn(world, pos, entity);
+        super.stepOn(world, pos, state, entity);
     }
 
     @Override
-    public void entityInside(BlockState state, World world, BlockPos pos, Entity entity) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceTubeTileEntity) {
             ForceTubeTileEntity forceTile = (ForceTubeTileEntity) tile;
             this.runOnCollide(entity, forceTile, this.getCollisionType(entity, forceTile), ForceInteractionType.INSIDE);
@@ -407,14 +407,14 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader blockReader, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter blockReader, BlockPos pos, CollisionContext context) {
         VoxelShape shape = super.getCollisionShape(state, blockReader, pos, context);
-        VoxelShape empty = VoxelShapes.empty();
-        if (!shape.isEmpty() && context instanceof EntitySelectionContext && !(blockReader instanceof ChunkRenderCache)) {
-            EntitySelectionContext entityContext = (EntitySelectionContext) context;
-            Entity entity = entityContext.getEntity();
+        VoxelShape empty = Shapes.empty();
+        if (!shape.isEmpty() && context instanceof EntityCollisionContext && !(blockReader instanceof RenderChunkRegion)) {
+            EntityCollisionContext entityContext = (EntityCollisionContext) context;
+            Entity entity = entityContext.getEntity().orElse(null);
 
-            TileEntity tile = blockReader.getBlockEntity(pos);
+            BlockEntity tile = blockReader.getBlockEntity(pos);
             if (tile instanceof ForceTubeTileEntity && entity!=null) {
                 ForceTubeTileEntity forceTubeTile = (ForceTubeTileEntity) tile;
                 if (forceTubeTile.hasMasterPos()) {
@@ -428,13 +428,13 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
                     boolean isColliding = false;
                     boolean isVeryNearby = false;
 
-                    List<AxisAlignedBB> boxes = shape.move(pos.getX(), pos.getY(), pos.getZ()).toAabbs();
+                    List<AABB> boxes = shape.move(pos.getX(), pos.getY(), pos.getZ()).toAabbs();
 
-                    AxisAlignedBB entityBox = entity.getBoundingBox();
+                    AABB entityBox = entity.getBoundingBox();
 
-                    for (AxisAlignedBB box : boxes) {
-                        AxisAlignedBB box2 = box.inflate(0.01);
-                        AxisAlignedBB box3 = box.inflate(0.5);
+                    for (AABB box : boxes) {
+                        AABB box2 = box.inflate(0.01);
+                        AABB box3 = box.inflate(0.5);
                         if (entityBox.intersects(box2)) {
                             isColliding = true;
                         }
@@ -574,7 +574,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
         }
     }
 
-    protected void doParticlesForDirection(ForceNetworkDirection networkDirection, ForceTubeTileEntity ftte, World world, BlockPos pos, Random rand) {
+    protected void doParticlesForDirection(ForceNetworkDirection networkDirection, ForceTubeTileEntity ftte, Level world, BlockPos pos, Random rand) {
         int limit = 20;
         long now = world.getGameTime();
         long last_packet = networkDirection == ForceNetworkDirection.TO_MASTER ? ftte.getLastToMasterPacketGT() : ftte.getLatestToServantPacketGameTime();
@@ -602,7 +602,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
                     } else {
                         otherPos = pos.above();
                     }
-                    Vector3i dir = new Vector3i(pos.getX() - otherPos.getX(), pos.getY() - otherPos.getY(), pos.getZ() - otherPos.getZ()); //from me to otherPos
+                    Vec3i dir = new Vec3i(pos.getX() - otherPos.getX(), pos.getY() - otherPos.getY(), pos.getZ() - otherPos.getZ()); //from me to otherPos
                     double lower = 0;//0.48
                     double upper = 0.3;//0.6
                     double offsetX = (dir.getX() == 0 ? MiscUtil.randomSignedDouble(lower, upper, rand) : 0);
@@ -631,7 +631,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
                     float scale = Math.max(1.0f, (1 - alpha) * 2.0f);
                     double speed = 1000.0f;
                     if (alpha > 0.001) {
-                        world.addParticle(new RedstoneParticleData(1.0f-red, 1.0f-green, 1.0f-blue, scale), startX, startY, startZ, (startX-endX)*speed, (startY-endY)*speed, (startZ-endZ)*speed);
+                        world.addParticle(new DustParticleOptions(new Vector3f(1.0f-red, 1.0f-green, 1.0f-blue), scale), startX, startY, startZ, (startX-endX)*speed, (startY-endY)*speed, (startZ-endZ)*speed);
                     }
                 }
             }
@@ -640,9 +640,9 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock 
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void animateTick(BlockState blockState, World world, BlockPos pos, Random rand) {
+    public void animateTick(BlockState blockState, Level world, BlockPos pos, Random rand) {
         super.animateTick(blockState, world, pos, rand);
-        TileEntity te = world.getBlockEntity(pos);
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ForceTubeTileEntity) {
             ForceTubeTileEntity ftte = (ForceTubeTileEntity) te;
             if (ClientUtils.mc().player!=null && MiscUtil.isPlayerWearingShimmeringHelmet(ClientUtils.mc().player) && ClientUtils.mc().player.isShiftKeyDown()) {

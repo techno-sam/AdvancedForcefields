@@ -5,10 +5,12 @@ import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.init.BlockInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 
@@ -23,8 +25,8 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
     protected boolean nodesNeedUpdating = false;
     protected long lastUpdate = 0;
 
-    public ForceTubeTileEntity() {
-        super(TileEntityTypeInit.FORCE_TUBE_TYPE);
+    public ForceTubeTileEntity(BlockPos pos, BlockState state) {
+        super(TileEntityTypeInit.FORCE_TUBE_TYPE, pos, state);
         this.updateNodeLists();
     }
 
@@ -46,15 +48,14 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
         this.nodesNeedUpdating = true;
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-        if (this.getLevel()!=null && this.getLevel().getGameTime()>this.lastUpdate+60) {
-            this.nodesNeedUpdating = true;
-            this.lastUpdate = this.getLevel().getGameTime();
+    public static <T extends ForceTubeTileEntity> void tick(Level level, BlockPos pos, BlockState state, T tile) {
+        ForceNetworkTileEntity.networkTick(level, pos, state, tile);
+        if (tile.getLevel() != null && tile.getLevel().getGameTime()>tile.lastUpdate+60) {
+            tile.nodesNeedUpdating = true;
+            tile.lastUpdate = tile.getLevel().getGameTime();
         }
-        if (this.nodesNeedUpdating) {
-            this.updateNodeLists();
+        if (tile.nodesNeedUpdating) {
+            tile.updateNodeLists();
         }
     }
 
@@ -65,7 +66,7 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
             BlockPos myPos = this.getBlockPos();
             for (Direction dir : Direction.values()) {
                 if (this.isConnected(dir)) {
-                    TileEntity te = this.getLevel().getBlockEntity(myPos.relative(dir));
+                    BlockEntity te = this.getLevel().getBlockEntity(myPos.relative(dir));
                     if (te instanceof ForceNetworkTileEntity) {
                         ForceNetworkTileEntity otherFNTE = (ForceNetworkTileEntity) te;
                         if (this.sharesMasterPos(myPos.relative(dir))) {
@@ -115,9 +116,9 @@ public class ForceTubeTileEntity extends ForceNetworkTileEntity {
     }
 
     public void networkDisconnect() {
-        CompoundNBT data = new CompoundNBT();
+        CompoundTag data = new CompoundTag();
         data.putString(TAG_PACKET_TYPE, "NETWORK_RELEASE");
-        data.put(TAG_PACKET_MESSAGE, new CompoundNBT());
+        data.put(TAG_PACKET_MESSAGE, new CompoundTag());
         ForceNetworkPacket release_packet = new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, this.getBlockPos(), true);
         this.onReceiveToServantsPacket(this.getBlockPos(), this.getDistance(), release_packet);
         this.updateBlockState();

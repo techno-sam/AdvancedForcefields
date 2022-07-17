@@ -2,16 +2,18 @@
   "parent": "minecraft:recipes/root",
   "rewards": {
     "recipes": [
-      "aforce:enderite_block"
+      "aforce:enderite_ingot_from_smelting_enderite_ore"
     ]
   },
   "criteria": {
-    "has_enderite_ingot": {
+    "has_enderite_ore": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
-            "item": "aforce:enderite_ingot"
+            "items": [
+              "aforce:enderite_ore"
+            ]
           }
         ]
       }
@@ -19,13 +21,13 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "aforce:enderite_block"
+        "recipe": "aforce:enderite_ingot_from_smelting_enderite_ore"
       }
     }
   },
   "requirements": [
     [
-      "has_enderite_ingot",
+      "has_enderite_ore",
       "has_the_recipe"
     ]
   ]

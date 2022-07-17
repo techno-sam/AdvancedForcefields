@@ -1,20 +1,18 @@
 package com.slimeist.aforce.common.modifier_actions;
 
-import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.core.enums.CollisionType;
 import com.slimeist.aforce.core.enums.FallDamageType;
 import com.slimeist.aforce.core.enums.ForceInteractionType;
 import com.slimeist.aforce.core.interfaces.IForceModifierAction;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SlimeBlock;
-import net.minecraft.block.SoundType;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlimeBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.phys.Vec3;
 
 public class BouncyAction implements IForceModifierAction {
 
@@ -25,20 +23,20 @@ public class BouncyAction implements IForceModifierAction {
     }
 
     @Override
-    public void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+    public void onCollide(Level world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
         if (!this.canApplyToEntity(collider)) {return;}
         if (collisionType!=CollisionType.SOLID) {
             return;
         }
         if (interactionType == ForceInteractionType.COLLIDE || interactionType == ForceInteractionType.INSIDE || interactionType == ForceInteractionType.VERY_CLOSE) {
-            Vector3d difference = collider.position().subtract(Vector3d.atCenterOf(pos));
+            Vec3 difference = collider.position().subtract(Vec3.atCenterOf(pos));
 
-            Vector3d move = collider.getDeltaMovement();
+            Vec3 move = collider.getDeltaMovement();
 
-            Vector3d new_move = new Vector3d(
-                    MathHelper.lerp(strength, difference.x(), move.x()),
-                    MathHelper.lerp(strength, difference.y(), move.y()),
-                    MathHelper.lerp(strength, difference.z(), move.z())
+            Vec3 new_move = new Vec3(
+                    Mth.lerp(strength, difference.x(), move.x()),
+                    Mth.lerp(strength, difference.y(), move.y()),
+                    Mth.lerp(strength, difference.z(), move.z())
             );
             collider.setDeltaMovement(new_move);
         } else if (interactionType == ForceInteractionType.LAND_ON) {

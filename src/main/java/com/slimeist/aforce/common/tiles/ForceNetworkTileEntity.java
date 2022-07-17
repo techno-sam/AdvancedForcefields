@@ -7,22 +7,22 @@ import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.TagUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTileEntity {
+public class ForceNetworkTileEntity extends ModTileEntity {
 
     protected static final String TAG_PACKET_TYPE = "packetType"; //things such as 'DATA_SYNC', 'COLLISION_DETECTED'
 
@@ -120,18 +120,18 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         }
     }
 
-    protected void loadPacketList(ListNBT list) {
+    protected void loadPacketList(ListTag list) {
         this.packetList = new ArrayList<ForceNetworkPacket>();
         for(int i = 0; i < list.size(); ++i) {
-            CompoundNBT nbt = list.getCompound(i);
+            CompoundTag nbt = list.getCompound(i);
             this.packetList.add(new ForceNetworkPacket(nbt));
         }
     }
 
-    protected ListNBT savePacketList() {
-        ListNBT nbt = new ListNBT();
+    protected ListTag savePacketList() {
+        ListTag nbt = new ListTag();
         for (ForceNetworkPacket forceNetworkPacket : this.packetList) {
-            CompoundNBT compoundnbt = forceNetworkPacket.toNBT();
+            CompoundTag compoundnbt = forceNetworkPacket.toNBT();
             nbt.add(compoundnbt);
         }
         return nbt;
@@ -267,15 +267,14 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         return this.sortedActionSelectors;
     }
 
-    public ForceNetworkTileEntity(TileEntityType<?> tileEntityType) {
-        super(tileEntityType);
+    public ForceNetworkTileEntity(BlockEntityType<?> tileEntityType, BlockPos pos, BlockState state) {
+        super(tileEntityType, pos, state);
     }
 
-    @Override
-    public void tick() {
-        this.handlePackets();
-        if (this.isDirty()) {
-            this.handleDirty();
+    protected static void networkTick(Level level, BlockPos pos, BlockState state, ForceNetworkTileEntity tile) {
+        tile.handlePackets();
+        if (tile.isDirty()) {
+            tile.handleDirty();
         }
     }
 
@@ -319,9 +318,9 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
     }*/
 
     public void handleDirty() { //this doesn't seem to every execute, as ForceControllerTileEntity is the only thing currently marking as dirty, and that has custom handleDirty implementation
-        CompoundNBT shareddata = new CompoundNBT();
+        CompoundTag shareddata = new CompoundTag();
         this.writeSyncedShared(shareddata);
-        CompoundNBT data = new CompoundNBT();
+        CompoundTag data = new CompoundTag();
         data.putString(TAG_PACKET_TYPE, "DATA_SYNC");
         data.put(TAG_PACKET_MESSAGE, shareddata);
 
@@ -337,7 +336,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                 BlockPos acceptingBlockPos = null;
                 for (Direction dir : Direction.values()) {
                     BlockPos testPos = this.getBlockPos().relative(dir);
-                    TileEntity te = this.getLevel().getBlockEntity(testPos);
+                    BlockEntity te = this.getLevel().getBlockEntity(testPos);
                     if (te instanceof ForceNetworkTileEntity) {
                         ForceNetworkTileEntity fnte = (ForceNetworkTileEntity) te;
                         if (fnte.getDistance()<this.getDistance() && this.sharesMasterPos(testPos)) {
@@ -348,7 +347,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                 } //accept from one side only, should fix some problems
                 //AdvancedForcefields.LOGGER.warn("ABP: "+(acceptingBlockPos!=null ? acceptingBlockPos.toShortString() : "Nothing")+", OP: "+packet.originPos.toShortString());
                 if (acceptingBlockPos==null || acceptingBlockPos.equals(packet.originPos)) {
-                    this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
+                    this.loadShared(packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
                     this.markDirtyFast();
                     this.setLatestToServantPacketGameTime(packet.createdGameTime);
                 }
@@ -360,10 +359,10 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
             this.setLocked(false);
             this.reset();
             BlockPos pos = this.getBlockPos();
-            World world = this.getLevel();
+            Level world = this.getLevel();
             BlockState state = world.getBlockState(pos);
             if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
-                world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, false), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.NO_RERENDER);
+                world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, false), Block.UPDATE_CLIENTS | Block.UPDATE_INVISIBLE);
             }
         }
     }
@@ -395,7 +394,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                         BlockPos testPos = myPos.offset(dir.getNormal());
                         if (this.isConnected(testPos)) {
                             if (this.getLevel() != null) {
-                                TileEntity testTile = this.getLevel().getBlockEntity(testPos);
+                                BlockEntity testTile = this.getLevel().getBlockEntity(testPos);
                                 if (testTile instanceof ForceNetworkTileEntity) {
                                     int testDist = ((ForceNetworkTileEntity) testTile).getDistance();
                                     if (testDist < lowestDist) {
@@ -409,7 +408,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
 
                     if (lowestPos != null) {
                         if (this.getLevel()!=null) {
-                            TileEntity tile = this.getLevel().getBlockEntity(lowestPos);
+                            BlockEntity tile = this.getLevel().getBlockEntity(lowestPos);
                             if (tile instanceof ForceNetworkTileEntity) {
                                 ((ForceNetworkTileEntity) tile)
                                         .addPacket(packet.copy());
@@ -427,7 +426,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                         BlockPos testPos = myPos.offset(dir.getNormal());
                         if (this.isConnected(testPos)) {
                             if (this.getLevel() != null) {
-                                TileEntity testTile = this.getLevel().getBlockEntity(testPos);
+                                BlockEntity testTile = this.getLevel().getBlockEntity(testPos);
                                 if (testTile instanceof ForceNetworkTileEntity) {
                                     int testDist = ((ForceNetworkTileEntity) testTile).getDistance();
                                     if (testDist > myDist) {
@@ -477,7 +476,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         BlockPos myPos = this.getBlockPos();
         if (this.getLevel()==null)
             return false;
-        TileEntity tile = this.getLevel().getBlockEntity(otherPos);
+        BlockEntity tile = this.getLevel().getBlockEntity(otherPos);
         if (tile instanceof ForceNetworkTileEntity) {
             ForceNetworkTileEntity networkTile = (ForceNetworkTileEntity) tile;
             if (this.hasMasterPos()==networkTile.hasMasterPos()) {
@@ -494,7 +493,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         boolean isOk = false;
         BlockPos myPos = this.getBlockPos();
         Direction direction = Direction.fromNormal(myPos.getX()-otherPos.getX(), myPos.getY()-otherPos.getY(), myPos.getZ()-otherPos.getZ());
-        World world = this.getLevel();
+        Level world = this.getLevel();
         String reason = "NONE";
         if (world!=null) {
             BlockState otherBlock = world.getBlockState(otherPos);
@@ -507,7 +506,7 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
                         reason = "Not connected to the "+direction.getName();
                     //info("["+this.getBlockPos()+"]->["+otherPos+"] isOk1: "+isOk);
                 }
-                TileEntity otherTile = world.getBlockEntity(otherPos);
+                BlockEntity otherTile = world.getBlockEntity(otherPos);
                 if (otherTile instanceof ForceNetworkTileEntity && !recursed) {
                     boolean changeReason = isOk;
                     isOk = isOk && ((ForceNetworkTileEntity) otherTile).canConnect(myPos, true);
@@ -540,29 +539,29 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         return isOk;
     }
 
-    public void loadInternal(BlockState blockState, CompoundNBT nbt) {
+    public void loadInternal(CompoundTag nbt) {
         this.setDistance(nbt.getInt(TAG_DISTANCE));
         this.setConnections(nbt.getByteArray(TAG_CONNECTIONS));
-        CompoundNBT masterPosNBT = nbt.getCompound(TAG_MASTER_POS);
+        CompoundTag masterPosNBT = nbt.getCompound(TAG_MASTER_POS);
         if (masterPosNBT.isEmpty()) {
             this.setMasterPos(null);
         } else {
             this.setMasterPos(TagUtil.readPos(masterPosNBT));
         }
-        this.loadPacketList(nbt.getList(TAG_PACKET_LIST, Constants.NBT.TAG_COMPOUND));
+        this.loadPacketList(nbt.getList(TAG_PACKET_LIST, Tag.TAG_COMPOUND));
         this.setDirty(nbt.getBoolean(TAG_IS_DIRTY));
         this.setLocked(nbt.getBoolean(TAG_IS_LOCKED));
         this.resetLatestToServantPacketGameTime();
         this.setLatestToServantPacketGameTime(nbt.getLong(TAG_LATEST_TO_SERVANT_PACKET_GAME_TIME));
     }
 
-    public void writeSyncedInternal(CompoundNBT nbt) {
+    public void writeSyncedInternal(CompoundTag nbt) {
         nbt.putInt(TAG_DISTANCE, this.getDistance());
         nbt.putByteArray(TAG_CONNECTIONS, this.getConnections());
         if (this.hasMasterPos()) {
             nbt.put(TAG_MASTER_POS, TagUtil.writePos(this.getMasterPos()));
         } else {
-            nbt.put(TAG_MASTER_POS, new CompoundNBT());
+            nbt.put(TAG_MASTER_POS, new CompoundTag());
         }
         nbt.put(TAG_PACKET_LIST, this.savePacketList());
         nbt.putBoolean(TAG_IS_DIRTY, this.isDirty());
@@ -570,56 +569,56 @@ public class ForceNetworkTileEntity extends ModTileEntity implements ITickableTi
         nbt.putLong(TAG_LATEST_TO_SERVANT_PACKET_GAME_TIME, this.getLatestToServantPacketGameTime());
     }
 
-    public void loadShared(BlockState state, CompoundNBT nbt) {
+    public void loadShared(CompoundTag nbt) {
         this.setColor(nbt.getInt(TAG_COLOR));
 
-        ListNBT actionList = nbt.getList(TAG_ACTION_SELECTORS, Constants.NBT.TAG_COMPOUND);
+        ListTag actionList = nbt.getList(TAG_ACTION_SELECTORS, Tag.TAG_COMPOUND);
         this.clearActionSelectors();
         for (int i=0; i<actionList.size(); i++) {
-            CompoundNBT actionNBT = actionList.getCompound(i);
+            CompoundTag actionNBT = actionList.getCompound(i);
             this.addActionSelector(ForceModifierSelector.fromNBT(actionNBT));
         }
     }
 
-    public void writeSyncedShared(CompoundNBT nbt) {
+    public void writeSyncedShared(CompoundTag nbt) {
         nbt.putInt(TAG_COLOR, this.getColor());
 
-        ListNBT actionList = new ListNBT();
+        ListTag actionList = new ListTag();
         for (ForceModifierSelector sel : this.getActionSelectors()) {
             actionList.add(sel.toNBT());
         }
         nbt.put(TAG_ACTION_SELECTORS, actionList);
     }
 
-    public void loadPersonal(BlockState blockState, CompoundNBT nbt) {
+    public void loadPersonal(CompoundTag nbt) {
 
     }
 
-    public void writeSyncedPersonal(CompoundNBT nbt) {
+    public void writeSyncedPersonal(CompoundTag nbt) {
 
-    }
-
-    @Override
-    public void load(BlockState blockState, CompoundNBT nbt) {
-        super.load(blockState, nbt);
-        this.loadInternal(blockState, nbt.getCompound("internal"));
-        this.loadShared(blockState, nbt.getCompound("shared"));
-        this.loadPersonal(blockState, nbt.getCompound("personal"));
     }
 
     @Override
-    public void writeSynced(CompoundNBT nbt) {
+    public void load(CompoundTag nbt) {
+        super.load(nbt);
+        this.loadInternal(nbt.getCompound("internal"));
+        this.loadShared(nbt.getCompound("shared"));
+        this.loadPersonal(nbt.getCompound("personal"));
+    }
+
+    @Override
+    public void writeSynced(CompoundTag nbt) {
         super.writeSynced(nbt);
 
-        CompoundNBT internalNBT = nbt.getCompound("internal");
+        CompoundTag internalNBT = nbt.getCompound("internal");
         writeSyncedInternal(internalNBT);
         nbt.put("internal", internalNBT);
 
-        CompoundNBT sharedNBT = nbt.getCompound("shared");
+        CompoundTag sharedNBT = nbt.getCompound("shared");
         writeSyncedShared(sharedNBT);
         nbt.put("shared", sharedNBT);
 
-        CompoundNBT personalNBT = nbt.getCompound("personal");
+        CompoundTag personalNBT = nbt.getCompound("personal");
         writeSyncedPersonal(personalNBT);
         nbt.put("personal", personalNBT);
     }

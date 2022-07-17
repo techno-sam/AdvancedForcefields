@@ -1,7 +1,8 @@
 package com.slimeist.aforce.client.util;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class ClientUtils {
     public static Minecraft mc() {
@@ -9,7 +10,7 @@ public class ClientUtils {
     }
 
     public static void bindTexture(ResourceLocation texture) {
-        mc().getTextureManager().bind(texture);
+        RenderSystem.setShaderTexture(0, texture);
     }
 
     public static double modDouble(double x, int modulus) {

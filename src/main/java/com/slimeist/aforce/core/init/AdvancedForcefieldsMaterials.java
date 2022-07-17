@@ -1,10 +1,8 @@
 package com.slimeist.aforce.core.init;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
-import net.minecraft.block.material.PushReaction;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.PushReaction;
 
 public class AdvancedForcefieldsMaterials {
     public static final Material UNPUSHABLE_GLASS = (new AdvancedForcefieldsMaterials.Builder(MaterialColor.NONE)).notSolidBlocking().build();

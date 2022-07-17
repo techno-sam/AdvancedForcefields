@@ -1,10 +1,10 @@
 package com.slimeist.aforce.common;
 
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class CommonProxy {
 
-    public World getClientWorld() {
+    public Level getClientWorld() {
         return null;
     }
 
