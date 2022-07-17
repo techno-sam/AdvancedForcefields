@@ -1,6 +1,6 @@
 # Advanced Forcefields
 
-By Slimeist for **Forge 1.16**.
+By Slimeist for **Forge 1.16 - 1.18**.
 
 ## Credit
 
