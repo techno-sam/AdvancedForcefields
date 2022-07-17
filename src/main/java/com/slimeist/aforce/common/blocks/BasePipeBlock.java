@@ -1,39 +1,36 @@
 package com.slimeist.aforce.common.blocks;
 
-import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.core.util.RenderLayerHandler;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.IWaterLoggable;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.ToolType;
-import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 
-public class BasePipeBlock extends Block implements IWaterLoggable { //derived from vazkii's Quark Oddities Pipe Block
+public class BasePipeBlock extends Block implements SimpleWaterloggedBlock { //derived from vazkii's Quark Oddities Pipe Block
 
-    private static final VoxelShape CENTER_SHAPE = VoxelShapes.box(0.3125, 0.3125, 0.3125, 0.6875, 0.6875, 0.6875);
+    private static final VoxelShape CENTER_SHAPE = Shapes.box(0.3125, 0.3125, 0.3125, 0.6875, 0.6875, 0.6875);
 
-    private static final VoxelShape DOWN_SHAPE = VoxelShapes.box(0.3125, 0, 0.3125, 0.6875, 0.6875, 0.6875);
-    private static final VoxelShape UP_SHAPE = VoxelShapes.box(0.3125, 0.3125, 0.3125, 0.6875, 1, 0.6875);
-    private static final VoxelShape NORTH_SHAPE = VoxelShapes.box(0.3125, 0.3125, 0, 0.6875, 0.6875, 0.6875);
-    private static final VoxelShape SOUTH_SHAPE = VoxelShapes.box(0.3125, 0.3125, 0.3125, 0.6875, 0.6875, 1);
-    private static final VoxelShape WEST_SHAPE = VoxelShapes.box(0, 0.3125, 0.3125, 0.6875, 0.6875, 0.6875);
-    private static final VoxelShape EAST_SHAPE = VoxelShapes.box(0.3125, 0.3125, 0.3125, 1, 0.6875, 0.6875);
+    private static final VoxelShape DOWN_SHAPE = Shapes.box(0.3125, 0, 0.3125, 0.6875, 0.6875, 0.6875);
+    private static final VoxelShape UP_SHAPE = Shapes.box(0.3125, 0.3125, 0.3125, 0.6875, 1, 0.6875);
+    private static final VoxelShape NORTH_SHAPE = Shapes.box(0.3125, 0.3125, 0, 0.6875, 0.6875, 0.6875);
+    private static final VoxelShape SOUTH_SHAPE = Shapes.box(0.3125, 0.3125, 0.3125, 0.6875, 0.6875, 1);
+    private static final VoxelShape WEST_SHAPE = Shapes.box(0, 0.3125, 0.3125, 0.6875, 0.6875, 0.6875);
+    private static final VoxelShape EAST_SHAPE = Shapes.box(0.3125, 0.3125, 0.3125, 1, 0.6875, 0.6875);
 
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
     public static final BooleanProperty UP = BooleanProperty.create("up");
@@ -66,11 +63,6 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
         RenderLayerHandler.setRenderType(this, RenderLayerHandler.RenderTypeSkeleton.CUTOUT_MIPPED);
     }
 
-    @Override
-    public boolean isToolEffective(BlockState state, ToolType tool) {
-        return tool == ToolType.PICKAXE;
-    }
-
     @Nonnull
     @Override
     @SuppressWarnings("deprecation")
@@ -79,22 +71,22 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
     }
 
     @Override
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         BlockState targetState = getTargetState(worldIn, pos, state.getValue(WATERLOGGED));
         if(!targetState.equals(state))
-            worldIn.setBlock(pos, targetState, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.NO_RERENDER);//2 | 4);
+            worldIn.setBlock(pos, targetState, UPDATE_CLIENTS | UPDATE_INVISIBLE);//2 | 4);
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context) {
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
         return getTargetState(context.getLevel(), context.getClickedPos(), context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 
-    public boolean isMatchingBlock(BlockState mystate, BlockState neighborstate, BlockPos mypos, BlockPos neighborpos, IBlockReader blockReader) {
-        return neighborstate.getBlock().is(Tags.Blocks.GLASS);
+    public boolean isMatchingBlock(BlockState mystate, BlockState neighborstate, BlockPos mypos, BlockPos neighborpos, BlockGetter blockReader) {
+        return neighborstate.is(Tags.Blocks.GLASS);
     }
 
-    private BlockState getTargetState(World worldIn, BlockPos pos, boolean waterlog) {
+    private BlockState getTargetState(Level worldIn, BlockPos pos, boolean waterlog) {
         BlockState newState = defaultBlockState();
         newState = newState.setValue(WATERLOGGED, waterlog);
 
@@ -112,7 +104,7 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         int index = 0;
         for(Direction dir : Direction.values()) {
             int ord = dir.ordinal();
@@ -127,7 +119,7 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
             for(Direction dir : Direction.values()) {
                 boolean connected = isConnected(state, dir);
                 if(connected)
-                    currShape = VoxelShapes.or(currShape, SIDE_BOXES[dir.ordinal()]);
+                    currShape = Shapes.or(currShape, SIDE_BOXES[dir.ordinal()]);
             }
 
             shapeCache[index] = currShape;
@@ -143,7 +135,7 @@ public class BasePipeBlock extends Block implements IWaterLoggable { //derived f
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(UP, DOWN, NORTH, SOUTH, WEST, EAST, WATERLOGGED);
     }
 }

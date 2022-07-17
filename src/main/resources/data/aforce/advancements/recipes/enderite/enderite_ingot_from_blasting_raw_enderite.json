@@ -2,16 +2,18 @@
   "parent": "minecraft:recipes/root",
   "rewards": {
     "recipes": [
-      "aforce:enderite_ingot_from_blasting"
+      "aforce:enderite_ingot_from_blasting_raw_enderite"
     ]
   },
   "criteria": {
-    "has_enderite_ore": {
+    "has_raw_enderite": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
-            "item": "aforce:enderite_ore"
+            "items": [
+              "aforce:raw_enderite"
+            ]
           }
         ]
       }
@@ -19,13 +21,13 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "aforce:enderite_ingot_from_blasting"
+        "recipe": "aforce:enderite_ingot_from_blasting_raw_enderite"
       }
     }
   },
   "requirements": [
     [
-      "has_enderite_ore",
+      "has_raw_enderite",
       "has_the_recipe"
     ]
   ]

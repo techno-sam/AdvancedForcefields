@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "group": "iron_ingot",
+  "ingredient": {
+    "item": "aforce:raw_enderite"
+  },
+  "result": "aforce:enderite_ingot",
+  "experience": 0.7,
+  "cookingtime": 200
+}

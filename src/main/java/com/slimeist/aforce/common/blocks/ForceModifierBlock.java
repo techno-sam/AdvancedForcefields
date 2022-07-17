@@ -1,36 +1,39 @@
 package com.slimeist.aforce.common.blocks;
 
-import com.google.common.collect.Sets;
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
+import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
-import net.minecraft.block.*;
-import net.minecraft.block.material.PushReaction;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.DirectionProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.fmllegacy.network.NetworkHooks;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 
-public class ForceModifierBlock extends ContainerBlock implements IForceNetworkBlock {
-    public static final DirectionProperty FACING = HorizontalBlock.FACING;
+public class ForceModifierBlock extends BaseEntityBlock implements IForceNetworkBlock {
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     public ForceModifierBlock(Properties properties) {
@@ -42,42 +45,38 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
         builder.add(POWERED);
     }
 
-    public BlockState getStateForPlacement(BlockItemUseContext p_196258_1_) {
+    public BlockState getStateForPlacement(BlockPlaceContext p_196258_1_) {
         return this.defaultBlockState().setValue(FACING, p_196258_1_.getHorizontalDirection().getOpposite());
-    }
-
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
-    }
-
-    @Override
-    public TileEntity createTileEntity(BlockState block, IBlockReader world) {
-        return this.newBlockEntity(world);
     }
 
     @Nullable
     @Override
-    public TileEntity newBlockEntity(IBlockReader world) {
-        return new ForceModifierTileEntity();
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ForceModifierTileEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level p_153212_, BlockState p_153213_, BlockEntityType<T> p_153214_) {
+        return createTickerHelper(p_153214_, TileEntityTypeInit.FORCE_MODIFIER_TYPE, ForceModifierTileEntity::tick);
     }
 
     @Override
-    public void onPlace(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+    public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, worldIn, pos, oldState, isMoving);
         this.doUpdate(state, worldIn, pos);
     }
 
     @Override
-    public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        if (placer instanceof PlayerEntity) {
-            TileEntity myTile = worldIn.getBlockEntity(pos);
+    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        if (placer instanceof Player) {
+            BlockEntity myTile = worldIn.getBlockEntity(pos);
             if (myTile instanceof ForceModifierTileEntity) {
                 ForceModifierTileEntity modifieTE = (ForceModifierTileEntity) myTile;
                 modifieTE.owner = placer.getName().getString();
@@ -86,29 +85,29 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     }
 
     @Override
-    public boolean canEntityDestroy(BlockState state, IBlockReader world, BlockPos pos, Entity entity) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public boolean canEntityDestroy(BlockState state, BlockGetter world, BlockPos pos, Entity entity) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if(tile instanceof ForceModifierTileEntity)
             return ((ForceModifierTileEntity)tile).canEntityDestroy(entity);
         return super.canEntityDestroy(state, world, pos, entity);
     }
 
     @Override
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
         this.doUpdate(state, worldIn, pos);
     }
 
-    private void doUpdate(BlockState state, World worldIn, BlockPos pos) {
+    private void doUpdate(BlockState state, Level worldIn, BlockPos pos) {
         if (!worldIn.isClientSide) {
             this.updateDistance(worldIn, pos, state);
         }
 
-        TileEntity myTile = worldIn.getBlockEntity(pos);
+        BlockEntity myTile = worldIn.getBlockEntity(pos);
         if (myTile instanceof ForceModifierTileEntity) {
             boolean powered = worldIn.hasNeighborSignal(pos);
             if (powered!=state.getValue(POWERED)) {
-                worldIn.setBlock(pos, state.setValue(POWERED, powered), Constants.BlockFlags.BLOCK_UPDATE);
+                worldIn.setBlock(pos, state.setValue(POWERED, powered), UPDATE_CLIENTS);
                 ForceModifierTileEntity modifierTile = (ForceModifierTileEntity) myTile;
                 if (powered) {
                     modifierTile.onPowered();
@@ -123,8 +122,8 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         return PushReaction.BLOCK;
     }
 
-    public boolean shouldSignal(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public boolean shouldSignal(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceModifierTileEntity) {
             return ((ForceModifierTileEntity) tile).isSignalling();
         } else {
@@ -133,8 +132,8 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         return false;
     }
 
-    public void setSignalling(World world, BlockPos pos, boolean shouldSignal) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public void setSignalling(Level world, BlockPos pos, boolean shouldSignal) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceModifierTileEntity) {
             ((ForceModifierTileEntity) tile).setSignalling(shouldSignal);
         } else {
@@ -142,8 +141,8 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         }
     }
 
-    private void networkDisconnect(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    private void networkDisconnect(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceModifierTileEntity) {
             ((ForceModifierTileEntity) tile).networkDisconnect();
         } else {
@@ -152,8 +151,8 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     }
 
     @Override
-    public int getDistance(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public int getDistance(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity && this.shouldSignal(world, pos)) {
             int distance = ((ForceNetworkTileEntity) tile).getDistance();
             //LOGGER.info("getDistance @ "+pos.toShortString()+" (shouldSignal: "+this.shouldSignal(world, pos)+"), returning "+distance);
@@ -163,8 +162,8 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         return -1;
     }
 
-    private int getInternalDistance(World world, BlockPos pos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    private int getInternalDistance(Level world, BlockPos pos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             int distance = ((ForceNetworkTileEntity) tile).getDistance();
             //LOGGER.info("getInteranlDistance @ "+pos.toShortString()+" returning "+distance);
@@ -175,14 +174,14 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     }
 
     @Override
-    public void setDistance(World world, BlockPos pos, int distance) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public void setDistance(Level world, BlockPos pos, int distance) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             ((ForceNetworkTileEntity) tile).setDistance(distance);
         }
     }
 
-    public void updateDistance(World world, BlockPos pos, BlockState state) {
+    public void updateDistance(Level world, BlockPos pos, BlockState state) {
         int targetDistance = this.calculateTargetDistance(world, pos);
         if (this.getDistance(world, pos) != targetDistance) {
             //LOGGER.warn("Distance is: "+this.getDistance(world, pos)+", target is: "+targetDistance);
@@ -197,7 +196,7 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         }
     }
 
-    private int calculateTargetDistance(World world, BlockPos pos) {
+    private int calculateTargetDistance(Level world, BlockPos pos) {
         this.setSignalling(world, pos, false);
         int dist = this.getLeastNeighborDistance(world, pos);
         this.setSignalling(world, pos, true);
@@ -208,7 +207,7 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         }
     }
 
-    private int getLeastNeighborDistance(World world, BlockPos pos) {
+    private int getLeastNeighborDistance(Level world, BlockPos pos) {
         int d = -1;
         boolean hasCloser = false;
         int myd = this.getInternalDistance(world, pos);
@@ -240,7 +239,7 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     }
 
     @Override
-    public boolean hasCloser(World world, BlockPos pos, BlockPos bannedPos, int distance) {
+    public boolean hasCloser(Level world, BlockPos pos, BlockPos bannedPos, int distance) {
         for (Direction dir : Direction.values()) {
             BlockPos testPos = pos.relative(dir);
             if (!testPos.equals(bannedPos) && this.canConnect(world, pos, testPos)) {
@@ -257,8 +256,8 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
         return false;
     }
 
-    public boolean canConnect(World world, BlockPos pos, BlockPos otherPos) {
-        TileEntity tile = world.getBlockEntity(pos);
+    public boolean canConnect(Level world, BlockPos pos, BlockPos otherPos) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if (tile instanceof ForceNetworkTileEntity) {
             return ((ForceNetworkTileEntity) tile).canConnect(otherPos);
         } else {
@@ -301,14 +300,14 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     // Called when the block is right clicked
     // In this block it is used to open the block gui when right clicked by a player
     @Override
-    public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
-        if (worldIn.isClientSide) return ActionResultType.SUCCESS; // on client side, don't do anything
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand hand, BlockHitResult rayTraceResult) {
+        if (worldIn.isClientSide) return InteractionResult.SUCCESS; // on client side, don't do anything
 
-        INamedContainerProvider namedContainerProvider = this.getMenuProvider(state, worldIn, pos);
+        MenuProvider namedContainerProvider = this.getMenuProvider(state, worldIn, pos);
         if (namedContainerProvider != null) {
-            if (!(player instanceof ServerPlayerEntity)) return ActionResultType.FAIL;  // should always be true, but just in case...
-            ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
-            TileEntity tile = worldIn.getBlockEntity(pos);
+            if (!(player instanceof ServerPlayer)) return InteractionResult.FAIL;  // should always be true, but just in case...
+            ServerPlayer serverPlayerEntity = (ServerPlayer)player;
+            BlockEntity tile = worldIn.getBlockEntity(pos);
             if (tile instanceof ForceModifierTileEntity && ((ForceModifierTileEntity) tile).canUseGui(player)) {
                 NetworkHooks.openGui(serverPlayerEntity, namedContainerProvider, (packetBuffer) -> {
                     packetBuffer.writeBlockPos(pos);
@@ -316,15 +315,15 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
             }
             // (packetBuffer)->{} is just a do-nothing because we have no extra data to send
         }
-        return ActionResultType.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     // This is where you can do something when the block is broken. In this case drop the inventory's contents
     // Code is copied directly from vanilla eg ChestBlock, CampfireBlock
     @Override
-    public void onRemove(BlockState state, World world, BlockPos blockPos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState state, Level world, BlockPos blockPos, BlockState newState, boolean isMoving) {
         if (state.getBlock() != newState.getBlock()) {
-            TileEntity tileentity = world.getBlockEntity(blockPos);
+            BlockEntity tileentity = world.getBlockEntity(blockPos);
             if (tileentity instanceof ForceModifierTileEntity) {
                 ForceModifierTileEntity tileEntityModifier = (ForceModifierTileEntity) tileentity;
                 tileEntityModifier.dropAllContents(world, blockPos);
@@ -337,7 +336,7 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     // render using a BakedModel
     // required because the default (super method) is INVISIBLE for BlockContainers.
     @Override
-    public BlockRenderType getRenderShape(BlockState iBlockState) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState iBlockState) {
+        return RenderShape.MODEL;
     }
 }

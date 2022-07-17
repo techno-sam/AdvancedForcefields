@@ -1,9 +1,10 @@
 {
   "type": "minecraft:blasting",
+  "group": "iron_ingot",
   "ingredient": {
-    "item": "aforce:enderite_ore"
+    "item": "aforce:raw_enderite"
   },
   "result": "aforce:enderite_ingot",
-  "experience": 1.5,
+  "experience": 0.7,
   "cookingtime": 100
 }

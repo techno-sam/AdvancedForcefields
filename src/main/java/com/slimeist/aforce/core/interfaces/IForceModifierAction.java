@@ -4,16 +4,15 @@ import com.slimeist.aforce.core.enums.BurningType;
 import com.slimeist.aforce.core.enums.CollisionType;
 import com.slimeist.aforce.core.enums.FallDamageType;
 import com.slimeist.aforce.core.enums.ForceInteractionType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public interface IForceModifierAction {
 
-    default void onCollide(World world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
+    default void onCollide(Level world, BlockPos pos, Entity collider, CollisionType collisionType, ForceInteractionType interactionType, ItemStack triggerStack) {
     }
 
     default CollisionType collisionType() {
@@ -29,6 +28,6 @@ public interface IForceModifierAction {
     }
 
     default boolean canApplyToEntity(Entity entity) {
-        return !(entity instanceof PlayerEntity) || !((PlayerEntity) entity).isSpectator();
+        return !(entity instanceof Player) || !((Player) entity).isSpectator();
     }
 }

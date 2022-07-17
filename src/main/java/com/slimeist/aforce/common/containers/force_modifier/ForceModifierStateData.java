@@ -1,9 +1,9 @@
 package com.slimeist.aforce.common.containers.force_modifier;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.IIntArray;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.inventory.ContainerData;
 
-public class ForceModifierStateData implements IIntArray {
+public class ForceModifierStateData implements ContainerData {
 
     /** example */
     public int example;
@@ -11,11 +11,11 @@ public class ForceModifierStateData implements IIntArray {
 
     // --------- read/write to NBT for permanent storage (on disk, or packet transmission) - used by the TileEntity only
 
-    public void putIntoNBT(CompoundNBT nbtTagCompound) {
+    public void putIntoNBT(CompoundTag nbtTagCompound) {
         nbtTagCompound.putInt(EXAMPLE_TAG, example);
     }
 
-    public void readFromNBT(CompoundNBT nbtTagCompound) {
+    public void readFromNBT(CompoundTag nbtTagCompound) {
         // Trim the arrays (or pad with 0) to make sure they have the correct number of elements
         example = nbtTagCompound.getInt(EXAMPLE_TAG);
     }

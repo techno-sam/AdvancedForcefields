@@ -1,39 +1,29 @@
 package com.slimeist.aforce.mixins;
 
-import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.core.enums.BurningType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.monster.CreeperEntity;
-import net.minecraft.item.FireworkRocketItem;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Calendar;
-
 @Mixin(Entity.class)
 public class MixinEntity {
     @Shadow
-    public AxisAlignedBB getBoundingBox() {
+    public AABB getBoundingBox() {
         throw new RuntimeException("getBoundingBox() should have been mixed in");
     }
 
     @Shadow
-    public World level;
+    public Level level;
 
     @Shadow
     private int remainingFireTicks;
@@ -47,12 +37,12 @@ public class MixinEntity {
         throw new RuntimeException("getFireImmuneTicks() should have been mixed in");
     }
 
-    @Inject(at = @At(value="INVOKE", target="Lnet/minecraft/entity/Entity;setRemainingFireTicks(I)V", ordinal=0), method="move(Lnet/minecraft/entity/MoverType;Lnet/minecraft/util/math/vector/Vector3d;)V", cancellable = true)
+    @Inject(at = @At(value="INVOKE", target="Lnet/minecraft/world/entity/Entity;setRemainingFireTicks(I)V", ordinal=0), method="move", cancellable = true)
     private void modifyTicks(CallbackInfo callback) {
         if (BlockPos.betweenClosedStream(this.getBoundingBox().deflate(0.001D)).noneMatch((p_233572_0_) -> {
             BlockState state = level.getBlockState(p_233572_0_);
             if (state.getBlock() instanceof ForceTubeBlock) {
-                TileEntity tile = level.getBlockEntity(p_233572_0_);
+                BlockEntity tile = level.getBlockEntity(p_233572_0_);
                 if (tile instanceof ForceTubeTileEntity) {
                     return ((ForceTubeBlock) state.getBlock()).getBurningType((Entity) (Object) this, (ForceTubeTileEntity) tile) == BurningType.BURN;
                 }

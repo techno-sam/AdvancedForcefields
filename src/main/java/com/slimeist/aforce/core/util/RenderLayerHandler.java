@@ -1,9 +1,9 @@
 package com.slimeist.aforce.core.util;
 
 
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
@@ -40,7 +40,7 @@ public class RenderLayerHandler { //directly copied from vazkii's Quark mod
         }
 
         for(Block b : mapping.keySet())
-            RenderTypeLookup.setRenderLayer(b, renderTypes.get(mapping.get(b)));
+            ItemBlockRenderTypes.setRenderLayer(b, renderTypes.get(mapping.get(b)));
 
         inheritances.clear();
         mapping.clear();

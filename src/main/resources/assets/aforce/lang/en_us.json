@@ -9,6 +9,7 @@
   "block.aforce.force_modifier": "Force Modifier",
   "block.aforce.enderite_ore": "Enderite Ore",
   "block.aforce.enderite_block": "Enderite Block",
+  "block.aforce.raw_enderite_block": "Block of Raw Enderite",
 
   "item.aforce.shimmering_helmet": "Shimmering Helmet",
   "item.aforce.shimmering_chestplate": "Shimmering Chestplate",
@@ -17,6 +18,7 @@
   "item.aforce.shimmering_cloth": "Shimmering Cloth",
   "item.aforce.enderite_ingot": "Enderite Ingot",
   "item.aforce.enderite_nugget": "Enderite Nugget",
+  "item.aforce.raw_enderite": "Raw Enderite",
 
   "gui.aforce.modifier.add": "Add",
   "gui.aforce.modifier.blacklist": "Blacklist",
