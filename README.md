@@ -78,6 +78,7 @@ of the same network. (Higher numbers are applied first)
 | <img src="https://i.imgur.com/WDhsqqQ.png" height=56 title="Blaze Rod"> | Light entities on fire |
 | <img src="https://i.imgur.com/9ClkSPB.png" height=56 title="Shulker Shell"> | Give entities levitation, strength based on number of shells |
 | <img src="https://i.imgur.com/fsLH9Gm.png" height=56 title="Any Lingering Potion"> | Give entities potion effect |
+| <img src="https://i.imgur.com/48kQ6m5.png" height=56 title="Powder Snow Bucket"> | Freeze entities, like powder snow |
 
 ### Shimmering Armor
 
