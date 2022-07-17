@@ -1,8 +1,8 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "EEE",
-    "EOE",
+    "E-E",
+    "-O-",
     "###"
   ],
   "key": {
@@ -14,6 +14,9 @@
     },
     "E": {
       "item": "minecraft:end_stone"
+    },
+    "-": {
+      "item": "aforce:enderite_ingot"
     }
   },
   "result": {

@@ -95,12 +95,12 @@ Does crazy stuff with invisibility. You'll have to try it to discover for yourse
 
 #### Force Controller
 
-<img src="https://i.imgur.com/JAJoe0q.png">
+<img src="https://i.imgur.com/sRToGX3.png">
 
 #### Force Modifier
 
-<img src="https://i.imgur.com/Qu0pp7o.png">
+<img src="https://i.imgur.com/IFTHSUd.png">
 
 #### Force Tubes
 
-<img src="https://i.imgur.com/ogFkQKl.png">
+<img src="https://i.imgur.com/9ZACpmm.png">
