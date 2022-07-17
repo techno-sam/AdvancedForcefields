@@ -183,8 +183,8 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements M
         this.actions.clear();
         this.clearActionSelectors(this.getBlockPos());
 
-        for (ResourceLocation id : RegistryInit.MODIFIER_REGISTRY.getKeys()) {
-            ForceModifierRegistry reg = RegistryInit.MODIFIER_REGISTRY.getValue(id);
+        for (ResourceLocation id : RegistryInit.MODIFIER_REGISTRY.get().getKeys()) {
+            ForceModifierRegistry reg = RegistryInit.MODIFIER_REGISTRY.get().getValue(id);
             if (reg != null && reg.matches(stack)) {
                 this.actions.add(reg);
             }

@@ -1,6 +1,8 @@
 package com.slimeist.aforce.core.util;
 
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -15,7 +17,7 @@ import java.util.Random;
 public class MiscUtil {
 
     public static void syncTE(BlockEntity tile) {
-        ClientboundBlockEntityDataPacket packet = tile.getUpdatePacket();
+        Packet<ClientGamePacketListener> packet = tile.getUpdatePacket();
         if (packet!=null && tile.getLevel() instanceof ServerLevel) {
             ((ServerChunkCache) tile.getLevel().getChunkSource()).chunkMap
                     .getPlayers(new ChunkPos(tile.getBlockPos()), false)

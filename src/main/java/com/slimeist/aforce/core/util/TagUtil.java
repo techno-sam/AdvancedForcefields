@@ -1,9 +1,8 @@
 package com.slimeist.aforce.core.util;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 

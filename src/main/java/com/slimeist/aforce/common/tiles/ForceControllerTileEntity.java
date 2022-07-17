@@ -139,7 +139,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         for (int slot = 0; slot < slots; slot++) {
             ItemStack stack = this.glassZoneContents.getItem(slot);
             Item item = stack.getItem();
-            if (Tags.Items.GLASS_COLORLESS.contains(item)) {
+            if (stack.is(Tags.Items.GLASS_COLORLESS)) {
                 alpha -= stack.getCount();
             }
             if (item instanceof BlockItem) {

@@ -43,6 +43,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import static com.slimeist.aforce.AdvancedForcefields.LOGGER;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
@@ -412,7 +414,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock,
         VoxelShape empty = Shapes.empty();
         if (!shape.isEmpty() && context instanceof EntityCollisionContext && !(blockReader instanceof RenderChunkRegion)) {
             EntityCollisionContext entityContext = (EntityCollisionContext) context;
-            Entity entity = entityContext.getEntity().orElse(null);
+            Entity entity = entityContext.getEntity();
 
             BlockEntity tile = blockReader.getBlockEntity(pos);
             if (tile instanceof ForceTubeTileEntity && entity!=null) {
@@ -481,7 +483,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock,
                 }
                 for (ForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
-                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.get().getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
                             CollisionType test = registered.getAction().collisionType();
                             if (test != CollisionType.INHERIT) {
@@ -509,7 +511,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock,
                 }
                 for (ForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
-                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.get().getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
                             BurningType test = registered.getAction().burningType();
                             if (test != BurningType.INHERIT) {
@@ -537,7 +539,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock,
                 }
                 for (ForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
-                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.get().getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
                             FallDamageType test = registered.getAction().fallDamageType();
                             if (test != FallDamageType.INHERIT) {
@@ -564,7 +566,7 @@ public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock,
                 }
                 for (ForceModifierSelector sel : temp) {
                     if (sel.validForEntity(entity)) {
-                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.getValue(new ResourceLocation(sel.getAction()));
+                        ForceModifierRegistry registered = RegistryInit.MODIFIER_REGISTRY.get().getValue(new ResourceLocation(sel.getAction()));
                         if (registered != null) {
                             registered.getAction().onCollide(entity.level, forceTubeTile.getBlockPos(), entity, collisionType, interactionType, sel.getTriggerStack());
                         }

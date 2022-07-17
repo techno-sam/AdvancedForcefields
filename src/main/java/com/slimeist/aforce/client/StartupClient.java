@@ -27,7 +27,7 @@ public class StartupClient {
 
     @SubscribeEvent
     public static void loadExtraTextures(final TextureStitchEvent.Pre event) {
-        if (event.getMap().location().equals(InventoryMenu.BLOCK_ATLAS)) {
+        if (event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS)) {
             event.addSprite(AlternateForceTubeTileEntityRenderer.SHIMMER_LOCATION);
             event.addSprite(AlternateForceTubeTileEntityRenderer.OUTLINE_LOCATION);
         }

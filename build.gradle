@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://maven.minecraftforge.net' }
         maven { url = 'https://repo.spongepowered.org/maven' }
         mavenCentral()
     }
@@ -21,13 +21,13 @@ archivesBaseName = 'AdvancedForcefields'
 
 compileJava.options.compilerArgs << "-Xlint:all,-classfile,-processing,-deprecation" << "-Werror"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16) // Mojang ships Java 16 to end users, so your mod should target Java 16.
+java.toolchain.languageVersion = JavaLanguageVersion.of(17) // Mojang ships Java 17 to end users, so your mod should target Java 17.
 
 println('Minecraft version: ' + mc_version + ', Mod version: '+version);
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
     // The mappings can be changed at any time, and must be in the following format.
-    // Channel:   Version:
+    // Channel:   Version:8
     // snapshot   YYYYMMDD   Snapshot are built nightly.
     // stable     #          Stables are built at the discretion of the MCP team.
     // official   MCVersion  Official field/method names from Mojang mapping files
@@ -135,7 +135,7 @@ dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.17.1-37.1.1'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.60'
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 

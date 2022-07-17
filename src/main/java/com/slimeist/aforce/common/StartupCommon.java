@@ -19,7 +19,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fmllegacy.network.NetworkDirection;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.registries.NewRegistryEvent;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -74,7 +75,7 @@ public class StartupCommon {
     }
 
     @SubscribeEvent
-    public void onRegistryRegistration(final RegistryEvent.NewRegistry event) {
+    public void onRegistryRegistration(final NewRegistryEvent event) {
         RegistryInit.registerAll(event);
     }
 

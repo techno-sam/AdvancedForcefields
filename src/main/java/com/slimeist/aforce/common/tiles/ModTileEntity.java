@@ -38,7 +38,7 @@ public class ModTileEntity extends BlockEntity {
     @Override
     @Nullable
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return shouldSyncOnUpdate() ? new ClientboundBlockEntityDataPacket(this.worldPosition, -1, this.getUpdateTag()) : null;
+        return shouldSyncOnUpdate() ? ClientboundBlockEntityDataPacket.create(this, BlockEntity::getUpdateTag) : null;
     }
 
     @Override
@@ -62,9 +62,8 @@ public class ModTileEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag save(CompoundTag nbt) {
-        nbt = super.save(nbt);
+    public void saveAdditional(CompoundTag nbt) {
+        super.saveAdditional(nbt);
         writeSynced(nbt);
-        return nbt;
     }
 }

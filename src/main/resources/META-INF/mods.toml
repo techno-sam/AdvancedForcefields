@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[37,)"
+loaderVersion="[40,)"
 license="GNU General Public License v3.0 or later"
 
 [[mods]]
@@ -16,13 +16,13 @@ Advanced Forcefields creates modular, configurable forcefields!
 [[dependencies.aforce]]
     modId="forge"
     mandatory=true
-    versionRange="[37,)"
+    versionRange="[40,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.aforce]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.17,1.18)"
+    versionRange="[1.18.2,1.19)"
     ordering="NONE"
     side="BOTH"

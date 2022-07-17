@@ -34,7 +34,7 @@ public final class ModifierInit {
     private static <T extends ForceModifierRegistry> T register(String name, T modifier) {
         ResourceLocation id = AdvancedForcefields.getId(name);
         modifier.setRegistryName(id);
-        RegistryInit.MODIFIER_REGISTRY.register(modifier);
+        RegistryInit.MODIFIER_REGISTRY.get().register(modifier);
         return modifier;
     }
 }

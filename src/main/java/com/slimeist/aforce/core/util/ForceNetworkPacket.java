@@ -1,10 +1,9 @@
 package com.slimeist.aforce.core.util;
 
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.Constants;
 
 public class ForceNetworkPacket {
 
