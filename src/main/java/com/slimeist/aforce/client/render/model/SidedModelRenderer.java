@@ -1,19 +1,19 @@
-package com.slimeist.aforce.client.render.model;
+/*package com.slimeist.aforce.client.render.model;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
 import java.util.HashMap;
 import java.util.Random;
 
-import net.minecraft.client.renderer.model.Model;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Matrix3f;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.client.model.Model;
+import net.minecraft.core.Direction;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -134,11 +134,11 @@ public class SidedModelRenderer {
         this.z = p_78793_3_;
     }
 
-    public void render(MatrixStack p_228308_1_, IVertexBuilder p_228308_2_, int p_228308_3_, int p_228308_4_) {
+    public void render(PoseStack p_228308_1_, VertexConsumer p_228308_2_, int p_228308_3_, int p_228308_4_) {
         this.render(p_228308_1_, p_228308_2_, p_228308_3_, p_228308_4_, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public void render(MatrixStack p_228309_1_, IVertexBuilder p_228309_2_, int p_228309_3_, int p_228309_4_, float p_228309_5_, float p_228309_6_, float p_228309_7_, float p_228309_8_) {
+    public void render(PoseStack p_228309_1_, VertexConsumer p_228309_2_, int p_228309_3_, int p_228309_4_, float p_228309_5_, float p_228309_6_, float p_228309_7_, float p_228309_8_) {
         if (this.visible) {
             if (!this.cubes.isEmpty() || !this.children.isEmpty()) {
                 p_228309_1_.pushPose();
@@ -154,7 +154,7 @@ public class SidedModelRenderer {
         }
     }
 
-    public void translateAndRotate(MatrixStack p_228307_1_) {
+    public void translateAndRotate(PoseStack p_228307_1_) {
         p_228307_1_.translate((double)(this.x / 16.0F), (double)(this.y / 16.0F), (double)(this.z / 16.0F));
         if (this.zRot != 0.0F) {
             p_228307_1_.mulPose(Vector3f.ZP.rotation(this.zRot));
@@ -170,7 +170,7 @@ public class SidedModelRenderer {
 
     }
 
-    private void compile(MatrixStack.Entry p_228306_1_, IVertexBuilder p_228306_2_, int p_228306_3_, int p_228306_4_, float p_228306_5_, float p_228306_6_, float p_228306_7_, float p_228306_8_) {
+    private void compile(PoseStack.Pose p_228306_1_, VertexConsumer p_228306_2_, int p_228306_3_, int p_228306_4_, float p_228306_5_, float p_228306_6_, float p_228306_7_, float p_228306_8_) {
         Matrix4f matrix4f = p_228306_1_.pose();
         Matrix3f matrix3f = p_228306_1_.normal();
 
@@ -327,3 +327,4 @@ public class SidedModelRenderer {
         }
     }
 }
+*/

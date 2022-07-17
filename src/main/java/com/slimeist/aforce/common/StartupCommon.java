@@ -6,20 +6,20 @@ import com.slimeist.aforce.common.recipies.EnderFuelRecipe;
 import com.slimeist.aforce.common.recipies.RecipeTypeEnderFuel;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
 import com.slimeist.aforce.core.init.*;
-import net.minecraft.block.Block;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.Item;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
+import com.slimeist.aforce.world.OreGeneration;
+import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.fmllegacy.network.NetworkDirection;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -30,13 +30,14 @@ import static com.slimeist.aforce.AdvancedForcefields.packetHandler;
 
 public class StartupCommon {
 
-    public static final IRecipeType<EnderFuelRecipe> ENDER_FUEL_RECIPE = new RecipeTypeEnderFuel();
+    public static final RecipeType<EnderFuelRecipe> ENDER_FUEL_RECIPE = new RecipeTypeEnderFuel();
 
     @SubscribeEvent
     public void setup(final FMLCommonSetupEvent event)
     {
         AdvancedForcefieldsTags.init();
         registerMessage(MessageForceModifierSync.class, MessageForceModifierSync::new);
+        event.enqueueWork(OreGeneration::registerOres);
     }
 
     @SubscribeEvent
@@ -50,18 +51,18 @@ public class StartupCommon {
     }
 
     @SubscribeEvent
-    public void onTileEntitiesRegistration(final RegistryEvent.Register<TileEntityType<?>> event) {
+    public void onTileEntitiesRegistration(final RegistryEvent.Register<BlockEntityType<?>> event) {
         TileEntityTypeInit.registerAll(event);
     }
 
     @SubscribeEvent
-    public void onContainerRegistration(final RegistryEvent.Register<ContainerType<?>> event)
+    public void onContainerRegistration(final RegistryEvent.Register<MenuType<?>> event)
     {
         ContainerTypeInit.registerAll(event);
     }
 
     @SubscribeEvent
-    public void onRecipeRegistration(final RegistryEvent.Register<IRecipeSerializer<?>> event) {
+    public void onRecipeRegistration(final RegistryEvent.Register<RecipeSerializer<?>> event) {
 
         // Vanilla has a registry for recipe types, but it does not actively use this registry.
         // While this makes registering your recipe type an optional step, I recommend
@@ -86,13 +87,13 @@ public class StartupCommon {
 
     private int messageId = 0;
 
-    private <T extends IMessage> void registerMessage(Class<T> packetType, Function<PacketBuffer, T> decoder)
+    private <T extends IMessage> void registerMessage(Class<T> packetType, Function<FriendlyByteBuf, T> decoder)
     {
         registerMessage(packetType, decoder, Optional.empty());
     }
 
     private <T extends IMessage> void registerMessage(
-            Class<T> packetType, Function<PacketBuffer, T> decoder, NetworkDirection direction
+            Class<T> packetType, Function<FriendlyByteBuf, T> decoder, NetworkDirection direction
     )
     {
         registerMessage(packetType, decoder, Optional.of(direction));
@@ -101,7 +102,7 @@ public class StartupCommon {
     private final Set<Class<?>> knownPacketTypes = new HashSet<>();
 
     private <T extends IMessage> void registerMessage(
-            Class<T> packetType, Function<PacketBuffer, T> decoder, Optional<NetworkDirection> direction
+            Class<T> packetType, Function<FriendlyByteBuf, T> decoder, Optional<NetworkDirection> direction
     )
     {
         if(!knownPacketTypes.add(packetType))

@@ -2,9 +2,12 @@ package com.slimeist.aforce.core.init;
 
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.items.ArmorMaterials;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.*;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -16,6 +19,7 @@ public final class ItemInit {
 
     public static BlockItem ENDERITE_ORE;
     public static BlockItem ENDERITE_BLOCK;
+    public static BlockItem RAW_ENDERITE_BLOCK;
 
     public static ArmorItem SHIMMERING_HELMET;
     public static ArmorItem SHIMMERING_CHESTPLATE;
@@ -26,6 +30,7 @@ public final class ItemInit {
 
     public static Item ENDERITE_INGOT;
     public static Item ENDERITE_NUGGET;
+    public static Item RAW_ENDERITE;
 
     private ItemInit() {}
 
@@ -47,21 +52,25 @@ public final class ItemInit {
         ENDERITE_BLOCK = register("enderite_block", new BlockItem(BlockInit.ENDERITE_BLOCK, new Item.Properties()
                 .tab(CreativeTabInit.FORCE_NETWORK)
         ));
+        RAW_ENDERITE_BLOCK = register("raw_enderite_block", new BlockItem(BlockInit.RAW_ENDERITE_BLOCK, new Item.Properties()
+                .tab(CreativeTabInit.FORCE_NETWORK)
+        ));
 
         //Shimmering Armor
-        SHIMMERING_HELMET = register("shimmering_helmet", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.HEAD,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
-        SHIMMERING_CHESTPLATE = register("shimmering_chestplate", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.CHEST,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
-        SHIMMERING_LEGGINGS = register("shimmering_leggings", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.LEGS,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
-        SHIMMERING_BOOTS = register("shimmering_boots", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlotType.FEET,
-                (new Item.Properties().tab(ItemGroup.TAB_COMBAT))));
+        SHIMMERING_HELMET = register("shimmering_helmet", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.HEAD,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
+        SHIMMERING_CHESTPLATE = register("shimmering_chestplate", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.CHEST,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
+        SHIMMERING_LEGGINGS = register("shimmering_leggings", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.LEGS,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
+        SHIMMERING_BOOTS = register("shimmering_boots", new ArmorItem(ArmorMaterials.SHIMMERING_GOLD, EquipmentSlot.FEET,
+                (new Item.Properties().tab(CreativeModeTab.TAB_COMBAT))));
 
         //Misc items
         SHIMMERING_CLOTH = register("shimmering_cloth", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
         ENDERITE_INGOT = register("enderite_ingot", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
         ENDERITE_NUGGET = register("enderite_nugget", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
+        RAW_ENDERITE = register("raw_enderite", new Item(new Item.Properties().tab(CreativeTabInit.FORCE_NETWORK)));
     }
 
     private static <T extends Item> T register(String name, T item) {

@@ -1,22 +1,20 @@
 package com.slimeist.aforce.mixins;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.monster.CreeperEntity;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.item.FireworkRocketItem;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.item.FireworkRocketItem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Calendar;
 
-@Mixin(CreeperEntity.class)
+@Mixin(Creeper.class)
 public class MixinCreeperEntity {
     @Inject(at = @At("HEAD"), method="explodeCreeper()V", cancellable = true)
     private void explodeCreeper(CallbackInfo callback) {
@@ -26,22 +24,22 @@ public class MixinCreeperEntity {
         april_fools = calendar.get(Calendar.MONTH)==Calendar.APRIL && calendar.get(Calendar.DATE)==1;
 
         if (april_fools) {
-            World world = ((CreeperEntity) (Object) this).level;
-            CreeperEntity creeper = (CreeperEntity) (Object) this;
+            Level world = ((Creeper) (Object) this).level;
+            Creeper creeper = (Creeper) (Object) this;
             if (!world.isClientSide) {
                 creeper.dead = true;
-                creeper.remove();
+                creeper.discard();
                 for (Entity extra : world.getEntities(creeper, creeper.getBoundingBox().inflate(creeper.explosionRadius))) {
-                    if (extra instanceof CreeperEntity) {
-                        ((CreeperEntity) extra).ignite();
+                    if (extra instanceof Creeper) {
+                        ((Creeper) extra).ignite();
                     }
                 }
             } else {
-                Vector3d v3d = new Vector3d(0.0d, 0.0d, 0.0d);
+                Vec3 v3d = new Vec3(0.0d, 0.0d, 0.0d);
 
-                CompoundNBT nbt = new CompoundNBT();
-                ListNBT list = new ListNBT();
-                CompoundNBT explosion = new CompoundNBT();
+                CompoundTag nbt = new CompoundTag();
+                ListTag list = new ListTag();
+                CompoundTag explosion = new CompoundTag();
                 explosion.putByte("Type", (byte) FireworkRocketItem.Shape.CREEPER.getId());
                 explosion.putBoolean("Flicker", false);
                 explosion.putBoolean("Trail", false);

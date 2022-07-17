@@ -8,16 +8,19 @@
 
 package com.slimeist.aforce.client.gui.ie_elements;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.util.ClientUtils;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.function.Function;
+
+import net.minecraft.client.gui.components.Button.OnPress;
 
 public class GuiReactiveList extends Button
 {
@@ -39,9 +42,9 @@ public class GuiReactiveList extends Button
 	private int targetEntry = -1;
 	private int hoverTimer = 0;
 
-	public GuiReactiveList(Screen gui, int x, int y, int w, int h, IPressable handler, String... entries)
+	public GuiReactiveList(Screen gui, int x, int y, int w, int h, OnPress handler, String... entries)
 	{
-		super(x, y, w, h, StringTextComponent.EMPTY, handler);
+		super(x, y, w, h, TextComponent.EMPTY, handler);
 		this.gui = gui;
 		this.entries = entries;
 		recalculateEntries();
@@ -107,15 +110,15 @@ public class GuiReactiveList extends Button
 	}
 
 	@Override
-	public void render(MatrixStack transform, int mx, int my, float partialTicks)
+	public void render(PoseStack transform, int mx, int my, float partialTicks)
 	{
-		FontRenderer fr = ClientUtils.mc().font;
+		Font fr = ClientUtils.mc().font;
 
 		int mmY = my-this.y;
 		int strWidth = width-padding[2]-padding[3]-(needsSlider?6: 0);
 		if(needsSlider)
 		{
-			ClientUtils.mc().getTextureManager().bind(TEXTURE);
+			ClientUtils.bindTexture(TEXTURE);
 			this.blit(transform, x+width-6, y, 16, 136, 6, 4);
 			this.blit(transform, x+width-6, y+height-4, 16, 144, 6, 4);
 			for(int i = 0; i < height-8; i += 2)
@@ -201,7 +204,7 @@ public class GuiReactiveList extends Button
 		if(this.active&&this.visible)
 			if(this.isValidClickButton(key)&&this.clicked(mx, my))
 			{
-				FontRenderer fr = ClientUtils.mc().font;
+				Font fr = ClientUtils.mc().font;
 				double mmY = my-this.y;
 				for(int i = 0; i < Math.min(perPage, entries.length); i++)
 					if(mmY >= i*fr.lineHeight&&mmY < (i+1)*fr.lineHeight)

@@ -86,10 +86,21 @@ def convert_item_with_darken(original_name):
         d
         )
 
+def convert_item_with_half_darken(original_name):
+    convert_with_darken(
+        "/home/sam/MinecraftForge/AdvancedForcefields/tools/metal_src/"+original_name+".png",
+        "/home/sam/MinecraftForge/AdvancedForcefields/tools/metal_dest/"+original_name.replace("netherite", name)+".png",
+        h,
+        s,
+        d/3
+        )
+
 
 convert_item("netherite_ingot")
 convert_item("netherite_block")
 convert_item_with_darken("netherite_overlay")
+convert_item_with_half_darken("raw_netherite")
+convert_item_with_half_darken("raw_netherite_block")
 convert_item("netherite_bars")
 convert_item("netherite_door_bottom")
 convert_item("netherite_door_top")

@@ -17,29 +17,29 @@ import com.slimeist.aforce.core.util.ColorUtil;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.NetworkBlockChain;
 import com.slimeist.aforce.core.util.TagUtil;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.IBeaconBeamColorProvider;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BeaconBeamBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ import java.util.List;
  * Tinted glasses - combines colors to set forcefield color
  */
 
-public class ForceControllerTileEntity extends ForceNetworkTileEntity implements INamedContainerProvider {
+public class ForceControllerTileEntity extends ForceNetworkTileEntity implements MenuProvider {
 
     public String owner;
 
@@ -72,31 +72,31 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
 
     private final ForceControllerStateData forceControllerStateData = new ForceControllerStateData();
 
-    public ForceControllerTileEntity() {
-        super(TileEntityTypeInit.FORCE_CONTROLLER_TYPE);
+    public ForceControllerTileEntity(BlockPos pos, BlockState state) {
+        super(TileEntityTypeInit.FORCE_CONTROLLER_TYPE, pos, state);
         fuelZoneContents = ForceControllerZoneContents.createForTileEntity(1,
                 this::canPlayerAccessInventory, this::setChanged);
         glassZoneContents = ForceControllerZoneContents.createForTileEntity(GLASS_SLOTS_COUNT,
                 this::canPlayerAccessInventory, this::glassSlotsChanged);
     }
 
-    protected boolean hasOwnerRights(PlayerEntity player) {
-        if (player.abilities.instabuild || owner == null || owner.isEmpty())
+    protected boolean hasOwnerRights(Player player) {
+        if (player.getAbilities().instabuild || owner == null || owner.isEmpty())
             return true;
         return owner.equalsIgnoreCase(player.getName().getString());
     }
 
     public boolean canEntityDestroy(Entity entity) {
-        if (entity instanceof PlayerEntity)
-            return hasOwnerRights((PlayerEntity) entity);
+        if (entity instanceof Player)
+            return hasOwnerRights((Player) entity);
         return owner == null || owner.isEmpty();
     }
 
-    public boolean canUseGui(PlayerEntity player) {
+    public boolean canUseGui(Player player) {
         if (hasOwnerRights(player))
             return true;
-        player.displayClientMessage(new TranslationTextComponent("container.isLocked", this.getDisplayName()), true);
-        player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        player.displayClientMessage(new TranslatableComponent("container.isLocked", this.getDisplayName()), true);
+        player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
         return false;
     }
 
@@ -107,7 +107,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     // Return true if the given player is able to use this block. In this case it checks that
     // 1) the world tileentity hasn't been replaced in the meantime, and
     // 2) the player isn't too far away from the centre of the block
-    public boolean canPlayerAccessInventory(PlayerEntity player) {
+    public boolean canPlayerAccessInventory(Player player) {
         if (this.level.getBlockEntity(this.worldPosition) != this) return false;
         final double X_CENTRE_OFFSET = 0.5;
         final double Y_CENTRE_OFFSET = 0.5;
@@ -120,10 +120,9 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         return forceControllerStateData.burnTimeRemaining > 0;
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-        this.handleFuel();
+    public static <T extends ForceControllerTileEntity> void tick(Level level, BlockPos pos, BlockState state, T tile) {
+        ForceNetworkTileEntity.networkTick(level, pos, state, tile);
+        tile.handleFuel();
     }
 
     public void glassSlotsChanged() {
@@ -145,8 +144,8 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
             }
             if (item instanceof BlockItem) {
                 Block block = ((BlockItem) item).getBlock();
-                if (block instanceof IBeaconBeamColorProvider) {
-                    float[] dyeColor = ((IBeaconBeamColorProvider) block).getColor().getTextureDiffuseColors();
+                if (block instanceof BeaconBeamBlock) {
+                    float[] dyeColor = ((BeaconBeamBlock) block).getColor().getTextureDiffuseColors();
                     for (int i = 0; i < stack.getCount(); i++) {
                         totalColors++;
                         colorSum = new float[]{colorSum[0] + dyeColor[0], colorSum[1] + dyeColor[1], colorSum[2] + dyeColor[2]};
@@ -209,7 +208,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         return isBurning;
     }
 
-    public static int getItemBurnTime(World world, ItemStack stack)
+    public static int getItemBurnTime(Level world, ItemStack stack)
     {
         if (world==null) {
             return -1;
@@ -236,14 +235,14 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         /*for (Item item : AdvancedForcefieldsTags.Items.ENDER_FUEL.getValues()) {
             log(item.toString());
         }*/
-        return itemStack.getItem().is(AdvancedForcefieldsTags.Items.ENDER_FUEL);
+        return itemStack.is(AdvancedForcefieldsTags.Items.ENDER_FUEL);
     }
 
     // Return true if the given stack is allowed to be inserted in the given slot
     // Unlike the vanilla furnace, we allow anything to be placed in the input slots
     static public boolean isItemValidForGlassSlot(ItemStack itemStack)
     {
-        return itemStack.getItem().is(Tags.Items.GLASS);
+        return itemStack.is(Tags.Items.GLASS);
     }
 
 
@@ -251,17 +250,17 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     private final String GLASS_SLOTS_NBT = "glassSlots";
 
     @Override
-    public void loadPersonal(BlockState state, CompoundNBT nbt) {
-        super.loadPersonal(state, nbt);
+    public void loadPersonal(CompoundTag nbt) {
+        super.loadPersonal(nbt);
         forceControllerStateData.readFromNBT(nbt);
 
-        CompoundNBT inventoryNBT = nbt.getCompound(FUEL_SLOTS_NBT);
+        CompoundTag inventoryNBT = nbt.getCompound(FUEL_SLOTS_NBT);
         fuelZoneContents.deserializeNBT(inventoryNBT);
 
         inventoryNBT = nbt.getCompound(GLASS_SLOTS_NBT);
         glassZoneContents.deserializeNBT(inventoryNBT);
 
-        if (nbt.contains(TAG_OWNER_NAME, Constants.NBT.TAG_STRING)) {
+        if (nbt.contains(TAG_OWNER_NAME, Tag.TAG_STRING)) {
             this.owner = nbt.getString(TAG_OWNER_NAME);
         }
 
@@ -271,7 +270,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     }
 
     @Override
-    public void writeSyncedPersonal(CompoundNBT nbt) {
+    public void writeSyncedPersonal(CompoundTag nbt) {
         super.writeSyncedPersonal(nbt);
         forceControllerStateData.putIntoNBT(nbt);
         nbt.put(FUEL_SLOTS_NBT, fuelZoneContents.serializeNBT());
@@ -282,9 +281,9 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     }
 
 
-    public void dropAllContents(World world, BlockPos blockPos) {
-        InventoryHelper.dropContents(world, blockPos, fuelZoneContents);
-        InventoryHelper.dropContents(world, blockPos, glassZoneContents);
+    public void dropAllContents(Level world, BlockPos blockPos) {
+        Containers.dropContents(world, blockPos, fuelZoneContents);
+        Containers.dropContents(world, blockPos, glassZoneContents);
     }
 
 
@@ -293,8 +292,8 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
      *  Can be useful when the tileentity has a customised name (eg "David's footlocker")
      */
     @Override
-    public ITextComponent getDisplayName() {
-        return new TranslationTextComponent("container.aforce.force_controller");
+    public Component getDisplayName() {
+        return new TranslatableComponent("container.aforce.force_controller");
     }
 
     /**
@@ -306,7 +305,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
      */
     @Nullable
     @Override
-    public Container createMenu(int windowID, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+    public AbstractContainerMenu createMenu(int windowID, Inventory playerInventory, Player playerEntity) {
         return ContainerForceController.createContainerServerSide(windowID, playerInventory,
                 glassZoneContents, fuelZoneContents, forceControllerStateData);
     }
@@ -323,9 +322,9 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
 
     @Override
     public void handleDirty() {
-        CompoundNBT shareddata = new CompoundNBT();
+        CompoundTag shareddata = new CompoundTag();
         this.writeSyncedShared(shareddata);
-        CompoundNBT data = new CompoundNBT();
+        CompoundTag data = new CompoundTag();
         data.putString(TAG_PACKET_TYPE, "DATA_SYNC");
         data.put(TAG_PACKET_MESSAGE, shareddata);
 
@@ -348,7 +347,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     public void onReceiveToMasterPacket(BlockPos myPos, int myDist, ForceNetworkPacket packet) {
         if (this.getLevel()!=null) {
             if (packet.data.getString(TAG_PACKET_TYPE).equals("DATA_SYNC")) {
-                this.loadShared(this.getLevel().getBlockState(myPos), packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
+                this.loadShared(packet.data.getCompound(TAG_PACKET_MESSAGE).copy());
                 this.markAsDirty(); //everything needs syncing
                 AdvancedForcefields.LOGGER.warn("ForceControllerTileEntity received DATA_SYNC packet, this should not happen in current implementation.");
             } else if (packet.data.getString(TAG_PACKET_TYPE).equals("CLEAR_ACTIONS")) {
@@ -364,7 +363,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         }
     }
 
-    public boolean validTube(BlockState state, IBlockReader world, BlockPos pos) {
+    public boolean validTube(BlockState state, BlockGetter world, BlockPos pos) {
         boolean ok = state.is(AdvancedForcefieldsTags.Blocks.FORCE_COMPONENT_NO_CONTROLLER);
         //AdvancedForcefields.LOGGER.info("Checking if ["+state.getBlock().toString()+"] is a valid tube, and the answer is: "+ok);
         if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
@@ -373,10 +372,10 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         return ok; //allow network to be built through modifiers etc. too
     }
 
-    public boolean validComponent(BlockState state, IBlockReader world, BlockPos pos) {
+    public boolean validComponent(BlockState state, BlockGetter world, BlockPos pos) {
         boolean ok = state.is(AdvancedForcefieldsTags.Blocks.FORCE_COMPONENT_NO_CONTROLLER);
         //AdvancedForcefields.LOGGER.info("Checking if ["+state.getBlock().toString()+"] is a valid component, and the answer is: "+ok);
-        TileEntity tile = world.getBlockEntity(pos);
+        BlockEntity tile = world.getBlockEntity(pos);
         if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
             ok = ok && !state.getValue(ForceTubeBlock.ENABLED);
         }
@@ -396,17 +395,17 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         this.onNetworkBuild(this.getBlockPos());
         for (BlockPos pos : blocks) {
             if (this.getLevel()!=null) {
-                TileEntity tile = this.getLevel().getBlockEntity(pos);
+                BlockEntity tile = this.getLevel().getBlockEntity(pos);
                 if (tile instanceof ForceNetworkTileEntity) {
                     AdvancedForcefields.LOGGER.info("ForceController adding tile: "+tile+", at pos: "+pos.toShortString());
                     ForceNetworkTileEntity networkTile = (ForceNetworkTileEntity) tile;
                     networkTile.onNetworkBuild(this.getBlockPos());
                     networkTile.setDistance(distances.get(pos));
                     networkTile.setLocked(true);
-                    World world = this.getLevel();
+                    Level world = this.getLevel();
                     BlockState state = world.getBlockState(pos);
                     if (false && state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
-                        world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, true), Constants.BlockFlags.BLOCK_UPDATE);// | Constants.BlockFlags.NO_RERENDER);
+                        world.setBlock(pos, state.setValue(ForceTubeBlock.ENABLED, true), Block.UPDATE_CLIENTS);// | Constants.BlockFlags.NO_RERENDER);
                     }
                 }
             }
@@ -425,7 +424,7 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
         }
         for (BlockPos pos : blocks) {
             if (this.getLevel()!=null) {
-                TileEntity tile = this.getLevel().getBlockEntity(pos);
+                BlockEntity tile = this.getLevel().getBlockEntity(pos);
                 if (tile instanceof ForceNetworkTileEntity) {
                     /*BlockState state = this.getLevel().getBlockState(pos);
                     if (state.is(AdvancedForcefieldsTags.Blocks.FORCE_TUBE)) {
@@ -442,9 +441,9 @@ public class ForceControllerTileEntity extends ForceNetworkTileEntity implements
     }
 
     public void onDepowered() {
-        CompoundNBT data = new CompoundNBT();
+        CompoundTag data = new CompoundTag();
         data.putString(TAG_PACKET_TYPE, "NETWORK_RELEASE");
-        data.put(TAG_PACKET_MESSAGE, new CompoundNBT());
+        data.put(TAG_PACKET_MESSAGE, new CompoundTag());
 
         this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_SERVANTS, data, this.getBlockPos(), true));
         this.handlePackets();

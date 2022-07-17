@@ -1,14 +1,15 @@
 package com.slimeist.aforce.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.slimeist.aforce.AdvancedForcefields;
+import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.containers.force_controller.ContainerForceController;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -27,10 +28,10 @@ import java.util.List;
  * Foreground layer - typically text labels
  * renderHoveredToolTip - for tool tips when the mouse is hovering over something of interest
  */
-public class ContainerScreenForceController extends ContainerScreen<ContainerForceController> {
+public class ContainerScreenForceController extends AbstractContainerScreen<ContainerForceController> {
 
     private ContainerForceController containerForceController;
-    public ContainerScreenForceController(ContainerForceController containerForceController, PlayerInventory playerInventory, ITextComponent title) {
+    public ContainerScreenForceController(ContainerForceController containerForceController, Inventory playerInventory, Component title) {
         super(containerForceController, playerInventory, title);
         this.containerForceController = containerForceController;
 
@@ -53,7 +54,7 @@ public class ContainerScreenForceController extends ContainerScreen<ContainerFor
     final static  int PLAYER_INV_LABEL_YPOS = ContainerForceController.PLAYER_INVENTORY_YPOS - FONT_Y_SPACING;
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         this.renderTooltip(matrixStack, mouseX, mouseY);
@@ -62,16 +63,16 @@ public class ContainerScreenForceController extends ContainerScreen<ContainerFor
     // Draw the Tool tip text if hovering over something of interest on the screen
     // renderHoveredToolTip
     @Override
-    protected void renderTooltip(MatrixStack matrixStack, int mouseX, int mouseY) {
-        if (!this.minecraft.player.inventory.getCarried().isEmpty())
+    protected void renderTooltip(PoseStack matrixStack, int mouseX, int mouseY) {
+        if (!this.minecraft.player.inventoryMenu.getCarried().isEmpty())
             return;  // no tooltip if the player is dragging something
 
-        List<ITextComponent> hoveringText = new ArrayList<ITextComponent>();
+        List<Component> hoveringText = new ArrayList<Component>();
 
         // If the mouse is over one of the burn time indicators, add the burn time indicator hovering text
         if (isInRect(leftPos + FLAME_XPOS, topPos + FLAME_YPOS, FLAME_WIDTH, FLAME_HEIGHT, mouseX, mouseY)) {
-            hoveringText.add(new StringTextComponent("Fuel Time:"));
-            hoveringText.add(new StringTextComponent(containerForceController.secondsOfFuelRemaining() + "s"));
+            hoveringText.add(new TextComponent("Fuel Time:"));
+            hoveringText.add(new TextComponent(containerForceController.secondsOfFuelRemaining() + "s"));
         }
 
         // If hoveringText is not empty draw the hovering text.  Otherwise, use vanilla to render tooltip for the slots
@@ -83,9 +84,9 @@ public class ContainerScreenForceController extends ContainerScreen<ContainerFor
     }
 
     @Override
-    protected void renderBg(MatrixStack matrixStack, float partialTicks, int x, int y) {
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.minecraft.getTextureManager().bind(TEXTURE);
+    protected void renderBg(PoseStack matrixStack, float partialTicks, int x, int y) {
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        ClientUtils.bindTexture(TEXTURE);
 
         // width and height are the size provided to the window when initialised after creation.
         // xSize, ySize are the expected size of the texture-? usually seems to be left as a default.
@@ -104,14 +105,14 @@ public class ContainerScreenForceController extends ContainerScreen<ContainerFor
     }
 
     @Override
-    protected void renderLabels(MatrixStack matrixStack, int mouseX, int mouseY) {
+    protected void renderLabels(PoseStack matrixStack, int mouseX, int mouseY) {
         // draw the label for the top of the screen
         final int LABEL_XPOS = 5;
         final int LABEL_YPOS = 5;
         this.font.draw(matrixStack, this.title, LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());     ///    this.font.drawString
 
         // draw the label for the player inventory slots
-        this.font.draw(matrixStack, this.inventory.getDisplayName(),                  ///    this.font.drawString
+        this.font.draw(matrixStack, this.playerInventoryTitle,                  ///    this.font.drawString
                 PLAYER_INV_LABEL_XPOS, PLAYER_INV_LABEL_YPOS, Color.darkGray.getRGB());
     }
 
