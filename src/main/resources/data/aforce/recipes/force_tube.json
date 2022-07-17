@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "###",
-    ".O.",
+    "-O-",
     "###"
   ],
   "key": {
@@ -12,8 +12,8 @@
     "O": {
       "item": "minecraft:ender_pearl"
     },
-    ".": {
-      "item": "minecraft:gold_nugget"
+    "-": {
+      "item": "aforce:enderite_ingot"
     }
   },
   "result": {
