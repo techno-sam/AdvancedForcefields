@@ -4,7 +4,8 @@ import java.util.function.Supplier;
 
 public enum ForceModifierSelectorType {
     BASE(BaseForceModifierSelector::new),
-    SIMPLE(SimpleForceModifierSelector::new)
+    SIMPLE(SimpleForceModifierSelector::new),
+    ADVANCED(AdvancedForceModifierSelector::new),
     ;
 
     private final Supplier<? extends BaseForceModifierSelector> initializer;

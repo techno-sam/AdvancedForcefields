@@ -1,7 +1,7 @@
 package com.slimeist.aforce.common.blocks;
 
-import com.google.common.collect.Sets;
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
+import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
 import net.minecraft.block.*;
@@ -27,7 +27,6 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkHooks;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 
 public class ForceModifierBlock extends ContainerBlock implements IForceNetworkBlock {
     public static final DirectionProperty FACING = HorizontalBlock.FACING;
@@ -65,7 +64,7 @@ public class ForceModifierBlock extends ContainerBlock implements IForceNetworkB
     @Nullable
     @Override
     public TileEntity newBlockEntity(IBlockReader world) {
-        return new ForceModifierTileEntity();
+        return new SimpleForceModifierTileEntity();
     }
 
     @Override

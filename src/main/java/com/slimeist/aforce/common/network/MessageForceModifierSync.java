@@ -2,6 +2,7 @@ package com.slimeist.aforce.common.network;
 
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
+import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;

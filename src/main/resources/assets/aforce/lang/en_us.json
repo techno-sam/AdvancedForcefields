@@ -7,6 +7,7 @@
   "block.aforce.force_controller": "Force Controller",
   "block.aforce.force_tube": "Force Tube",
   "block.aforce.force_modifier": "Force Modifier",
+  "block.aforce.advanced_force_modifier": "Advanced Force Modifier",
   "block.aforce.enderite_ore": "Enderite Ore",
   "block.aforce.enderite_block": "Enderite Block",
 
@@ -24,6 +25,7 @@
   "gui.aforce.modifier.players": "Players",
   "gui.aforce.modifier.neutrals": "Neutrals",
   "gui.aforce.modifier.priority": "%d Priority",
+  "gui.aforce.advanced_modifier.set": "Set",
 
   "itemGroup.force_network": "Advanced Forcefields"
 }

@@ -13,6 +13,7 @@ public final class ItemInit {
     public static BlockItem FORCE_TUBE;
     public static BlockItem FORCE_CONTROLLER;
     public static BlockItem FORCE_MODIFIER;
+    public static BlockItem ADVANCED_FORCE_MODIFIER;
 
     public static BlockItem ENDERITE_ORE;
     public static BlockItem ENDERITE_BLOCK;
@@ -39,6 +40,9 @@ public final class ItemInit {
                 .tab(CreativeTabInit.FORCE_NETWORK)
         ));
         FORCE_MODIFIER = register("force_modifier", new BlockItem(BlockInit.FORCE_MODIFIER, new Item.Properties()
+                .tab(CreativeTabInit.FORCE_NETWORK)
+        ));
+        ADVANCED_FORCE_MODIFIER = register("advanced_force_modifier", new BlockItem(BlockInit.ADVANCED_FORCE_MODIFIER, new Item.Properties()
                 .tab(CreativeTabInit.FORCE_NETWORK)
         ));
         ENDERITE_ORE = register("enderite_ore", new BlockItem(BlockInit.ENDERITE_ORE, new Item.Properties()

@@ -7,13 +7,11 @@ import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.gui.ie_elements.GuiButtonCheckbox;
 import com.slimeist.aforce.client.gui.ie_elements.GuiButtonIE;
 import com.slimeist.aforce.client.gui.ie_elements.GuiReactiveList;
-import com.slimeist.aforce.client.gui.ie_elements.GuiSliderIE;
 import com.slimeist.aforce.client.util.ClientUtils;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 
 import com.slimeist.aforce.common.network.MessageForceModifierSync;
-import com.slimeist.aforce.common.tiles.ForceControllerTileEntity;
-import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
+import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.entity.player.PlayerInventory;
@@ -34,7 +32,7 @@ import static com.slimeist.aforce.client.util.ClientUtils.mc;
 
 public class ContainerScreenForceModifier extends ContainerScreen<ContainerForceModifier> {
 
-    public ForceModifierTileEntity tile;
+    public SimpleForceModifierTileEntity tile;
     private TextFieldWidget nameField;
     private ContainerForceModifier containerForceModifier;
     public ContainerScreenForceModifier(ContainerForceModifier containerForceModifier, PlayerInventory playerInventory, ITextComponent title) {
@@ -101,7 +99,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.whitelist = btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_WHITELIST, tile.whitelist);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_WHITELIST, tile.whitelist);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addButton(new GuiButtonCheckbox(leftPos+74+sideX, topPos+26+extraY, new TranslationTextComponent("gui.aforce.modifier.animals"), tile.targetAnimals,
@@ -109,7 +107,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.targetAnimals = !btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_ANIMALS, tile.targetAnimals);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_TARGET_ANIMALS, tile.targetAnimals);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addButton(new GuiButtonCheckbox(leftPos+74+sideX, topPos+42+extraY, new TranslationTextComponent("gui.aforce.modifier.players"), tile.targetPlayers,
@@ -117,7 +115,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.targetPlayers = !btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_PLAYERS, tile.targetPlayers);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_TARGET_PLAYERS, tile.targetPlayers);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addButton(new GuiButtonCheckbox(leftPos+74+sideX, topPos+58+extraY, new TranslationTextComponent("gui.aforce.modifier.neutrals"), tile.targetNeutrals,
@@ -125,7 +123,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.targetNeutrals = !btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_NEUTRALS, tile.targetNeutrals);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_TARGET_NEUTRALS, tile.targetNeutrals);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addButton(new GuiButtonIE(leftPos+74+sideX, topPos+70+extraY, 7,7, new StringTextComponent(""), ELEMENTS, 9, 87,
@@ -133,7 +131,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.priority += 1;
-                    tag.putInt(ForceModifierTileEntity.TAG_PRIORITY, tile.priority);
+                    tag.putInt(SimpleForceModifierTileEntity.TAG_PRIORITY, tile.priority);
                     handleButtonClick(tag, listOffset);
                 }).setHoverOffset(9,0));
         this.addButton(new GuiButtonIE(leftPos+74+sideX, topPos+86+extraY, 7,7, new StringTextComponent(""), ELEMENTS, 9, 96,
@@ -141,7 +139,7 @@ public class ContainerScreenForceModifier extends ContainerScreen<ContainerForce
                     CompoundNBT tag = new CompoundNBT();
                     int listOffset = -1;
                     tile.priority -= 1;
-                    tag.putInt(ForceModifierTileEntity.TAG_PRIORITY, tile.priority);
+                    tag.putInt(SimpleForceModifierTileEntity.TAG_PRIORITY, tile.priority);
                     handleButtonClick(tag, listOffset);
                 }).setHoverOffset(9,0));
     }
