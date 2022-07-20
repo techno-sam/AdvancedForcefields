@@ -47,16 +47,18 @@ of stained glass colors placed in the **force controller**.
 
 <img src="https://i.imgur.com/mYryueo.png" height="256" alt="Powered Force Tube Network">
 
-### Force Modifier
+### Force Modifiers
+
+Multiple **force modifiers** can be included in a network, and their effects will
+be applied based on the filters set within.
+
+#### Basic Force Modifier
 
 <img src="https://i.imgur.com/CzN5Lyb.png" height="128" alt="Force Modifier">
 <br>
 <img src="https://i.imgur.com/czPv8lH.png" height="256" alt="Force Modifier GUI">
 
-Multiple **force modifiers** can be included in a network, and their effects will
-be applied based on the filters set within.
-
-#### Filters:
+Filters:
 
 - *Blacklist toggle*: When checked, entities named any of the names listed to the
   left will not have the effect applied. When unchecked, only entities with names
@@ -65,7 +67,21 @@ be applied based on the filters set within.
 - *Players toggle*: Whether players can be targeted
 - *Neutrals toggle*: Whether neutral mobs can be targeted
 - *Priority*: Order in which effect will be applied when multiple modifiers are part
-of the same network. (Higher numbers are applied first)
+  of the same network. (Higher numbers are applied first)
+
+#### Advanced Force Modifier
+
+<img src="https://i.imgur.com/5ql1Zkp.png" height="128" alt="Advanced Force Modifier">
+<br>
+<img src="https://i.imgur.com/YBHRKrh.png" height="256" alt="Advanced Force Modifier GUI">
+
+Filters:
+
+- *Entity selector*: Similar to selector in commands, filters entities based on a
+  variety of conditions listed on the [Minecraft Wiki Page](https://minecraft.fandom.com/wiki/Target_selectors)
+- *Blacklist toggle*: When checked, the entity selector's behavior will be inverted
+- *Priority*: Order in which effect will be applied when multiple modifiers are part
+  of the same network. (Higher numbers are applied first)
 
 #### Effects:
 
@@ -100,6 +116,10 @@ Does crazy stuff with invisibility. You'll have to try it to discover for yourse
 #### Force Modifier
 
 <img src="https://i.imgur.com/IFTHSUd.png">
+
+#### Advanced Force Modifier
+
+<img src="https://i.imgur.com/KDfPjml.png">
 
 #### Force Tubes
 

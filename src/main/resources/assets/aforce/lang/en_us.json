@@ -3,6 +3,7 @@
 
   "container.aforce.force_controller": "Force Controller",
   "container.aforce.force_modifier": "Force Modifier",
+  "container.aforce.advanced_force_modifier": "Advanced Force Modifier",
 
   "block.aforce.force_controller": "Force Controller",
   "block.aforce.force_tube": "Force Tube",

@@ -59,7 +59,7 @@ public class SelectorSuggestionHelper {
     private SelectorSuggestionHelper.Suggestions suggestions;
     private boolean allowSuggestions;
     private boolean keepSuggestions;
-    private int yOffset = 72;
+    private int yOffset = 0;
 
     public SelectorSuggestionHelper(Minecraft minecraft, Screen gui, TextFieldWidget input, FontRenderer font, int lineStartOffset, int suggestLineLimit, boolean anchorToBottom, int fillColor) {
         this.minecraft = minecraft;
@@ -122,23 +122,23 @@ public class SelectorSuggestionHelper {
         return true;
     }
 
-    public void showSuggestions(boolean p_228128_1_) {
+    public void showSuggestions(boolean narrator_bool) {
         if (this.pendingSuggestions != null && this.pendingSuggestions.isDone()) {
             com.mojang.brigadier.suggestion.Suggestions suggestions = this.pendingSuggestions.join();
             if (!suggestions.isEmpty()) {
                 if (shouldIgnoreAllSuggestions(suggestions))
                     return;
-                int i = 0;
+                int width = 0;
 
                 for(Suggestion suggestion : suggestions.getList()) {
                     if (shouldIgnoreSuggestion(suggestion))
                         continue;
-                    i = Math.max(i, this.font.width(suggestion.getText()));
+                    width = Math.max(width, this.font.width(suggestion.getText()));
                 }
 
-                int j = MathHelper.clamp(this.input.getScreenX(suggestions.getRange().getStart()), 0, this.input.getScreenX(0) + this.input.getInnerWidth() - i);
-                int k = this.anchorToBottom ? this.screen.height - 12 + this.yOffset : 72 + this.yOffset;
-                this.suggestions = new SelectorSuggestionHelper.Suggestions(j, k, i, this.sortSuggestions(suggestions), p_228128_1_);
+                int x = MathHelper.clamp(this.input.getScreenX(suggestions.getRange().getStart()), 0, this.input.getScreenX(0) + this.input.getInnerWidth() - width);
+                int y = this.anchorToBottom ? this.screen.height - 12 + this.yOffset : 72 + this.yOffset;
+                this.suggestions = new SelectorSuggestionHelper.Suggestions(x, y, width, this.sortSuggestions(suggestions), narrator_bool);
             }
         }
 
@@ -308,67 +308,67 @@ public class SelectorSuggestionHelper {
         private boolean tabCycles;
         private int lastNarratedEntry;
 
-        private Suggestions(int p_i241247_2_, int p_i241247_3_, int p_i241247_4_, List<Suggestion> p_i241247_5_, boolean p_i241247_6_) {
-            int i = p_i241247_2_ - 1;
-            int j = SelectorSuggestionHelper.this.anchorToBottom ? p_i241247_3_ - 3 - Math.min(p_i241247_5_.size(), SelectorSuggestionHelper.this.suggestionLineLimit) * 12 : p_i241247_3_;
-            this.rect = new Rectangle2d(i, j, p_i241247_4_ + 1, Math.min(p_i241247_5_.size(), SelectorSuggestionHelper.this.suggestionLineLimit) * 12);
+        private Suggestions(int x, int y, int width, List<Suggestion> suggestions, boolean narrated) {
+            int i = x - 1;
+            int j = SelectorSuggestionHelper.this.anchorToBottom ? y - 3 - Math.min(suggestions.size(), SelectorSuggestionHelper.this.suggestionLineLimit) * 12 : y;
+            this.rect = new Rectangle2d(i, j, width + 1, Math.min(suggestions.size(), SelectorSuggestionHelper.this.suggestionLineLimit) * 12);
             this.originalContents = SelectorSuggestionHelper.this.input.getValue();
-            this.lastNarratedEntry = p_i241247_6_ ? -1 : 0;
-            this.suggestionList = p_i241247_5_;
+            this.lastNarratedEntry = narrated ? -1 : 0;
+            this.suggestionList = suggestions;
             this.select(0);
         }
 
-        public void render(MatrixStack p_238501_1_, int p_238501_2_, int p_238501_3_) {
-            int i = Math.min(this.suggestionList.size(), SelectorSuggestionHelper.this.suggestionLineLimit);
+        public void render(MatrixStack transform, int mx, int my) {
+            int num_lines = Math.min(this.suggestionList.size(), SelectorSuggestionHelper.this.suggestionLineLimit);
             int j = -5592406;
-            boolean flag = this.offset > 0;
-            boolean flag1 = this.suggestionList.size() > this.offset + i;
-            boolean flag2 = flag || flag1;
-            boolean flag3 = this.lastMouse.x != (float)p_238501_2_ || this.lastMouse.y != (float)p_238501_3_;
-            if (flag3) {
-                this.lastMouse = new Vector2f((float)p_238501_2_, (float)p_238501_3_);
+            boolean has_offset = this.offset > 0;
+            boolean overflow = this.suggestionList.size() > this.offset + num_lines;
+            boolean offset_or_overflow = has_offset || overflow;
+            boolean mouse_moved = this.lastMouse.x != (float)mx || this.lastMouse.y != (float)my;
+            if (mouse_moved) {
+                this.lastMouse = new Vector2f((float)mx, (float)my);
             }
 
-            if (flag2) {
-                AbstractGui.fill(p_238501_1_, this.rect.getX(), this.rect.getY() - 1, this.rect.getX() + this.rect.getWidth(), this.rect.getY(), SelectorSuggestionHelper.this.fillColor);
-                AbstractGui.fill(p_238501_1_, this.rect.getX(), this.rect.getY() + this.rect.getHeight(), this.rect.getX() + this.rect.getWidth(), this.rect.getY() + this.rect.getHeight() + 1, SelectorSuggestionHelper.this.fillColor);
-                if (flag) {
+            if (offset_or_overflow) { //draw dotted 'extra' lines
+                AbstractGui.fill(transform, this.rect.getX(), this.rect.getY() - 1, this.rect.getX() + this.rect.getWidth(), this.rect.getY(), SelectorSuggestionHelper.this.fillColor);
+                AbstractGui.fill(transform, this.rect.getX(), this.rect.getY() + this.rect.getHeight(), this.rect.getX() + this.rect.getWidth(), this.rect.getY() + this.rect.getHeight() + 1, SelectorSuggestionHelper.this.fillColor);
+                if (has_offset) {
                     for(int k = 0; k < this.rect.getWidth(); ++k) {
                         if (k % 2 == 0) {
-                            AbstractGui.fill(p_238501_1_, this.rect.getX() + k, this.rect.getY() - 1, this.rect.getX() + k + 1, this.rect.getY(), -1);
+                            AbstractGui.fill(transform, this.rect.getX() + k, this.rect.getY() - 1, this.rect.getX() + k + 1, this.rect.getY(), -1);
                         }
                     }
                 }
 
-                if (flag1) {
+                if (overflow) {
                     for(int i1 = 0; i1 < this.rect.getWidth(); ++i1) {
                         if (i1 % 2 == 0) {
-                            AbstractGui.fill(p_238501_1_, this.rect.getX() + i1, this.rect.getY() + this.rect.getHeight(), this.rect.getX() + i1 + 1, this.rect.getY() + this.rect.getHeight() + 1, -1);
+                            AbstractGui.fill(transform, this.rect.getX() + i1, this.rect.getY() + this.rect.getHeight(), this.rect.getX() + i1 + 1, this.rect.getY() + this.rect.getHeight() + 1, -1);
                         }
                     }
                 }
             }
 
-            boolean flag4 = false;
+            boolean selected = false;
 
-            for(int l = 0; l < i; ++l) {
-                Suggestion suggestion = this.suggestionList.get(l + this.offset);
-                AbstractGui.fill(p_238501_1_, this.rect.getX(), this.rect.getY() + 12 * l, this.rect.getX() + this.rect.getWidth(), this.rect.getY() + 12 * l + 12, SelectorSuggestionHelper.this.fillColor);
-                if (p_238501_2_ > this.rect.getX() && p_238501_2_ < this.rect.getX() + this.rect.getWidth() && p_238501_3_ > this.rect.getY() + 12 * l && p_238501_3_ < this.rect.getY() + 12 * l + 12) {
-                    if (flag3) {
-                        this.select(l + this.offset);
+            for(int line = 0; line < num_lines; ++line) {
+                Suggestion suggestion = this.suggestionList.get(line + this.offset);
+                AbstractGui.fill(transform, this.rect.getX(), this.rect.getY() + 12 * line, this.rect.getX() + this.rect.getWidth(), this.rect.getY() + 12 * line + 12, SelectorSuggestionHelper.this.fillColor);
+                if (mx > this.rect.getX() && mx < this.rect.getX() + this.rect.getWidth() && my > this.rect.getY() + 12 * line && my < this.rect.getY() + 12 * line + 12) {
+                    if (mouse_moved) {
+                        this.select(line + this.offset);
                     }
 
-                    flag4 = true;
+                    selected = true;
                 }
 
-                SelectorSuggestionHelper.this.font.drawShadow(p_238501_1_, suggestion.getText(), (float)(this.rect.getX() + 1), (float)(this.rect.getY() + 2 + 12 * l), l + this.offset == this.current ? -256 : -5592406);
+                SelectorSuggestionHelper.this.font.drawShadow(transform, suggestion.getText(), (float)(this.rect.getX() + 1), (float)(this.rect.getY() + 2 + 12 * line), line + this.offset == this.current ? -256 : -5592406);
             }
 
-            if (flag4) {
+            if (selected) {
                 Message message = this.suggestionList.get(this.current).getTooltip();
                 if (message != null) {
-                    SelectorSuggestionHelper.this.screen.renderTooltip(p_238501_1_, TextComponentUtils.fromMessage(message), p_238501_2_, p_238501_3_);
+                    SelectorSuggestionHelper.this.screen.renderTooltip(transform, TextComponentUtils.fromMessage(message), mx, my);
                 }
             }
 

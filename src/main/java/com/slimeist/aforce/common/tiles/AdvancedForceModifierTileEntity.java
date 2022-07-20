@@ -15,6 +15,8 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -88,5 +90,10 @@ public class AdvancedForceModifierTileEntity extends ForceModifierTileEntity {
     public Container createMenu(int windowID, PlayerInventory playerInventory, PlayerEntity playerEntity) {
         return ContainerAdvancedForceModifier.createContainerServerSide(windowID, playerInventory,
                 upgradeZoneContents, (TileEntity) this);
+    }
+
+    @Override
+    public ITextComponent getDisplayName() {
+        return new TranslationTextComponent("container.aforce.advanced_force_modifier");
     }
 }

@@ -13,6 +13,7 @@ import com.slimeist.aforce.common.network.MessageForceModifierSync;
 import com.slimeist.aforce.common.tiles.AdvancedForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
 import com.slimeist.aforce.core.util.MiscUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.entity.player.PlayerInventory;
@@ -119,7 +120,7 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
 
         this.selectorSuggestions = new SelectorSuggestionHelper(this.minecraft, this, this.selectorField, this.font, 0, 7, true, Integer.MIN_VALUE);
         this.selectorSuggestions.setAllowSuggestions(true);
-        this.selectorSuggestions.setYOffset(-107);
+        this.selectorSuggestions.setYOffset(107+12+topPos-height);//this.selectorField.y);
         this.selectorSuggestions.updateCommandInfo();
     }
 
@@ -132,6 +133,16 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
             AdvancedForcefields.packetHandler.sendToServer(new MessageForceModifierSync(tile, nbt));
             this.init();
         }
+    }
+
+    @Override
+    public void resize(Minecraft p_231152_1_, int p_231152_2_, int p_231152_3_) {
+        String s = this.selectorField.getValue();
+        boolean b = this.selectorField.isFocused();
+        this.init(p_231152_1_, p_231152_2_, p_231152_3_);
+        this.selectorField.setValue(s);
+        this.selectorField.setFocus(b);
+        this.selectorSuggestions.updateCommandInfo();
     }
 
     @Override

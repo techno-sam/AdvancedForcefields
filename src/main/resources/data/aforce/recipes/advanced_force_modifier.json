@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " - ",
+    "-#-",
+    " - "
+  ],
+  "key": {
+    "#": {
+      "item": "aforce:force_modifier"
+    },
+    "-": {
+      "item": "aforce:enderite_ingot"
+    }
+  },
+  "result": {
+    "item": "aforce:advanced_force_modifier"
+  }
+}
