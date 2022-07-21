@@ -7,7 +7,6 @@ import com.slimeist.aforce.common.registries.ForceModifierRegistry;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.common.tiles.ForceTubeTileEntity;
 import com.slimeist.aforce.common.tiles.helpers.BaseForceModifierSelector;
-import com.slimeist.aforce.common.tiles.helpers.SimpleForceModifierSelector;
 import com.slimeist.aforce.core.enums.*;
 import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
@@ -43,13 +42,12 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
-
-import static com.slimeist.aforce.AdvancedForcefields.LOGGER;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+
+import static com.slimeist.aforce.AdvancedForcefields.LOGGER;
 
 public class ForceTubeBlock extends BasePipeBlock implements IForceNetworkBlock, EntityBlock {
 

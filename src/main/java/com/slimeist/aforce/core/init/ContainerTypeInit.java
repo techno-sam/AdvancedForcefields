@@ -20,7 +20,7 @@ public final class ContainerTypeInit {
     public static void registerAll(RegistryEvent.Register<MenuType<?>> event) {
         FORCE_CONTROLLER_TYPE = register("force_controller", IForgeMenuType.create(ContainerForceController::createContainerClientSide));
         FORCE_MODIFIER_TYPE = register("force_modifier", IForgeMenuType.create(ContainerForceModifier::createContainerClientSide));
-        ADVANCED_FORCE_MODIFIER_TYPE = register("advanced_force_modifier", IForgeContainerType.create(ContainerAdvancedForceModifier::createContainerClientSide));
+        ADVANCED_FORCE_MODIFIER_TYPE = register("advanced_force_modifier", IForgeMenuType.create(ContainerAdvancedForceModifier::createContainerClientSide));
     }
 
     private static <T extends MenuType<?>> T register(String name, T containertype) {
