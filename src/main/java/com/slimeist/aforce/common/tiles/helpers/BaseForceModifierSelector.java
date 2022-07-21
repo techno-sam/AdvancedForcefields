@@ -1,20 +1,14 @@
 package com.slimeist.aforce.common.tiles.helpers;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.core.util.TagUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
-import java.util.AbstractMap;
-import java.util.function.Supplier;
 
 public class BaseForceModifierSelector {
 
@@ -51,9 +45,9 @@ public class BaseForceModifierSelector {
         return ForceModifierSelectorType.BASE;
     }
 
-    public static BaseForceModifierSelector fromNBT(CompoundNBT nbt) {
+    public static BaseForceModifierSelector fromNBT(CompoundTag nbt) {
         String type = "";
-        if (nbt.contains(TAG_SELECTOR_TYPE, Constants.NBT.TAG_STRING)) {
+        if (nbt.contains(TAG_SELECTOR_TYPE, Tag.TAG_STRING)) {
             type = nbt.getString(TAG_SELECTOR_TYPE);
         }
         BaseForceModifierSelector instance;
@@ -66,24 +60,24 @@ public class BaseForceModifierSelector {
         return instance;
     }
 
-    protected void loadNBT(CompoundNBT nbt) {
+    protected void loadNBT(CompoundTag nbt) {
         this.originPosition = TagUtil.readPos(nbt.getCompound(TAG_ORIGIN_POSITION));
 
-        if (nbt.contains(TAG_MODIFIER_ACTION, Constants.NBT.TAG_STRING)) {
+        if (nbt.contains(TAG_MODIFIER_ACTION, Tag.TAG_STRING)) {
             this.setAction(nbt.getString(TAG_MODIFIER_ACTION));
         }
 
-        if (nbt.contains(TAG_PRIORITY, Constants.NBT.TAG_INT)) {
+        if (nbt.contains(TAG_PRIORITY, Tag.TAG_INT)) {
             this.setPriority(nbt.getInt(TAG_PRIORITY));
         }
 
-        if (nbt.contains(TAG_TRIGGER_STACK, Constants.NBT.TAG_COMPOUND)) {
+        if (nbt.contains(TAG_TRIGGER_STACK, Tag.TAG_COMPOUND)) {
             this.setTriggerStack(ItemStack.of(nbt.getCompound(TAG_TRIGGER_STACK)));
         }
     }
 
-    public CompoundNBT toNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag toNBT() {
+        CompoundTag nbt = new CompoundTag();
 
         nbt.putString(TAG_SELECTOR_TYPE, this.getType().name());
 
@@ -92,7 +86,7 @@ public class BaseForceModifierSelector {
 
         nbt.put(TAG_ORIGIN_POSITION, TagUtil.writePos(this.getOriginPosition()));
 
-        CompoundNBT itemNBT = new CompoundNBT();
+        CompoundTag itemNBT = new CompoundTag();
 
         this.getTriggerStack().save(itemNBT);
 

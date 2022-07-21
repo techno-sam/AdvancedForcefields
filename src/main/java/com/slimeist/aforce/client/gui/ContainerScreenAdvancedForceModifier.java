@@ -1,7 +1,7 @@
 package com.slimeist.aforce.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.client.gui.elements.SelectorSuggestionHelper;
 import com.slimeist.aforce.client.gui.ie_elements.GuiButtonCheckbox;
@@ -13,32 +13,36 @@ import com.slimeist.aforce.common.network.MessageForceModifierSync;
 import com.slimeist.aforce.common.tiles.AdvancedForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
 import com.slimeist.aforce.core.util.MiscUtil;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.*;
-import net.minecraftforge.fml.client.gui.GuiUtils;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.player.Inventory;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static com.slimeist.aforce.client.util.ClientUtils.mc;
 
 //Heavily inspired from IE Turret
 
-public class ContainerScreenAdvancedForceModifier extends ContainerScreen<ContainerAdvancedForceModifier> {
+public class ContainerScreenAdvancedForceModifier extends AbstractContainerScreen<ContainerAdvancedForceModifier> {
 
     public AdvancedForceModifierTileEntity tile;
-    private TextFieldWidget selectorField;
+    private EditBox selectorField;
     private ContainerAdvancedForceModifier containerAdvancedForceModifier;
     private SelectorSuggestionHelper selectorSuggestions;
 
-    public ContainerScreenAdvancedForceModifier(ContainerAdvancedForceModifier containerAdvancedForceModifier, PlayerInventory playerInventory, ITextComponent title) {
+    public ContainerScreenAdvancedForceModifier(ContainerAdvancedForceModifier containerAdvancedForceModifier, Inventory playerInventory, Component title) {
         super(containerAdvancedForceModifier, playerInventory, title);
         this.containerAdvancedForceModifier = containerAdvancedForceModifier;
         this.tile = this.containerAdvancedForceModifier.tile;
@@ -62,7 +66,7 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
     public void init() {
         super.init();
         mc().keyboardHandler.setSendRepeatsToGui(true);
-        this.selectorField = new TextFieldWidget(this.font, leftPos + 11, topPos + 107, 190, 12, StringTextComponent.EMPTY);
+        this.selectorField = new EditBox(this.font, leftPos + 11, topPos + 107, 190, 12, TextComponent.EMPTY);
         this.selectorField.setTextColor(-1);
         this.selectorField.setTextColorUneditable(-1);
         this.selectorField.setBordered(false);
@@ -70,17 +74,17 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
         this.selectorField.setValue(tile.entitySelector);
         this.selectorField.setFormatter((s, i) -> {
             String contents = this.selectorField.getValue();
-            return IReorderingProcessor.forward(s, validate(contents) ? Style.EMPTY : Style.EMPTY.withColor(TextFormatting.RED));
+            return FormattedCharSequence.forward(s, validate(contents) ? Style.EMPTY : Style.EMPTY.withColor(ChatFormatting.RED));
         });
         this.selectorField.setResponder(this::onEdited);
 
-        this.buttons.clear();
+        this.renderables.clear();
         AdvancedForcefields.LOGGER.info("This: " + this + ", tile: " + tile);//.toString()+", targetList: "+tile.targetList.toString());
         int extraY = 7;
         int sideX = 8;
-        this.addButton(new GuiButtonIE(leftPos + 203, topPos + 103, 24, 16, new TranslationTextComponent("gui.aforce.advanced_modifier.set"), TEXTURE, 194, 212,
+        this.addRenderableWidget(new GuiButtonIE(leftPos + 203, topPos + 103, 24, 16, new TranslatableComponent("gui.aforce.advanced_modifier.set"), TEXTURE, 194, 212,
                 btn -> {
-                    CompoundNBT tag = new CompoundNBT();
+                    CompoundTag tag = new CompoundTag();
                     String selector = selectorField.getValue();
                     /*if (!validate(selector)) {
                         this.init();
@@ -93,25 +97,25 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
                     selectorField.setValue(selector);
                     handleButtonClick(tag);
                 }));
-        this.addButton(new GuiButtonCheckbox(leftPos + sideX, topPos + 55 + extraY, new TranslationTextComponent("gui.aforce.modifier.blacklist"), !tile.whitelist,
+        this.addRenderableWidget(new GuiButtonCheckbox(leftPos + sideX, topPos + 55 + extraY, new TranslatableComponent("gui.aforce.modifier.blacklist"), !tile.whitelist,
                 btn -> {
-                    CompoundNBT tag = new CompoundNBT();
+                    CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.whitelist = btn.getState();
                     tag.putBoolean(SimpleForceModifierTileEntity.TAG_WHITELIST, tile.whitelist);
                     handleButtonClick(tag);
                 }));
-        this.addButton(new GuiButtonIE(leftPos + sideX, topPos + 70 + extraY, 7, 7, new StringTextComponent(""), ELEMENTS, 9, 87,
+        this.addRenderableWidget(new GuiButtonIE(leftPos + sideX, topPos + 70 + extraY, 7, 7, new TextComponent(""), ELEMENTS, 9, 87,
                 btn -> {
-                    CompoundNBT tag = new CompoundNBT();
+                    CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.priority += 1;
                     tag.putInt(SimpleForceModifierTileEntity.TAG_PRIORITY, tile.priority);
                     handleButtonClick(tag);
                 }).setHoverOffset(9, 0));
-        this.addButton(new GuiButtonIE(leftPos + sideX, topPos + 86 + extraY, 7, 7, new StringTextComponent(""), ELEMENTS, 9, 96,
+        this.addRenderableWidget(new GuiButtonIE(leftPos + sideX, topPos + 86 + extraY, 7, 7, new TextComponent(""), ELEMENTS, 9, 96,
                 btn -> {
-                    CompoundNBT tag = new CompoundNBT();
+                    CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.priority -= 1;
                     tag.putInt(SimpleForceModifierTileEntity.TAG_PRIORITY, tile.priority);
@@ -128,7 +132,7 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
         this.selectorSuggestions.updateCommandInfo();
     }
 
-    protected void handleButtonClick(CompoundNBT nbt) {
+    protected void handleButtonClick(CompoundTag nbt) {
         if (!nbt.isEmpty()) {
             AdvancedForcefields.packetHandler.sendToServer(new MessageForceModifierSync(tile, nbt));
             this.init();
@@ -146,23 +150,23 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
     }
 
     @Override
-    public void render(MatrixStack transform, int mx, int my, float partial) {
+    public void render(PoseStack transform, int mx, int my, float partial) {
         this.renderBackground(transform);
         super.render(transform, mx, my, partial);
         this.renderTooltip(transform, mx, my);
         this.selectorField.render(transform, mx, my, partial);
 
-        ArrayList<ITextComponent> tooltip = new ArrayList<>();
+        ArrayList<Component> tooltip = new ArrayList<>();
         //tooltip.add(new TranslationTextComponent("Version: "+AdvancedForcefields.VERSION));
 
         if (!tooltip.isEmpty())
-            GuiUtils.drawHoveringText(transform, tooltip, mx, my, width, height, -1, font);
+            renderTooltip(transform, tooltip, Optional.empty(), mx, my);
         this.selectorSuggestions.render(transform, mx, my);
     }
 
     @Override
-    protected void renderBg(MatrixStack transform, float f, int mx, int my) {
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+    protected void renderBg(PoseStack transform, float f, int mx, int my) {
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         ClientUtils.bindTexture(TEXTURE);
         this.blit(transform, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         //this.blit(transform, x, y, u, v, w, h);
@@ -172,18 +176,18 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
     }
 
     @Override
-    protected void renderLabels(MatrixStack matrixStack, int mouseX, int mouseY) {
+    protected void renderLabels(PoseStack matrixStack, int mouseX, int mouseY) {
         // draw the label for the top of the screen
         final int LABEL_XPOS = 5;
         final int LABEL_YPOS = 5;
         this.font.draw(matrixStack, this.title, LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());     ///    this.font.drawString
 
         // draw the label for the player inventory slots
-        this.font.draw(matrixStack, this.inventory.getDisplayName(),                  ///    this.font.drawString
+        this.font.draw(matrixStack, this.playerInventoryTitle,                  ///    this.font.drawString
                 PLAYER_INV_LABEL_XPOS, PLAYER_INV_LABEL_YPOS, Color.darkGray.getRGB());
 
         // draw the label for the priority
-        this.font.drawShadow(matrixStack, new TranslationTextComponent("gui.aforce.modifier.priority", tile.priority),
+        this.font.drawShadow(matrixStack, new TranslatableComponent("gui.aforce.modifier.priority", tile.priority),
                 9, 7 + 78, 0xE0E0E0); //x is sideX + 1
     }
 
@@ -205,7 +209,7 @@ public class ContainerScreenAdvancedForceModifier extends ContainerScreen<Contai
                     return true;
                 }*/
                 if (!tile.entitySelector.equals(selector)) {
-                    CompoundNBT tag = new CompoundNBT();
+                    CompoundTag tag = new CompoundTag();
                     tag.putString("set", selector);
                     tile.entitySelector = selector;
                     AdvancedForcefields.packetHandler.sendToServer(new MessageForceModifierSync(tile, tag));

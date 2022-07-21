@@ -3,28 +3,31 @@ package com.slimeist.aforce.client.gui.elements;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
-import com.mojang.brigadier.suggestion.Suggestions;
 import com.slimeist.aforce.core.util.MiscUtil;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.chat.NarratorChatListener;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.renderer.Rectangle2d;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.command.ISuggestionProvider;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.text.*;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -40,28 +43,28 @@ import java.util.stream.Stream;
 @OnlyIn(Dist.CLIENT)
 public class SelectorSuggestionHelper {
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("(\\s+)");
-    private static final Style UNPARSED_STYLE = Style.EMPTY.withColor(TextFormatting.RED);
-    private static final Style LITERAL_STYLE = Style.EMPTY.withColor(TextFormatting.GRAY);
-    private static final List<Style> ARGUMENT_STYLES = Stream.of(TextFormatting.AQUA, TextFormatting.YELLOW, TextFormatting.GREEN, TextFormatting.LIGHT_PURPLE, TextFormatting.GOLD).map(Style.EMPTY::withColor).collect(ImmutableList.toImmutableList());
+    private static final Style UNPARSED_STYLE = Style.EMPTY.withColor(ChatFormatting.RED);
+    private static final Style LITERAL_STYLE = Style.EMPTY.withColor(ChatFormatting.GRAY);
+    private static final List<Style> ARGUMENT_STYLES = Stream.of(ChatFormatting.AQUA, ChatFormatting.YELLOW, ChatFormatting.GREEN, ChatFormatting.LIGHT_PURPLE, ChatFormatting.GOLD).map(Style.EMPTY::withColor).collect(ImmutableList.toImmutableList());
     private final Minecraft minecraft;
     private final Screen screen;
-    private final TextFieldWidget input;
-    private final FontRenderer font;
+    private final EditBox input;
+    private final Font font;
     private final int lineStartOffset;
     private final int suggestionLineLimit;
     private final boolean anchorToBottom;
     private final int fillColor;
-    private final List<IReorderingProcessor> commandUsage = Lists.newArrayList();
+    private final List<FormattedCharSequence> commandUsage = Lists.newArrayList();
     private int commandUsagePosition;
     private int commandUsageWidth;
-    //private ParseResults<ISuggestionProvider> currentParse;
+    //private ParseResults<SharedSuggestionProvider> currentParse;
     private CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> pendingSuggestions;
     private SelectorSuggestionHelper.Suggestions suggestions;
     private boolean allowSuggestions;
     private boolean keepSuggestions;
     private int yOffset = 0;
 
-    public SelectorSuggestionHelper(Minecraft minecraft, Screen gui, TextFieldWidget input, FontRenderer font, int lineStartOffset, int suggestLineLimit, boolean anchorToBottom, int fillColor) {
+    public SelectorSuggestionHelper(Minecraft minecraft, Screen gui, EditBox input, Font font, int lineStartOffset, int suggestLineLimit, boolean anchorToBottom, int fillColor) {
         this.minecraft = minecraft;
         this.screen = gui;
         this.input = input;
@@ -100,7 +103,7 @@ public class SelectorSuggestionHelper {
     }
 
     public boolean mouseScrolled(double amt) {
-        return this.suggestions != null && this.suggestions.mouseScrolled(MathHelper.clamp(amt, -1.0D, 1.0D));
+        return this.suggestions != null && this.suggestions.mouseScrolled(Mth.clamp(amt, -1.0D, 1.0D));
     }
 
     public boolean mouseClicked(double x, double y, int p_228113_5_) {
@@ -136,7 +139,7 @@ public class SelectorSuggestionHelper {
                     width = Math.max(width, this.font.width(suggestion.getText()));
                 }
 
-                int x = MathHelper.clamp(this.input.getScreenX(suggestions.getRange().getStart()), 0, this.input.getScreenX(0) + this.input.getInnerWidth() - width);
+                int x = Mth.clamp(this.input.getScreenX(suggestions.getRange().getStart()), 0, this.input.getScreenX(0) + this.input.getInnerWidth() - width);
                 int y = this.anchorToBottom ? this.screen.height - 12 + this.yOffset : 72 + this.yOffset;
                 this.suggestions = new SelectorSuggestionHelper.Suggestions(x, y, width, this.sortSuggestions(suggestions), narrator_bool);
             }
@@ -185,7 +188,7 @@ public class SelectorSuggestionHelper {
 
         //boolean flag1 = this.commandsOnly || flag;
         int i = this.input.getCursorPosition();
-        //CommandDispatcher<ISuggestionProvider> commanddispatcher = this.minecraft.player.connection.getCommands();
+        //CommandDispatcher<SharedSuggestionProvider> commanddispatcher = this.minecraft.player.connection.getCommands();
             /*if (this.currentParse == null) {
                 this.currentParse = commanddispatcher.parse(stringreader, this.minecraft.player.connection.getSuggestionsProvider());
             }*/
@@ -215,10 +218,10 @@ public class SelectorSuggestionHelper {
         }
     }
 
-    private static IReorderingProcessor getExceptionMessage(CommandSyntaxException p_243255_0_) {
-        ITextComponent itextcomponent = TextComponentUtils.fromMessage(p_243255_0_.getRawMessage());
+    private static FormattedCharSequence getExceptionMessage(CommandSyntaxException p_243255_0_) {
+        Component Component = ComponentUtils.fromMessage(p_243255_0_.getRawMessage());
         String s = p_243255_0_.getContext();
-        return s == null ? itextcomponent.getVisualOrderText() : (new TranslationTextComponent("command.context.parse_error", itextcomponent, p_243255_0_.getCursor(), s)).getVisualOrderText();
+        return s == null ? Component.getVisualOrderText() : (new TranslatableComponent("command.context.parse_error", Component, p_243255_0_.getCursor(), s)).getVisualOrderText();
     }
 
     private void updateUsageInfo() {
@@ -238,13 +241,13 @@ public class SelectorSuggestionHelper {
         return p_228127_1_.startsWith(p_228127_0_) ? p_228127_1_.substring(p_228127_0_.length()) : null;
     }
 
-    private static IReorderingProcessor formatText(ParseResults<ISuggestionProvider> p_228116_0_, String p_228116_1_, int p_228116_2_) {
-        List<IReorderingProcessor> list = Lists.newArrayList();
+    private static FormattedCharSequence formatText(ParseResults<SharedSuggestionProvider> p_228116_0_, String p_228116_1_, int p_228116_2_) {
+        List<FormattedCharSequence> list = Lists.newArrayList();
         int i = 0;
         int j = -1;
-        CommandContextBuilder<ISuggestionProvider> commandcontextbuilder = p_228116_0_.getContext().getLastChild();
+        CommandContextBuilder<SharedSuggestionProvider> commandcontextbuilder = p_228116_0_.getContext().getLastChild();
 
-        for(ParsedArgument<ISuggestionProvider, ?> parsedargument : commandcontextbuilder.getArguments().values()) {
+        for(ParsedArgument<SharedSuggestionProvider, ?> parsedargument : commandcontextbuilder.getArguments().values()) {
             ++j;
             if (j >= ARGUMENT_STYLES.size()) {
                 j = 0;
@@ -257,8 +260,8 @@ public class SelectorSuggestionHelper {
 
             int l = Math.min(parsedargument.getRange().getEnd() - p_228116_2_, p_228116_1_.length());
             if (l > 0) {
-                list.add(IReorderingProcessor.forward(p_228116_1_.substring(i, k), LITERAL_STYLE));
-                list.add(IReorderingProcessor.forward(p_228116_1_.substring(k, l), ARGUMENT_STYLES.get(j)));
+                list.add(FormattedCharSequence.forward(p_228116_1_.substring(i, k), LITERAL_STYLE));
+                list.add(FormattedCharSequence.forward(p_228116_1_.substring(k, l), ARGUMENT_STYLES.get(j)));
                 i = l;
             }
         }
@@ -267,26 +270,26 @@ public class SelectorSuggestionHelper {
             int i1 = Math.max(p_228116_0_.getReader().getCursor() - p_228116_2_, 0);
             if (i1 < p_228116_1_.length()) {
                 int j1 = Math.min(i1 + p_228116_0_.getReader().getRemainingLength(), p_228116_1_.length());
-                list.add(IReorderingProcessor.forward(p_228116_1_.substring(i, i1), LITERAL_STYLE));
-                list.add(IReorderingProcessor.forward(p_228116_1_.substring(i1, j1), UNPARSED_STYLE));
+                list.add(FormattedCharSequence.forward(p_228116_1_.substring(i, i1), LITERAL_STYLE));
+                list.add(FormattedCharSequence.forward(p_228116_1_.substring(i1, j1), UNPARSED_STYLE));
                 i = j1;
             }
         }
 
-        list.add(IReorderingProcessor.forward(p_228116_1_.substring(i), LITERAL_STYLE));
-        return IReorderingProcessor.composite(list);
+        list.add(FormattedCharSequence.forward(p_228116_1_.substring(i), LITERAL_STYLE));
+        return FormattedCharSequence.composite(list);
     }
 
-    public void render(MatrixStack p_238500_1_, int p_238500_2_, int p_238500_3_) {
+    public void render(PoseStack p_238500_1_, int p_238500_2_, int p_238500_3_) {
         if (this.suggestions != null) {
             this.suggestions.render(p_238500_1_, p_238500_2_, p_238500_3_);
         } else {
             int i = 0;
 
-            for(IReorderingProcessor ireorderingprocessor : this.commandUsage) {
+            for(FormattedCharSequence FormattedCharSequence : this.commandUsage) {
                 int j = this.anchorToBottom ? this.screen.height - 14 - 13 + this.yOffset - 12 * i : 72 + this.yOffset + 12 * i;
-                AbstractGui.fill(p_238500_1_, this.commandUsagePosition - 1, j, this.commandUsagePosition + this.commandUsageWidth + 1, j + 12, this.fillColor);
-                this.font.drawShadow(p_238500_1_, ireorderingprocessor, (float)this.commandUsagePosition, (float)(j + 2), -1);
+                GuiComponent.fill(p_238500_1_, this.commandUsagePosition - 1, j, this.commandUsagePosition + this.commandUsageWidth + 1, j + 12, this.fillColor);
+                this.font.drawShadow(p_238500_1_, FormattedCharSequence, (float)this.commandUsagePosition, (float)(j + 2), -1);
                 ++i;
             }
         }
@@ -299,26 +302,26 @@ public class SelectorSuggestionHelper {
 
     @OnlyIn(Dist.CLIENT)
     public class Suggestions {
-        private final Rectangle2d rect;
+        private final Rect2i rect;
         private final String originalContents;
         private final List<Suggestion> suggestionList;
         private int offset;
         private int current;
-        private Vector2f lastMouse = Vector2f.ZERO;
+        private Vec2 lastMouse = Vec2.ZERO;
         private boolean tabCycles;
         private int lastNarratedEntry;
 
         private Suggestions(int x, int y, int width, List<Suggestion> suggestions, boolean narrated) {
             int i = x - 1;
             int j = SelectorSuggestionHelper.this.anchorToBottom ? y - 3 - Math.min(suggestions.size(), SelectorSuggestionHelper.this.suggestionLineLimit) * 12 : y;
-            this.rect = new Rectangle2d(i, j, width + 1, Math.min(suggestions.size(), SelectorSuggestionHelper.this.suggestionLineLimit) * 12);
+            this.rect = new Rect2i(i, j, width + 1, Math.min(suggestions.size(), SelectorSuggestionHelper.this.suggestionLineLimit) * 12);
             this.originalContents = SelectorSuggestionHelper.this.input.getValue();
             this.lastNarratedEntry = narrated ? -1 : 0;
             this.suggestionList = suggestions;
             this.select(0);
         }
 
-        public void render(MatrixStack transform, int mx, int my) {
+        public void render(PoseStack transform, int mx, int my) {
             int num_lines = Math.min(this.suggestionList.size(), SelectorSuggestionHelper.this.suggestionLineLimit);
             int j = -5592406;
             boolean has_offset = this.offset > 0;
@@ -326,16 +329,16 @@ public class SelectorSuggestionHelper {
             boolean offset_or_overflow = has_offset || overflow;
             boolean mouse_moved = this.lastMouse.x != (float)mx || this.lastMouse.y != (float)my;
             if (mouse_moved) {
-                this.lastMouse = new Vector2f((float)mx, (float)my);
+                this.lastMouse = new Vec2((float)mx, (float)my);
             }
 
             if (offset_or_overflow) { //draw dotted 'extra' lines
-                AbstractGui.fill(transform, this.rect.getX(), this.rect.getY() - 1, this.rect.getX() + this.rect.getWidth(), this.rect.getY(), SelectorSuggestionHelper.this.fillColor);
-                AbstractGui.fill(transform, this.rect.getX(), this.rect.getY() + this.rect.getHeight(), this.rect.getX() + this.rect.getWidth(), this.rect.getY() + this.rect.getHeight() + 1, SelectorSuggestionHelper.this.fillColor);
+                GuiComponent.fill(transform, this.rect.getX(), this.rect.getY() - 1, this.rect.getX() + this.rect.getWidth(), this.rect.getY(), SelectorSuggestionHelper.this.fillColor);
+                GuiComponent.fill(transform, this.rect.getX(), this.rect.getY() + this.rect.getHeight(), this.rect.getX() + this.rect.getWidth(), this.rect.getY() + this.rect.getHeight() + 1, SelectorSuggestionHelper.this.fillColor);
                 if (has_offset) {
                     for(int k = 0; k < this.rect.getWidth(); ++k) {
                         if (k % 2 == 0) {
-                            AbstractGui.fill(transform, this.rect.getX() + k, this.rect.getY() - 1, this.rect.getX() + k + 1, this.rect.getY(), -1);
+                            GuiComponent.fill(transform, this.rect.getX() + k, this.rect.getY() - 1, this.rect.getX() + k + 1, this.rect.getY(), -1);
                         }
                     }
                 }
@@ -343,7 +346,7 @@ public class SelectorSuggestionHelper {
                 if (overflow) {
                     for(int i1 = 0; i1 < this.rect.getWidth(); ++i1) {
                         if (i1 % 2 == 0) {
-                            AbstractGui.fill(transform, this.rect.getX() + i1, this.rect.getY() + this.rect.getHeight(), this.rect.getX() + i1 + 1, this.rect.getY() + this.rect.getHeight() + 1, -1);
+                            GuiComponent.fill(transform, this.rect.getX() + i1, this.rect.getY() + this.rect.getHeight(), this.rect.getX() + i1 + 1, this.rect.getY() + this.rect.getHeight() + 1, -1);
                         }
                     }
                 }
@@ -353,7 +356,7 @@ public class SelectorSuggestionHelper {
 
             for(int line = 0; line < num_lines; ++line) {
                 Suggestion suggestion = this.suggestionList.get(line + this.offset);
-                AbstractGui.fill(transform, this.rect.getX(), this.rect.getY() + 12 * line, this.rect.getX() + this.rect.getWidth(), this.rect.getY() + 12 * line + 12, SelectorSuggestionHelper.this.fillColor);
+                GuiComponent.fill(transform, this.rect.getX(), this.rect.getY() + 12 * line, this.rect.getX() + this.rect.getWidth(), this.rect.getY() + 12 * line + 12, SelectorSuggestionHelper.this.fillColor);
                 if (mx > this.rect.getX() && mx < this.rect.getX() + this.rect.getWidth() && my > this.rect.getY() + 12 * line && my < this.rect.getY() + 12 * line + 12) {
                     if (mouse_moved) {
                         this.select(line + this.offset);
@@ -368,7 +371,7 @@ public class SelectorSuggestionHelper {
             if (selected) {
                 Message message = this.suggestionList.get(this.current).getTooltip();
                 if (message != null) {
-                    SelectorSuggestionHelper.this.screen.renderTooltip(transform, TextComponentUtils.fromMessage(message), mx, my);
+                    SelectorSuggestionHelper.this.screen.renderTooltip(transform, ComponentUtils.fromMessage(message), mx, my);
                 }
             }
 
@@ -392,7 +395,7 @@ public class SelectorSuggestionHelper {
             int i = (int)(SelectorSuggestionHelper.this.minecraft.mouseHandler.xpos() * (double) SelectorSuggestionHelper.this.minecraft.getWindow().getGuiScaledWidth() / (double) SelectorSuggestionHelper.this.minecraft.getWindow().getScreenWidth());
             int j = (int)(SelectorSuggestionHelper.this.minecraft.mouseHandler.ypos() * (double) SelectorSuggestionHelper.this.minecraft.getWindow().getGuiScaledHeight() / (double) SelectorSuggestionHelper.this.minecraft.getWindow().getScreenHeight());
             if (this.rect.contains(i, j)) {
-                this.offset = MathHelper.clamp((int)((double)this.offset - p_228147_1_), 0, Math.max(this.suggestionList.size() - SelectorSuggestionHelper.this.suggestionLineLimit, 0));
+                this.offset = Mth.clamp((int)((double)this.offset - p_228147_1_), 0, Math.max(this.suggestionList.size() - SelectorSuggestionHelper.this.suggestionLineLimit, 0));
                 return true;
             } else {
                 return false;
@@ -428,9 +431,9 @@ public class SelectorSuggestionHelper {
             int i = this.offset;
             int j = this.offset + SelectorSuggestionHelper.this.suggestionLineLimit - 1;
             if (this.current < i) {
-                this.offset = MathHelper.clamp(this.current, 0, Math.max(this.suggestionList.size() - SelectorSuggestionHelper.this.suggestionLineLimit, 0));
+                this.offset = Mth.clamp(this.current, 0, Math.max(this.suggestionList.size() - SelectorSuggestionHelper.this.suggestionLineLimit, 0));
             } else if (this.current > j) {
-                this.offset = MathHelper.clamp(this.current + SelectorSuggestionHelper.this.lineStartOffset - SelectorSuggestionHelper.this.suggestionLineLimit, 0, Math.max(this.suggestionList.size() - SelectorSuggestionHelper.this.suggestionLineLimit, 0));
+                this.offset = Mth.clamp(this.current + SelectorSuggestionHelper.this.lineStartOffset - SelectorSuggestionHelper.this.suggestionLineLimit, 0, Math.max(this.suggestionList.size() - SelectorSuggestionHelper.this.suggestionLineLimit, 0));
             }
 
         }

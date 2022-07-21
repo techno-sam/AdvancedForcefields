@@ -13,7 +13,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class ContainerTypeInit {
     public static MenuType<ContainerForceController> FORCE_CONTROLLER_TYPE;
     public static MenuType<ContainerForceModifier> FORCE_MODIFIER_TYPE;
-    public static ContainerType<ContainerAdvancedForceModifier> ADVANCED_FORCE_MODIFIER_TYPE;
+    public static MenuType<ContainerAdvancedForceModifier> ADVANCED_FORCE_MODIFIER_TYPE;
 
     private ContainerTypeInit() {}
 

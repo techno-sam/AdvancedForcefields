@@ -5,20 +5,19 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
-import net.minecraft.advancements.criterion.MinMaxBounds;
-import net.minecraft.command.arguments.EntitySelector;
-import net.minecraft.command.arguments.EntitySelectorParser;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Random;
@@ -82,10 +81,10 @@ public class MiscUtil {
             if (es.isSelfSelector()) {
                 return Optional.empty();
             }
-            if (esp.getDeltaX() != null || esp.getDeltaY() != null || esp.getDeltaZ() != null || esp.getDistance() != MinMaxBounds.FloatBound.ANY) {
+            if (esp.getDeltaX() != null || esp.getDeltaY() != null || esp.getDeltaZ() != null || esp.getDistance() != MinMaxBounds.Doubles.ANY) {
                 return Optional.empty();
             }
-            Predicate<Entity> entityPredicate = es.getPredicate(Vector3d.ZERO);
+            Predicate<Entity> entityPredicate = es.getPredicate(Vec3.ZERO);
             return Optional.of(entityPredicate);
         } catch (CommandSyntaxException e) {
             return Optional.empty();

@@ -1,15 +1,15 @@
 package com.slimeist.aforce.common.tiles.helpers;
 
 import com.slimeist.aforce.core.util.MiscUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public class AdvancedForceModifierSelector extends BaseForceModifierSelector {
@@ -47,21 +47,21 @@ public class AdvancedForceModifierSelector extends BaseForceModifierSelector {
     }
 
     @Override
-    protected void loadNBT(CompoundNBT nbt) {
+    protected void loadNBT(CompoundTag nbt) {
         super.loadNBT(nbt);
 
-        if (nbt.contains(TAG_WHITELIST, Constants.NBT.TAG_BYTE)) {
+        if (nbt.contains(TAG_WHITELIST, Tag.TAG_BYTE)) {
             this.setWhitelist(nbt.getBoolean(TAG_WHITELIST));
         }
 
-        if (nbt.contains(TAG_ENTITY_SELECTOR, Constants.NBT.TAG_STRING)) {
+        if (nbt.contains(TAG_ENTITY_SELECTOR, Tag.TAG_STRING)) {
             this.setEntitySelector(nbt.getString(TAG_ENTITY_SELECTOR));
         }
     }
 
     @Override
-    public CompoundNBT toNBT() {
-        CompoundNBT nbt = super.toNBT();
+    public CompoundTag toNBT() {
+        CompoundTag nbt = super.toNBT();
 
         nbt.putBoolean(TAG_WHITELIST, this.isWhitelist());
 
