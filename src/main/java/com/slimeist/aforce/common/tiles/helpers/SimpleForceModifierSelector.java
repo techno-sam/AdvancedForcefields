@@ -82,14 +82,14 @@ public class SimpleForceModifierSelector extends BaseForceModifierSelector {
             this.setTargetPlayers(nbt.getBoolean(TAG_TARGET_PLAYERS));
         }
 
-        if (nbt.contains(TAG_TARGET_NEUTRALS, Constants.NBT.TAG_BYTE)) {
+        if (nbt.contains(TAG_TARGET_NEUTRALS, Tag.TAG_BYTE)) {
             this.setTargetNeutrals(nbt.getBoolean(TAG_TARGET_NEUTRALS));
         }
     }
 
     @Override
-    public CompoundNBT toNBT() {
-        CompoundNBT nbt = super.toNBT();
+    public CompoundTag toNBT() {
+        CompoundTag nbt = super.toNBT();
 
         ListTag tlist = new ListTag();
         for (String target : this.getTargetList()) {

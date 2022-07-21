@@ -2,40 +2,24 @@ package com.slimeist.aforce.common.tiles;
 
 
 import com.slimeist.aforce.AdvancedForcefields;
-import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.containers.force_modifier.ContainerForceModifier;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierStateData;
-import com.slimeist.aforce.common.containers.force_modifier.ForceModifierZoneContents;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
-import com.slimeist.aforce.common.tiles.helpers.BaseForceModifierSelector;
 import com.slimeist.aforce.common.tiles.helpers.SimpleForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
-import com.slimeist.aforce.core.init.ModifierInit;
-import com.slimeist.aforce.core.init.RegistryInit;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
-import com.slimeist.aforce.core.util.TagUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -73,29 +57,28 @@ public class SimpleForceModifierTileEntity extends ForceModifierTileEntity {
 
     private final ForceModifierStateData forceModifierStateData = new ForceModifierStateData();
 
-    public SimpleForceModifierTileEntity() {
-        super(TileEntityTypeInit.FORCE_MODIFIER_TYPE);
+    public SimpleForceModifierTileEntity(BlockPos pos, BlockState state) {
+        super(TileEntityTypeInit.FORCE_MODIFIER_TYPE, pos, state);
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-        if (this.sendActionsCountdown==0) {
+    public static <T extends SimpleForceModifierTileEntity> void tick(Level level, BlockPos pos, BlockState state, T tile) {
+        ForceNetworkTileEntity.networkTick(level, pos, state, tile);
+        if (tile.sendActionsCountdown==0) {
             AdvancedForcefields.LOGGER.info("sendActionsCountdown is zero!");
-            for (ForceModifierRegistry action : this.actions) {
-                SimpleForceModifierSelector selector = new SimpleForceModifierSelector(this.targetList, this.whitelist, this.targetAnimals, this.targetPlayers, this.targetNeutrals, action.getRegistryName().toString(), priority, this.getBlockPos(), this.upgradeZoneContents.getItem(0));
-                CompoundNBT message = selector.toNBT();
+            for (ForceModifierRegistry action : tile.actions) {
+                SimpleForceModifierSelector selector = new SimpleForceModifierSelector(tile.targetList, tile.whitelist, tile.targetAnimals, tile.targetPlayers, tile.targetNeutrals, action.getRegistryName().toString(), tile.priority, tile.getBlockPos(), tile.upgradeZoneContents.getItem(0));
+                CompoundTag message = selector.toNBT();
 
-                CompoundNBT data = new CompoundNBT();
+                CompoundTag data = new CompoundTag();
                 data.putString(TAG_PACKET_TYPE, "ADD_ACTION");
                 data.put(TAG_PACKET_MESSAGE, message);
 
-                this.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data, this.getBlockPos()));
+                tile.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data, tile.getBlockPos()));
                 AdvancedForcefields.LOGGER.info("Sent ADD_ACTION packet with action of: "+action.getRegistryName().toString());
             }
         }
-        if (this.sendActionsCountdown>=0) {
-            this.sendActionsCountdown -= 1;
+        if (tile.sendActionsCountdown>=0) {
+            tile.sendActionsCountdown -= 1;
         }
     }
 
@@ -104,11 +87,11 @@ public class SimpleForceModifierTileEntity extends ForceModifierTileEntity {
     }
 
     @Override
-    public void loadPersonal(BlockState state, CompoundNBT nbt) {
-        super.loadPersonal(state, nbt);
+    public void loadPersonal(CompoundTag nbt) {
+        super.loadPersonal(nbt);
         forceModifierStateData.readFromNBT(nbt);
 
-        ListNBT list = nbt.getList(TAG_TARGET_LIST, Constants.NBT.TAG_STRING);
+        ListTag list = nbt.getList(TAG_TARGET_LIST, Tag.TAG_STRING);
         targetList.clear();
         for (int i = 0; i < list.size(); i++)
             targetList.add(list.getString(i));
@@ -120,12 +103,12 @@ public class SimpleForceModifierTileEntity extends ForceModifierTileEntity {
     }
 
     @Override
-    public void writeSyncedPersonal(CompoundNBT nbt) {
+    public void writeSyncedPersonal(CompoundTag nbt) {
         super.writeSyncedPersonal(nbt);
         forceModifierStateData.putIntoNBT(nbt);
-        ListNBT list = new ListNBT();
+        ListTag list = new ListTag();
         for(String s : targetList)
-            list.add(StringNBT.valueOf(s));
+            list.add(StringTag.valueOf(s));
         nbt.put(TAG_TARGET_LIST, list);
         nbt.putBoolean(TAG_WHITELIST, whitelist);
         nbt.putBoolean(TAG_TARGET_ANIMALS, targetAnimals);
@@ -142,9 +125,9 @@ public class SimpleForceModifierTileEntity extends ForceModifierTileEntity {
      */
     @Nullable
     @Override
-    public Container createMenu(int windowID, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+    public AbstractContainerMenu createMenu(int windowID, Inventory playerInventory, Player playerEntity) {
         return ContainerForceModifier.createContainerServerSide(windowID, playerInventory,
-                upgradeZoneContents, forceModifierStateData, (TileEntity) this);
+                upgradeZoneContents, forceModifierStateData, (BlockEntity) this);
     }
 
     /**
@@ -157,29 +140,29 @@ public class SimpleForceModifierTileEntity extends ForceModifierTileEntity {
     }
 
     @Override
-    public void receiveMessageFromServer(CompoundNBT nbt) {
+    public void receiveMessageFromServer(CompoundTag nbt) {
         super.receiveMessageFromServer(nbt);
         log("Received message from server: "+nbt);
     }
 
     @Override
-    public void receiveMessageFromClient(PlayerEntity from, CompoundNBT nbt) {
+    public void receiveMessageFromClient(Player from, CompoundTag nbt) {
         super.receiveMessageFromClient(from, nbt);
         if (!this.hasOwnerRights(from))
             return;
-        if(nbt.contains("add", Constants.NBT.TAG_STRING))
+        if(nbt.contains("add", Tag.TAG_STRING))
             targetList.add(nbt.getString("add"));
-        if(nbt.contains("remove", Constants.NBT.TAG_INT))
+        if(nbt.contains("remove", Tag.TAG_INT))
             targetList.remove(nbt.getInt("remove"));
-        if(nbt.contains(TAG_WHITELIST, Constants.NBT.TAG_BYTE))
+        if(nbt.contains(TAG_WHITELIST, Tag.TAG_BYTE))
             whitelist = nbt.getBoolean(TAG_WHITELIST);
-        if(nbt.contains(TAG_TARGET_ANIMALS, Constants.NBT.TAG_BYTE))
+        if(nbt.contains(TAG_TARGET_ANIMALS, Tag.TAG_BYTE))
             targetAnimals = nbt.getBoolean(TAG_TARGET_ANIMALS);
-        if(nbt.contains(TAG_TARGET_PLAYERS, Constants.NBT.TAG_BYTE))
+        if(nbt.contains(TAG_TARGET_PLAYERS, Tag.TAG_BYTE))
             targetPlayers = nbt.getBoolean(TAG_TARGET_PLAYERS);
-        if(nbt.contains(TAG_TARGET_NEUTRALS, Constants.NBT.TAG_BYTE))
+        if(nbt.contains(TAG_TARGET_NEUTRALS, Tag.TAG_BYTE))
             targetNeutrals = nbt.getBoolean(TAG_TARGET_NEUTRALS);
-        if(nbt.contains(TAG_PRIORITY, Constants.NBT.TAG_INT))
+        if(nbt.contains(TAG_PRIORITY, Tag.TAG_INT))
             priority = nbt.getInt(TAG_PRIORITY);
         log("Received message from client: "+nbt);
         this.handleUpgrades();

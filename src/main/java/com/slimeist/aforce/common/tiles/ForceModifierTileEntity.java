@@ -1,9 +1,11 @@
 package com.slimeist.aforce.common.tiles;
 
+import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.containers.force_modifier.ForceModifierZoneContents;
 import com.slimeist.aforce.common.registries.ForceModifierRegistry;
 import com.slimeist.aforce.common.tiles.helpers.BaseForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.SimpleForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.init.ModifierInit;
 import com.slimeist.aforce.core.init.RegistryInit;
@@ -20,6 +22,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
@@ -29,6 +32,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
@@ -76,7 +80,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements M
 
     protected ForceModifierZoneContents upgradeZoneContents;
 
-    protected ForceModifierTileEntity(TileEntityType<?> tileEntityType, BlockPos pos, BlockState state) {
+    protected ForceModifierTileEntity(BlockEntityType<?> tileEntityType, BlockPos pos, BlockState state) {
         super(tileEntityType, pos, state);
         upgradeZoneContents = ForceModifierZoneContents.createForTileEntity(UPGRADE_SLOTS_COUNT,
                 this::canPlayerAccessInventory, this::handleUpgrades);
@@ -120,40 +124,19 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements M
         return player.distanceToSqr(worldPosition.getX() + X_CENTRE_OFFSET, worldPosition.getY() + Y_CENTRE_OFFSET, worldPosition.getZ() + Z_CENTRE_OFFSET) < MAXIMUM_DISTANCE_SQ;
     }
 
-    public static <T extends ForceModifierTileEntity> void tick(Level level, BlockPos pos, BlockState state, T tile) {
-        ForceNetworkTileEntity.networkTick(level, pos, state, tile);
-        if (tile.sendActionsCountdown==0) {
-            AdvancedForcefields.LOGGER.info("sendActionsCountdown is zero!");
-            for (ForceModifierRegistry action : tile.actions) {
-                ForceModifierSelector selector = new ForceModifierSelector(tile.targetList, tile.whitelist, tile.targetAnimals, tile.targetPlayers, tile.targetNeutrals, action.getRegistryName().toString(), tile.priority, tile.getBlockPos(), tile.getUpgradeZoneContents().getItem(0));
-                CompoundTag message = selector.toNBT();
-
-                CompoundTag data = new CompoundTag();
-                data.putString(TAG_PACKET_TYPE, "ADD_ACTION");
-                data.put(TAG_PACKET_MESSAGE, message);
-
-                tile.addPacket(new ForceNetworkPacket(ForceNetworkDirection.TO_MASTER, data, tile.getBlockPos()));
-                AdvancedForcefields.LOGGER.info("Sent ADD_ACTION packet with action of: "+action.getRegistryName().toString());
-            }
-        }
-        if (tile.sendActionsCountdown>=0) {
-            tile.sendActionsCountdown -= 1;
-        }
-    }
-
 
     /**
      *  standard code to look up what the human-readable name is.
      *  Can be useful when the tileentity has a customised name (eg "David's footlocker")
      */
     @Override
-    public ITextComponent getDisplayName() {
-        return new TranslationTextComponent("container.aforce.force_modifier");
+    public Component getDisplayName() {
+        return new TranslatableComponent("container.aforce.force_modifier");
     }
 
     @Nullable
     @Override
-    public Container createMenu(int p_createMenu_1_, PlayerInventory p_createMenu_2_, PlayerEntity p_createMenu_3_) {
+    public AbstractContainerMenu createMenu(int p_createMenu_1_, Inventory p_createMenu_2_, Player p_createMenu_3_) {
         return null;
     }
 
@@ -203,7 +186,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements M
     protected final String UPGRADE_SLOTS_NBT = "upgradeSlots";
 
     @Override
-    public void loadPersonal(CompoundNBT nbt) {
+    public void loadPersonal(CompoundTag nbt) {
         super.loadPersonal(nbt);
 
         CompoundTag inventoryNBT = nbt.getCompound(UPGRADE_SLOTS_NBT);
@@ -238,7 +221,7 @@ public class ForceModifierTileEntity extends ForceNetworkTileEntity implements M
 
     public void onDepowered() {}
 
-    public void receiveMessageFromServer(CompoundNBT nbt) {}
+    public void receiveMessageFromServer(CompoundTag nbt) {}
 
-    public void receiveMessageFromClient(PlayerEntity from, CompoundNBT nbt) {}
+    public void receiveMessageFromClient(Player from, CompoundTag nbt) {}
 }

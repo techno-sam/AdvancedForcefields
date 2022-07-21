@@ -59,13 +59,13 @@ public class ForceModifierBlock extends BaseEntityBlock implements IForceNetwork
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ForceModifierTileEntity(pos, state);
+        return new SimpleForceModifierTileEntity(pos, state);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level p_153212_, BlockState p_153213_, BlockEntityType<T> p_153214_) {
-        return createTickerHelper(p_153214_, TileEntityTypeInit.FORCE_MODIFIER_TYPE, ForceModifierTileEntity::tick);
+        return createTickerHelper(p_153214_, TileEntityTypeInit.FORCE_MODIFIER_TYPE, SimpleForceModifierTileEntity::tick);
     }
 
     @Override

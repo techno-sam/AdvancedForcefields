@@ -1,10 +1,7 @@
 package com.slimeist.aforce.core.init;
 
 import com.slimeist.aforce.AdvancedForcefields;
-import com.slimeist.aforce.common.blocks.CustomOreBlock;
-import com.slimeist.aforce.common.blocks.ForceControllerBlock;
-import com.slimeist.aforce.common.blocks.ForceModifierBlock;
-import com.slimeist.aforce.common.blocks.ForceTubeBlock;
+import com.slimeist.aforce.common.blocks.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -72,7 +69,7 @@ public final class BlockInit {
                 .sound(SoundType.LODESTONE)
         ));
 
-        ADVANCED_FORCE_MODIFIER = register("advanced_force_modifier", new AdvancedForceModifierBlock(AbstractBlock.Properties.of(Material.STONE)
+        ADVANCED_FORCE_MODIFIER = register("advanced_force_modifier", new AdvancedForceModifierBlock(BlockBehaviour.Properties.of(Material.STONE)
                 .strength(3.5F)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.LODESTONE)
