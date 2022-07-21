@@ -3,7 +3,7 @@ package com.slimeist.aforce.common.tiles;
 import com.slimeist.aforce.AdvancedForcefields;
 import com.slimeist.aforce.common.AdvancedForcefieldsTags;
 import com.slimeist.aforce.common.blocks.ForceTubeBlock;
-import com.slimeist.aforce.common.tiles.helpers.ForceModifierSelector;
+import com.slimeist.aforce.common.tiles.helpers.BaseForceModifierSelector;
 import com.slimeist.aforce.core.enums.ForceNetworkDirection;
 import com.slimeist.aforce.core.util.ForceNetworkPacket;
 import com.slimeist.aforce.core.util.TagUtil;
@@ -187,11 +187,11 @@ public class ForceNetworkTileEntity extends ModTileEntity {
         return this.latest_to_servant_packet_game_time;
     }
 
-    protected HashMap<Integer, ArrayList<ForceModifierSelector>> sortedActionSelectors = new HashMap<>();
+    protected HashMap<Integer, ArrayList<BaseForceModifierSelector>> sortedActionSelectors = new HashMap<>();
 
     protected static final String TAG_ACTION_SELECTORS = "actionSelectors";
 
-    protected ArrayList<ForceModifierSelector> actionSelectors = new ArrayList<>();
+    protected ArrayList<BaseForceModifierSelector> actionSelectors = new ArrayList<>();
 
     public void clearActionSelectors() {
         this.actionSelectors.clear();
@@ -202,8 +202,8 @@ public class ForceNetworkTileEntity extends ModTileEntity {
         //info("cas: We are "+((this instanceof ForceControllerTileEntity) ? "" : "not ")+"a controller");
         //info("Clearing action selectors for pos: "+originator.toShortString()+", this network tile is "+(this.getLevel().isClientSide() ? "clientside" : "serverside"));
         //info("There were "+this.actionSelectors.size()+" selectors.");
-        ArrayList<ForceModifierSelector> newSelectors = new ArrayList<>();
-        for (ForceModifierSelector selector : this.actionSelectors) {
+        ArrayList<BaseForceModifierSelector> newSelectors = new ArrayList<>();
+        for (BaseForceModifierSelector selector : this.actionSelectors) {
             if (!selector.getOriginPosition().equals(originator)) {
                 //info("Adding selector which has a position of: "+selector.getOriginPosition().toShortString()+", which is not the same as "+originator.toShortString());
                 newSelectors.add(selector);
@@ -216,7 +216,7 @@ public class ForceNetworkTileEntity extends ModTileEntity {
         //info("After updating our sorted list of action selectors, there are now "+this.actionSelectors.size()+" selectors.");
     }
 
-    public void addActionSelector(ForceModifierSelector selector) {
+    public void addActionSelector(BaseForceModifierSelector selector) {
         this.actionSelectors.add(selector);
         //info("aas: We are "+((this instanceof ForceControllerTileEntity) ? "" : "not ")+"a controller");
         //info("Added action selector with action: "+selector.getAction());
@@ -224,8 +224,8 @@ public class ForceNetworkTileEntity extends ModTileEntity {
     }
 
     @SuppressWarnings("unchecked")
-    public List<ForceModifierSelector> getActionSelectors() {
-        return (List<ForceModifierSelector>) this.actionSelectors.clone();
+    public List<BaseForceModifierSelector> getActionSelectors() {
+        return (List<BaseForceModifierSelector>) this.actionSelectors.clone();
     }
 
     public void updateSortedActionSelectors() {
@@ -233,12 +233,12 @@ public class ForceNetworkTileEntity extends ModTileEntity {
             this.sortedActionSelectors.clear();
             return;
         }
-        HashMap<Integer, ArrayList<ForceModifierSelector>> sorted = new HashMap<>();
+        HashMap<Integer, ArrayList<BaseForceModifierSelector>> sorted = new HashMap<>();
 
         int minPriority = Integer.MAX_VALUE;
         int maxPriority = Integer.MIN_VALUE;
 
-        for (ForceModifierSelector sel : this.getActionSelectors()) {
+        for (BaseForceModifierSelector sel : this.getActionSelectors()) {
             int priority = sel.getPriority();
             if (priority<minPriority) {
                 minPriority = priority;
@@ -249,8 +249,8 @@ public class ForceNetworkTileEntity extends ModTileEntity {
         }
 
         for (int priority=minPriority; priority<=maxPriority; priority++) {
-            ArrayList<ForceModifierSelector> temp = new ArrayList<>();
-            for (ForceModifierSelector sel : this.getActionSelectors()) {
+            ArrayList<BaseForceModifierSelector> temp = new ArrayList<>();
+            for (BaseForceModifierSelector sel : this.getActionSelectors()) {
                 if (sel.getPriority()==priority) {
                     temp.add(sel);
                 }
@@ -263,7 +263,7 @@ public class ForceNetworkTileEntity extends ModTileEntity {
         this.sortedActionSelectors = sorted;
     }
 
-    public HashMap<Integer, ArrayList<ForceModifierSelector>> getSortedActionSelectors() {
+    public HashMap<Integer, ArrayList<BaseForceModifierSelector>> getSortedActionSelectors() {
         return this.sortedActionSelectors;
     }
 
@@ -576,7 +576,7 @@ public class ForceNetworkTileEntity extends ModTileEntity {
         this.clearActionSelectors();
         for (int i=0; i<actionList.size(); i++) {
             CompoundTag actionNBT = actionList.getCompound(i);
-            this.addActionSelector(ForceModifierSelector.fromNBT(actionNBT));
+            this.addActionSelector(BaseForceModifierSelector.fromNBT(actionNBT));
         }
     }
 
@@ -584,7 +584,7 @@ public class ForceNetworkTileEntity extends ModTileEntity {
         nbt.putInt(TAG_COLOR, this.getColor());
 
         ListTag actionList = new ListTag();
-        for (ForceModifierSelector sel : this.getActionSelectors()) {
+        for (BaseForceModifierSelector sel : this.getActionSelectors()) {
             actionList.add(sel.toNBT());
         }
         nbt.put(TAG_ACTION_SELECTORS, actionList);

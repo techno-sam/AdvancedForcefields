@@ -28,6 +28,7 @@ public final class BlockInit {
     public static ForceTubeBlock FORCE_TUBE;
     public static ForceControllerBlock FORCE_CONTROLLER;
     public static ForceModifierBlock FORCE_MODIFIER;
+    public static AdvancedForceModifierBlock ADVANCED_FORCE_MODIFIER;
     public static OreBlock ENDERITE_ORE;
     public static Block ENDERITE_BLOCK;
     public static Block RAW_ENDERITE_BLOCK;
@@ -66,6 +67,12 @@ public final class BlockInit {
         ));
 
         FORCE_MODIFIER = register("force_modifier", new ForceModifierBlock(BlockBehaviour.Properties.of(Material.STONE)
+                .strength(3.5F)
+                .requiresCorrectToolForDrops()
+                .sound(SoundType.LODESTONE)
+        ));
+
+        ADVANCED_FORCE_MODIFIER = register("advanced_force_modifier", new AdvancedForceModifierBlock(AbstractBlock.Properties.of(Material.STONE)
                 .strength(3.5F)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.LODESTONE)

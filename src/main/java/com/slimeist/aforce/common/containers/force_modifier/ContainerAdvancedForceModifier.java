@@ -1,17 +1,17 @@
 package com.slimeist.aforce.common.containers.force_modifier;
 
 import com.slimeist.aforce.AdvancedForcefields;
-import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
+import com.slimeist.aforce.common.tiles.AdvancedForceModifierTileEntity;
 import com.slimeist.aforce.core.init.ContainerTypeInit;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.Container;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,31 +34,29 @@ import org.apache.logging.log4j.Logger;
  * Upgrades (For determining what special actions the force field applies)
  */
 
-public class ContainerForceModifier extends AbstractContainerMenu {
+public class ContainerAdvancedForceModifier extends Container {
 
-    public static ContainerForceModifier createContainerServerSide(int windowID, Inventory playerInventory,
-                                                                   ForceModifierZoneContents upgradeZoneContents,
-                                                                   ForceModifierStateData forceModifierStateData,
-                                                                   BlockEntity tile) {
-        return new ContainerForceModifier(windowID, playerInventory,
-                upgradeZoneContents, forceModifierStateData, tile);
+    public static ContainerAdvancedForceModifier createContainerServerSide(int windowID, PlayerInventory playerInventory,
+                                                                           ForceModifierZoneContents upgradeZoneContents,
+                                                                           TileEntity tile) {
+        return new ContainerAdvancedForceModifier(windowID, playerInventory,
+                upgradeZoneContents, tile);
     }
 
-    public static ContainerForceModifier createContainerClientSide(int windowID, Inventory playerInventory, net.minecraft.network.FriendlyByteBuf extraData) {
+    public static ContainerAdvancedForceModifier createContainerClientSide(int windowID, PlayerInventory playerInventory, net.minecraft.network.PacketBuffer extraData) {
         //  don't need extraData for this example; if you want you can use it to provide extra information from the server, that you can use
         //  when creating the client container
         //  eg String detailedDescription = extraData.readString(128);
         ForceModifierZoneContents upgradeZoneContents = ForceModifierZoneContents.createForClientSideContainer(UPGRADE_SLOTS_COUNT);
-        ForceModifierStateData forceModifierStateData = new ForceModifierStateData();
-        Level world = AdvancedForcefields.proxy.getClientWorld();
+        World world = AdvancedForcefields.proxy.getClientWorld();
         BlockPos pos = extraData.readBlockPos();
-        BlockEntity tile = world.getBlockEntity(pos);
+        TileEntity tile = world.getBlockEntity(pos);
 
         // on the client side there is no parent TileEntity to communicate with, so we:
         // 1) use dummy inventories and furnace state data (tracked ints)
         // 2) use "do nothing" lambda functions for canPlayerAccessInventory and markDirty
-        return new ContainerForceModifier(windowID, playerInventory,
-                upgradeZoneContents, forceModifierStateData, tile);
+        return new ContainerAdvancedForceModifier(windowID, playerInventory,
+                upgradeZoneContents, tile);
     }
 
     // must assign a slot index to each of the slots used by the GUI.
@@ -76,7 +74,7 @@ public class ContainerForceModifier extends AbstractContainerMenu {
     private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
 
-    public static final int UPGRADE_SLOTS_COUNT = SimpleForceModifierTileEntity.UPGRADE_SLOTS_COUNT;
+    public static final int UPGRADE_SLOTS_COUNT = AdvancedForceModifierTileEntity.UPGRADE_SLOTS_COUNT;
     public static final int TOTAL_SLOTS_COUNT = UPGRADE_SLOTS_COUNT;
 
     // slot index is the unique index for all slots in this container i.e. 0 - 35 for invPlayer then 36 - 49 for furnaceContents
@@ -93,18 +91,14 @@ public class ContainerForceModifier extends AbstractContainerMenu {
     // i.e. invPlayer slots 0 - 35 (hotbar 0 - 8 then main inventory 9 to 35)
     // and furnace: inputZone slots 0 - 4, outputZone slots 0 - 4, fuelZone 0 - 3
 
-    public ContainerForceModifier(int windowID, Inventory invPlayer,
-                                  ForceModifierZoneContents upgradeZoneContents,
-                                  ForceModifierStateData forceModifierStateData, BlockEntity tile) {
-        super(ContainerTypeInit.FORCE_MODIFIER_TYPE, windowID);
-        if (ContainerTypeInit.FORCE_MODIFIER_TYPE == null)
-            throw new IllegalStateException("Must initialise FORCE_MODIFIER_TYPE before constructing a ContainerForceController!");
+    public ContainerAdvancedForceModifier(int windowID, PlayerInventory invPlayer,
+                                          ForceModifierZoneContents upgradeZoneContents, TileEntity tile) {
+        super(ContainerTypeInit.ADVANCED_FORCE_MODIFIER_TYPE, windowID);
+        if (ContainerTypeInit.ADVANCED_FORCE_MODIFIER_TYPE == null)
+            throw new IllegalStateException("Must initialise ADVANCED_FORCE_MODIFIER_TYPE before constructing a ContainerAdvancedForceModifier!");
         this.upgradeZoneContents = upgradeZoneContents;
-        this.forceModifierStateData = forceModifierStateData;
         this.world = invPlayer.player.level;
-        this.tile = (SimpleForceModifierTileEntity) tile;
-
-        addDataSlots(forceModifierStateData);    // tell vanilla to keep the furnaceStateData synchronised between client and server Containers
+        this.tile = (AdvancedForceModifierTileEntity) tile;
 
         final int SLOT_X_SPACING = 18;
         final int SLOT_Y_SPACING = 18;
@@ -137,7 +131,7 @@ public class ContainerForceModifier extends AbstractContainerMenu {
 
     // Checks each tick to make sure the player is still able to access the inventory and if not closes the gui
     @Override
-    public boolean stillValid(Player player)
+    public boolean stillValid(PlayerEntity player)
     {
         return upgradeZoneContents.stillValid(player);
     }
@@ -151,7 +145,7 @@ public class ContainerForceModifier extends AbstractContainerMenu {
     //   otherwise, returns a copy of the source stack
     //  Code copied & refactored from vanilla furnace AbstractFurnaceContainer
     @Override
-    public ItemStack quickMoveStack(Player player, int sourceSlotIndex)
+    public ItemStack quickMoveStack(PlayerEntity player, int sourceSlotIndex)
     {
         Slot sourceSlot = slots.get(sourceSlotIndex);
         if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;
@@ -174,7 +168,7 @@ public class ContainerForceModifier extends AbstractContainerMenu {
 
             case PLAYER_HOTBAR:
             case PLAYER_MAIN_INVENTORY: // taking out of inventory - find the appropriate furnace zone
-                if (SimpleForceModifierTileEntity.isItemValidForUpgradeSlot(sourceItemStack)) { // is upgrade -> add to upgrade
+                if (AdvancedForceModifierTileEntity.isItemValidForUpgradeSlot(sourceItemStack)) { // is upgrade -> add to upgrade
                     successfulTransfer = mergeInto(SlotZone.UPGRADE_ZONE, sourceItemStack, false);
                 }
                 if (!successfulTransfer) {  // didn't fit into furnace; try player main inventory or hotbar
@@ -221,22 +215,21 @@ public class ContainerForceModifier extends AbstractContainerMenu {
 
     // SlotGlass is a slot that will only accept glass
     public class SlotUpgrade extends Slot {
-        public SlotUpgrade(Container inventoryIn, int index, int xPosition, int yPosition) {
+        public SlotUpgrade(IInventory inventoryIn, int index, int xPosition, int yPosition) {
             super(inventoryIn, index, xPosition, yPosition);
         }
 
         // if this function returns false, the player won't be able to insert the given item into this slot
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return SimpleForceModifierTileEntity.isItemValidForUpgradeSlot(stack);
+            return AdvancedForceModifierTileEntity.isItemValidForUpgradeSlot(stack);
         }
     }
 
     private ForceModifierZoneContents upgradeZoneContents;
-    private ForceModifierStateData forceModifierStateData;
-    public SimpleForceModifierTileEntity tile;
+    public AdvancedForceModifierTileEntity tile;
 
-    private Level world; //needed for some helper methods
+    private World world; //needed for some helper methods
     private static final Logger LOGGER = LogManager.getLogger();
 
     /**

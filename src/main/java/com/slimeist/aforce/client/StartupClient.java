@@ -1,5 +1,6 @@
 package com.slimeist.aforce.client;
 
+import com.slimeist.aforce.client.gui.ContainerScreenAdvancedForceModifier;
 import com.slimeist.aforce.client.gui.ContainerScreenForceModifier;
 import com.slimeist.aforce.client.render.tileentity.AlternateForceTubeTileEntityRenderer;
 import com.slimeist.aforce.client.gui.ContainerScreenForceController;
@@ -18,6 +19,7 @@ public class StartupClient {
         RenderLayerHandler.init();
         MenuScreens.register(ContainerTypeInit.FORCE_CONTROLLER_TYPE, ContainerScreenForceController::new);
         MenuScreens.register(ContainerTypeInit.FORCE_MODIFIER_TYPE, ContainerScreenForceModifier::new);
+        MenuScreens.register(ContainerTypeInit.ADVANCED_FORCE_MODIFIER_TYPE, ContainerScreenAdvancedForceModifier::new);
     }
 
     @SubscribeEvent

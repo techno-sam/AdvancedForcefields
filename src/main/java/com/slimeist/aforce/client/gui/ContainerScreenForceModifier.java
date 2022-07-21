@@ -30,7 +30,7 @@ import static com.slimeist.aforce.client.util.ClientUtils.mc;
 
 public class ContainerScreenForceModifier extends AbstractContainerScreen<ContainerForceModifier> {
 
-    public ForceModifierTileEntity tile;
+    public SimpleForceModifierTileEntity tile;
     private EditBox nameField;
     private ContainerForceModifier containerForceModifier;
     public ContainerScreenForceModifier(ContainerForceModifier containerForceModifier, Inventory playerInventory, Component title) {
@@ -97,7 +97,7 @@ public class ContainerScreenForceModifier extends AbstractContainerScreen<Contai
                     CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.whitelist = btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_WHITELIST, tile.whitelist);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_WHITELIST, tile.whitelist);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addRenderableWidget(new GuiButtonCheckbox(leftPos+74+sideX, topPos+26+extraY, new TranslatableComponent("gui.aforce.modifier.animals"), tile.targetAnimals,
@@ -105,7 +105,7 @@ public class ContainerScreenForceModifier extends AbstractContainerScreen<Contai
                     CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.targetAnimals = !btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_ANIMALS, tile.targetAnimals);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_TARGET_ANIMALS, tile.targetAnimals);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addRenderableWidget(new GuiButtonCheckbox(leftPos+74+sideX, topPos+42+extraY, new TranslatableComponent("gui.aforce.modifier.players"), tile.targetPlayers,
@@ -113,7 +113,7 @@ public class ContainerScreenForceModifier extends AbstractContainerScreen<Contai
                     CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.targetPlayers = !btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_PLAYERS, tile.targetPlayers);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_TARGET_PLAYERS, tile.targetPlayers);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addRenderableWidget(new GuiButtonCheckbox(leftPos+74+sideX, topPos+58+extraY, new TranslatableComponent("gui.aforce.modifier.neutrals"), tile.targetNeutrals,
@@ -121,7 +121,7 @@ public class ContainerScreenForceModifier extends AbstractContainerScreen<Contai
                     CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.targetNeutrals = !btn.getState();
-                    tag.putBoolean(ForceModifierTileEntity.TAG_TARGET_NEUTRALS, tile.targetNeutrals);
+                    tag.putBoolean(SimpleForceModifierTileEntity.TAG_TARGET_NEUTRALS, tile.targetNeutrals);
                     handleButtonClick(tag, listOffset);
                 }));
         this.addRenderableWidget(new GuiButtonIE(leftPos+74+sideX, topPos+70+extraY, 7,7, new TextComponent(""), ELEMENTS, 9, 87,
@@ -129,7 +129,7 @@ public class ContainerScreenForceModifier extends AbstractContainerScreen<Contai
                     CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.priority += 1;
-                    tag.putInt(ForceModifierTileEntity.TAG_PRIORITY, tile.priority);
+                    tag.putInt(SimpleForceModifierTileEntity.TAG_PRIORITY, tile.priority);
                     handleButtonClick(tag, listOffset);
                 }).setHoverOffset(9,0));
         this.addRenderableWidget(new GuiButtonIE(leftPos+74+sideX, topPos+86+extraY, 7,7, new TextComponent(""), ELEMENTS, 9, 96,
@@ -137,7 +137,7 @@ public class ContainerScreenForceModifier extends AbstractContainerScreen<Contai
                     CompoundTag tag = new CompoundTag();
                     int listOffset = -1;
                     tile.priority -= 1;
-                    tag.putInt(ForceModifierTileEntity.TAG_PRIORITY, tile.priority);
+                    tag.putInt(SimpleForceModifierTileEntity.TAG_PRIORITY, tile.priority);
                     handleButtonClick(tag, listOffset);
                 }).setHoverOffset(9,0));
     }

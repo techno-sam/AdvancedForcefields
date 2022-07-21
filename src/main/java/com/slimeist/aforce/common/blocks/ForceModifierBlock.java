@@ -1,6 +1,7 @@
 package com.slimeist.aforce.common.blocks;
 
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
+import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;

@@ -18,14 +18,13 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ForceModifierSelector {
+public class SimpleForceModifierSelector extends BaseForceModifierSelector {
 
     public static String TAG_TARGET_LIST = "targetList";
     protected List<String> targetList = new ArrayList<>();
 
     public static String TAG_WHITELIST = "whitelist";
     protected boolean whitelist = false;
-
 
     public static String TAG_TARGET_ANIMALS = "targetAnimals";
     protected boolean targetAnimals = false;
@@ -36,36 +35,31 @@ public class ForceModifierSelector {
     public static String TAG_TARGET_NEUTRALS = "targetNeutrals";
     protected boolean targetNeutrals = false;
 
-    public static String TAG_MODIFIER_ACTION = "modifierAction";
-    protected String action = AdvancedForcefields.getId("default_action").toString();
-
-    public static String TAG_PRIORITY = "priority";
-    protected int priority = 0;
-
-    public static String TAG_ORIGIN_POSITION = "originPosition";
-    protected BlockPos originPosition = null;
-
-    public static String TAG_TRIGGER_STACK = "triggerStack";
-    protected ItemStack triggerStack = ItemStack.EMPTY;
-
-    public ForceModifierSelector(BlockPos originPosition) {
-        this.originPosition = originPosition;
+    public SimpleForceModifierSelector() {
+        super();
     }
 
-    public ForceModifierSelector(List<String> targetList, boolean whitelist, boolean targetAnimals, boolean targetPlayers, boolean targetNeutrals, String action, int priority, BlockPos originPosition, ItemStack triggerStack) {
+    public SimpleForceModifierSelector(BlockPos originPosition) {
+        super(originPosition);
+    }
+
+    public SimpleForceModifierSelector(List<String> targetList, boolean whitelist, boolean targetAnimals, boolean targetPlayers, boolean targetNeutrals, String action, int priority, BlockPos originPosition, ItemStack triggerStack) {
+        super(action, priority, originPosition, triggerStack);
         this.targetList = targetList;
         this.whitelist = whitelist;
         this.targetAnimals = targetAnimals;
         this.targetPlayers = targetPlayers;
         this.targetNeutrals = targetNeutrals;
-        this.action = action;
-        this.priority = priority;
-        this.originPosition = originPosition;
-        this.triggerStack = triggerStack;
     }
 
-    public static ForceModifierSelector fromNBT(CompoundTag nbt) {
-        ForceModifierSelector selector = new ForceModifierSelector(TagUtil.readPos(nbt.getCompound(TAG_ORIGIN_POSITION)));
+    @Override
+    public ForceModifierSelectorType getType() {
+        return ForceModifierSelectorType.SIMPLE;
+    }
+
+    @Override
+    protected void loadNBT(CompoundTag nbt) {
+        super.loadNBT(nbt);
 
         if (nbt.contains(TAG_TARGET_LIST, Tag.TAG_LIST)) {
             ListTag list = nbt.getList(TAG_TARGET_LIST, Tag.TAG_STRING);
@@ -73,42 +67,29 @@ public class ForceModifierSelector {
             for (int i=0; i<list.size(); i++) {
                 tlist.add(list.getString(i));
             }
-            selector.setTargetList(tlist);
+            this.setTargetList(tlist);
         }
 
         if (nbt.contains(TAG_WHITELIST, Tag.TAG_BYTE)) {
-            selector.setWhitelist(nbt.getBoolean(TAG_WHITELIST));
+            this.setWhitelist(nbt.getBoolean(TAG_WHITELIST));
         }
 
         if (nbt.contains(TAG_TARGET_ANIMALS, Tag.TAG_BYTE)) {
-            selector.setTargetAnimals(nbt.getBoolean(TAG_TARGET_ANIMALS));
+            this.setTargetAnimals(nbt.getBoolean(TAG_TARGET_ANIMALS));
         }
 
         if (nbt.contains(TAG_TARGET_PLAYERS, Tag.TAG_BYTE)) {
-            selector.setTargetPlayers(nbt.getBoolean(TAG_TARGET_PLAYERS));
+            this.setTargetPlayers(nbt.getBoolean(TAG_TARGET_PLAYERS));
         }
 
-        if (nbt.contains(TAG_TARGET_NEUTRALS, Tag.TAG_BYTE)) {
-            selector.setTargetNeutrals(nbt.getBoolean(TAG_TARGET_NEUTRALS));
+        if (nbt.contains(TAG_TARGET_NEUTRALS, Constants.NBT.TAG_BYTE)) {
+            this.setTargetNeutrals(nbt.getBoolean(TAG_TARGET_NEUTRALS));
         }
-
-        if (nbt.contains(TAG_MODIFIER_ACTION, Tag.TAG_STRING)) {
-            selector.setAction(nbt.getString(TAG_MODIFIER_ACTION));
-        }
-
-        if (nbt.contains(TAG_PRIORITY, Tag.TAG_INT)) {
-            selector.setPriority(nbt.getInt(TAG_PRIORITY));
-        }
-
-        if (nbt.contains(TAG_TRIGGER_STACK, Tag.TAG_COMPOUND)) {
-            selector.setTriggerStack(ItemStack.of(nbt.getCompound(TAG_TRIGGER_STACK)));
-        }
-
-        return selector;
     }
 
-    public CompoundTag toNBT() {
-        CompoundTag nbt = new CompoundTag();
+    @Override
+    public CompoundNBT toNBT() {
+        CompoundNBT nbt = super.toNBT();
 
         ListTag tlist = new ListTag();
         for (String target : this.getTargetList()) {
@@ -121,17 +102,6 @@ public class ForceModifierSelector {
         nbt.putBoolean(TAG_TARGET_ANIMALS, this.shouldTargetAnimals());
         nbt.putBoolean(TAG_TARGET_PLAYERS, this.shouldTargetPlayers());
         nbt.putBoolean(TAG_TARGET_NEUTRALS, this.shouldTargetNeutrals());
-
-        nbt.putString(TAG_MODIFIER_ACTION, this.getAction());
-        nbt.putInt(TAG_PRIORITY, this.getPriority());
-
-        nbt.put(TAG_ORIGIN_POSITION, TagUtil.writePos(this.getOriginPosition()));
-
-        CompoundTag itemNBT = new CompoundTag();
-
-        this.getTriggerStack().save(itemNBT);
-
-        nbt.put(TAG_TRIGGER_STACK, itemNBT);
 
         return nbt;
     }
@@ -176,38 +146,6 @@ public class ForceModifierSelector {
         this.targetNeutrals = targetNeutrals;
     }
 
-    public String getAction() {
-        return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
-    public BlockPos getOriginPosition() {
-        return originPosition;
-    }
-
-    public void setOriginPosition(BlockPos originPosition) {
-        this.originPosition = originPosition;
-    }
-
-    public ItemStack getTriggerStack() {
-        return triggerStack;
-    }
-
-    public void setTriggerStack(ItemStack triggerStack) {
-        this.triggerStack = triggerStack;
-    }
-
     public static void info(String msg) {
         //AdvancedForcefields.LOGGER.info(msg);
     }
@@ -229,6 +167,7 @@ public class ForceModifierSelector {
     }
 
     //the following method, validForEntity is from ImmersiveEngineering turret validation check, credit to BluSunrize
+    @Override
     public boolean validForEntity(@Nonnull Entity entity) {
         info("Checking for entity: "+entity.getName().getString());
         if (entity.level == null) {
