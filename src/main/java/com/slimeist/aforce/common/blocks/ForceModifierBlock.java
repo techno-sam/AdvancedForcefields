@@ -1,6 +1,7 @@
 package com.slimeist.aforce.common.blocks;
 
 import com.slimeist.aforce.common.tiles.ForceModifierTileEntity;
+import com.slimeist.aforce.common.tiles.SimpleForceModifierTileEntity;
 import com.slimeist.aforce.common.tiles.ForceNetworkTileEntity;
 import com.slimeist.aforce.core.init.TileEntityTypeInit;
 import com.slimeist.aforce.core.interfaces.IForceNetworkBlock;
@@ -60,13 +61,13 @@ public class ForceModifierBlock extends BaseEntityBlock implements IForceNetwork
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ForceModifierTileEntity(pos, state);
+        return new SimpleForceModifierTileEntity(pos, state);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level p_153212_, BlockState p_153213_, BlockEntityType<T> p_153214_) {
-        return createTickerHelper(p_153214_, TileEntityTypeInit.FORCE_MODIFIER_TYPE, ForceModifierTileEntity::tick);
+        return createTickerHelper(p_153214_, TileEntityTypeInit.FORCE_MODIFIER_TYPE, SimpleForceModifierTileEntity::tick);
     }
 
     @Override

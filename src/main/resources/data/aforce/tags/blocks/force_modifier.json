@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "aforce:force_modifier"
+    "aforce:force_modifier",
+    "aforce:advanced_force_modifier"
   ]
 }
